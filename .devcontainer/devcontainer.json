@@ -12,7 +12,12 @@
 			"pnpmVersion": "latest",
 			"nvmVersion": "latest"
 		}
-	}
+	},
+	// Needed to run in Podman.
+	// See https://code.visualstudio.com/remote/advancedcontainers/docker-options#_podman
+	"runArgs": [
+  	"--userns=keep-id"
+	]
 	
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
