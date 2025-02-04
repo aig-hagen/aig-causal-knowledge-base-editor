@@ -17,7 +17,19 @@
 	// See https://code.visualstudio.com/remote/advancedcontainers/docker-options#_podman
 	"runArgs": [
   	"--userns=keep-id"
-	]
+	],
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"Vue.volar",
+				"EditorConfig.EditorConfig",
+				"esbenp.prettier-vscode",
+				"ms-playwright.playwright",
+				"vitest.explorer",
+				"dbaeumer.vscode-eslint"
+			]
+		}
+	}
 	
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
