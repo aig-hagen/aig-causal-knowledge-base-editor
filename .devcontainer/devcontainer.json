@@ -13,11 +13,6 @@
 			"nvmVersion": "latest"
 		}
 	},
-	// Needed to run in Podman.
-	// See https://code.visualstudio.com/remote/advancedcontainers/docker-options#_podman
-	"runArgs": [
-  	"--userns=keep-id"
-	],
 	"customizations": {
 		"vscode": {
 			"extensions": [
