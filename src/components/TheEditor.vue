@@ -2,13 +2,21 @@
 import { useMutationObserver } from '@vueuse/core'
 import { computed, nextTick, ref, useTemplateRef } from 'vue'
 
-// TODO add different arrow types for to show negation and no negation
-// TODO add color to arrow type and node type selection
+const COLOR_BACKGROUND_ATOM = 'PapayaWhip'
+const COLOR_EXPLAINABLE_ATOM = 'DarkOrange'
+const COLOR_CONJUNCTION = 'LightGray'
 
 type NodeType = 'BACKGROUND_ATOM' | 'EXPLAINABLE_ATOM' | 'CONJUCTION'
+const selectedNodeType = ref<NodeType>('BACKGROUND_ATOM')
 
-type NodeId = number
-type AtomId = number
+const COLOR_REGULAR_LINKS = 'DarkBlue'
+const COLOR_NEGATED_LINKS = 'DarkRed'
+
+type LinkType = 'REGULAR' | 'NEGATED'
+const selectedLinkType = ref<LinkType>('REGULAR')
+
+type NodeId = string
+type AtomId = string
 type AssumptionValue = 1 | 2 | 3 | 4 | 5
 
 const DEFAULT_ASSUMPTION_VALUE = 3
@@ -29,17 +37,26 @@ interface ExplainableAtom {
 }
 
 type Atom = BackgroundAtom | ExplainableAtom
-
 const atoms = ref<Atom[]>([])
-// selectedAtomId might be an outdated id, if the atom was deleted while beeing selected
 const selectedAtomId = ref<AtomId | null>(null)
+// selectedAtomId might be an outdated ID, if the atom was deleted while beeing selected
 const selectedAtom = computed(() => {
   return atoms.value.find((atom) => atom.id === selectedAtomId.value)
 })
 
 const conjunctions = ref<NodeId[]>([])
 
-const selectedNodeType = ref<NodeType>('BACKGROUND_ATOM')
+type LinkId = string
+interface Link {
+  id: LinkId
+  negated: boolean
+}
+const links = ref<Link[]>([])
+const selectedLinkId = ref<LinkId | null>(null)
+// selectedLinkId might be an outdated ID, if the link was deleted while beeing selected
+const selectedLinkRef = computed(() => {
+  return links.value.find((link) => link.id === selectedLinkId.value)
+})
 
 const graphComponentElement = useTemplateRef<HTMLElement>('graph-component-element')
 const nodeContainerRef = ref<SVGElement | null>(null)
@@ -51,6 +68,7 @@ computed(() => {
   return nodes[0] as HTMLElement
 })
 const nameInput = useTemplateRef<HTMLInputElement>('name-input')
+const negatedInput = useTemplateRef<HTMLInputElement>('negated-input')
 
 const { stop } = useMutationObserver(
   graphComponentElement,
@@ -58,6 +76,34 @@ const { stop } = useMutationObserver(
     if ((graphComponentElement.value?.childNodes ?? []).length == 0) {
       return
     }
+
+    graphComponentElement.value?.addEventListener('click', (event) => {
+      const pointerEvent = event as PointerEvent
+      const target = pointerEvent.target as HTMLElement
+
+      selectedAtomId.value =
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (target.closest('.graph-controller__node-container') as any)?.__data__?.id ?? null
+      nextTick(() => {
+        if (selectedAtomId.value !== null) {
+          nameInput.value?.focus()
+        }
+      })
+
+      selectedLinkId.value =
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (target.closest('.graph-controller__link-container') as any)?.__data__?.id ?? null
+      nextTick(() => {
+        if (selectedLinkId.value !== null) {
+          negatedInput.value?.focus()
+        }
+      })
+    })
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const instance = (graphComponentElement.value as any)?._instance?.exposed
+    instanceRef.value = instance
+    instance.toggleZoom(true)
     const nodeContainer = graphComponentElement.value?.getElementsByClassName('nodes')[0]
     const linkContainer = graphComponentElement.value?.getElementsByClassName('links')[0]
     stop()
@@ -76,21 +122,6 @@ const instanceRef = ref<any | null>(null)
 useMutationObserver(
   nodeContainerRef,
   () => {
-    if (!instanceRef.value) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      instanceRef.value = (graphComponentElement.value as any)?._instance?.exposed
-      if (!instanceRef.value) return
-      graphComponentElement.value?.addEventListener('click', (event) => {
-        const pointerEvent = event as PointerEvent
-        const target = pointerEvent.target as HTMLElement
-
-        selectedAtomId.value =
-          (target.closest('.graph-controller__node-container') as any)?.__data__?.id ?? null
-        nextTick(() => {
-          nameInput.value?.focus()
-        })
-      })
-    }
     const instance = instanceRef.value
     const graph = instance.getGraph('json', false, false, false)
     const nodeIds: NodeId[] = graph.nodes.map((node: { id: number }) => node.id)
@@ -104,7 +135,7 @@ useMutationObserver(
       instance.setLabelEditable(false, nodeId)
       switch (selectedNodeType.value) {
         case 'BACKGROUND_ATOM':
-          instance.setNodeColor('PapayaWhip', nodeId)
+          instance.setNodeColor(COLOR_BACKGROUND_ATOM, nodeId)
           atoms.value.push({
             id: nodeId,
             type: 'BACKGROUND',
@@ -114,7 +145,7 @@ useMutationObserver(
           })
           break
         case 'EXPLAINABLE_ATOM':
-          instance.setNodeColor('Orange', nodeId)
+          instance.setNodeColor(COLOR_EXPLAINABLE_ATOM, nodeId)
           atoms.value.push({
             id: nodeId,
             type: 'EXPLAINABLE',
@@ -123,7 +154,7 @@ useMutationObserver(
           })
           break
         case 'CONJUCTION':
-          instance.setNodeColor('lightgray', nodeId)
+          instance.setNodeColor(COLOR_CONJUNCTION, nodeId)
           conjunctions.value.push(nodeId)
           setLabel(nodeId, '$\\land$')
           break
@@ -144,10 +175,25 @@ useMutationObserver(
   () => {
     const instance = instanceRef.value
     const graph = instance.getGraph('json', false, false, false)
-    const links: string[] = graph.links.map(
+    const linkIds: string[] = graph.links.map(
       (link: { sourceId: number; targetId: number }) => `${link.sourceId}-${link.targetId}`,
     )
-    instance.setLabelEditable(false, links)
+    const knownLinkIds = links.value.map((link) => link.id)
+    const newLinkIds = linkIds.filter((linkId) => !knownLinkIds.includes(linkId))
+
+    instance.setLabelEditable(false, newLinkIds)
+    const negated = selectedLinkType.value === 'NEGATED'
+    const color = negated ? COLOR_NEGATED_LINKS : COLOR_REGULAR_LINKS
+    instance.setLinkColor(color, newLinkIds)
+
+    for (const linkId of newLinkIds) {
+      links.value.push({
+        id: linkId,
+        negated: negated,
+      })
+    }
+
+    links.value = links.value.filter((link) => linkIds.includes(link.id))
   },
   {
     childList: true,
@@ -158,7 +204,7 @@ function changeAtomToBackgroundAtom(atom: Atom) {
   if (atom.type === 'EXPLAINABLE') {
     ;(atom as unknown as BackgroundAtom).type = 'BACKGROUND'
     ;(atom as unknown as BackgroundAtom).assumption = DEFAULT_ASSUMPTION_VALUE
-    instanceRef.value?.setNodeColor('PapayaWhip', atom.id)
+    instanceRef.value?.setNodeColor(COLOR_BACKGROUND_ATOM, atom.id)
   }
 }
 
@@ -167,8 +213,17 @@ function changeAtomToExplainableAtom(atom: Atom) {
     ;(atom as unknown as ExplainableAtom).type = 'EXPLAINABLE'
     // @ts-expect-error: Legal, because we are changig the type here
     delete atom.assumption
-    instanceRef.value?.setNodeColor('Orange', atom.id)
+    instanceRef.value?.setNodeColor(COLOR_EXPLAINABLE_ATOM, atom.id)
   }
+}
+
+function updateLinkType() {
+  const newValue = negatedInput.value!.checked
+  const selectedLink = selectedLinkRef.value
+  if (selectedLink === undefined) return
+  selectedLink.negated = newValue
+  const color = newValue ? COLOR_NEGATED_LINKS : COLOR_REGULAR_LINKS
+  instanceRef.value.setLinkColor(color, selectedLink.id)
 }
 
 function setName(atom: Atom, newName: string) {
@@ -178,7 +233,7 @@ function setName(atom: Atom, newName: string) {
 
 // HACK Change the label in D3 data and HTML.
 // Slightly adapted version of https://github.com/aig-hagen/aig_graph_component/blob/d96e5140aa205a7076f25c6e8a72044ab98f79eb/src/components/GraphComponent.vue#L1510
-function setLabel(nodeId: number, newName: string) {
+function setLabel(nodeId: string, newName: string) {
   const nodeElement = document.getElementById(`gc-node-${nodeId}`)!
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const data = (nodeElement as any).__data__
@@ -207,28 +262,53 @@ function setLabel(nodeId: number, newName: string) {
   <div class="menu menu-top box m-5 p-0 is-flex is-flex-direction-row">
     <div class="p-4">Menu (WIP)</div>
   </div>
-  <div class="menu menu-left box m-5 p-0">
-    <div class="title is-5 p-2 m-0"><h1>Node type (TODO add color to name)</h1></div>
-    <div
-      class="node-type p-2"
-      :class="{ 'node-type-selected': selectedNodeType === 'BACKGROUND_ATOM' }"
-      @click="selectedNodeType = 'BACKGROUND_ATOM'"
-    >
-      Background atom
+  <div class="menu menu-left">
+    <div class="node-selection box m-5 p-0">
+      <div class="title is-5 p-2 m-0"><h1>Node type</h1></div>
+      <div
+        class="type p-2"
+        :class="{ 'type-selected': selectedNodeType === 'BACKGROUND_ATOM' }"
+        @click="selectedNodeType = 'BACKGROUND_ATOM'"
+      >
+        <div class="node-type-legend" :style="{ backgroundColor: COLOR_BACKGROUND_ATOM }"></div>
+        Background atom
+      </div>
+      <div
+        class="type p-2"
+        :class="{ 'type-selected': selectedNodeType === 'EXPLAINABLE_ATOM' }"
+        @click="selectedNodeType = 'EXPLAINABLE_ATOM'"
+      >
+        <div class="node-type-legend" :style="{ backgroundColor: COLOR_EXPLAINABLE_ATOM }"></div>
+        Explainable atom
+      </div>
+      <div
+        class="type p-2"
+        :class="{ 'type-selected': selectedNodeType === 'CONJUCTION' }"
+        @click="selectedNodeType = 'CONJUCTION'"
+      >
+        <!-- https://en.wikipedia.org/wiki/Wedge_(symbol) -->
+        <div class="node-type-legend" :style="{ backgroundColor: COLOR_CONJUNCTION }">∧</div>
+        Conjunction
+      </div>
     </div>
-    <div
-      class="node-type p-2"
-      :class="{ 'node-type-selected': selectedNodeType === 'EXPLAINABLE_ATOM' }"
-      @click="selectedNodeType = 'EXPLAINABLE_ATOM'"
-    >
-      Explainable atom
-    </div>
-    <div
-      class="node-type p-2"
-      :class="{ 'node-type-selected': selectedNodeType === 'CONJUCTION' }"
-      @click="selectedNodeType = 'CONJUCTION'"
-    >
-      Conjunction
+    <div class="link-selection box m-5 p-0">
+      <div class="title is-5 p-2 m-0"><h1>Connection type</h1></div>
+      <div
+        class="type p-2"
+        :class="{ 'type-selected': selectedLinkType === 'REGULAR' }"
+        @click="selectedLinkType = 'REGULAR'"
+      >
+        <div class="link-type-legend" :style="{ color: COLOR_REGULAR_LINKS }">&#8594;</div>
+        Regular connection
+      </div>
+      <div
+        class="type p-2"
+        :class="{ 'type-selected': selectedLinkType === 'NEGATED' }"
+        @click="selectedLinkType = 'NEGATED'"
+      >
+        <div class="link-type-legend" :style="{ color: COLOR_NEGATED_LINKS }">&#8594;</div>
+        Negated connection
+      </div>
     </div>
   </div>
   <div v-if="selectedAtom !== undefined" class="menu menu-right box m-5">
@@ -313,15 +393,30 @@ function setLabel(nodeId: number, newName: string) {
       </div>
     </div>
   </div>
+  <div v-if="selectedLinkRef !== undefined" class="menu menu-right box m-5">
+    <div class="title is-5"><h1>Connection properties</h1></div>
+    <div class="field">
+      <label class="label">Connection type</label>
+      <div class="control">
+        <label class="checkbox">
+          <input
+            ref="negated-input"
+            type="checkbox"
+            name="negated"
+            :checked="selectedLinkRef.negated"
+            @change="updateLinkType"
+          />
+          Negated
+        </label>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped>
-.menu {
-  border: 1px solid gray;
-}
-
 .menu-top {
   position: fixed;
+  border: 1px solid gray;
 }
 
 .menu-top * + * {
@@ -333,22 +428,30 @@ function setLabel(nodeId: number, newName: string) {
   position: fixed;
 }
 
-.menu-left * + * {
+.node-selection,
+.link-selection {
+  border: 1px solid gray;
+  overflow: hidden;
+}
+
+.node-selection * + *,
+.link-selection * + * {
   border-top: 1px solid gray;
 }
 
-.node-type {
+.type {
   cursor: pointer;
 }
 
-.node-type-selected {
-  background: lightgray;
+.type-selected {
+  background-color: #afdbf5;
 }
 
 .menu-right {
   top: 128px;
   right: 0;
   position: fixed;
+  border: 1px solid gray;
 }
 
 .menu-right datalist option:first-child {
@@ -357,5 +460,29 @@ function setLabel(nodeId: number, newName: string) {
 
 .menu-right datalist option:last-child {
   margin-right: 5px;
+}
+
+.type {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 4px;
+}
+
+.node-type-legend {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 100%;
+  /* center text inside div */
+  text-align: center;
+  line-height: 15px;
+}
+
+.link-type-legend {
+  font-weight: bold;
+  height: 20px;
+  line-height: 17px;
 }
 </style>
