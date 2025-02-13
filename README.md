@@ -1,6 +1,8 @@
-# agi-causal-knowledge-base-editor
+# Causal Knowledge Base Editor
 
-This template should help get you started developing with Vue 3 in Vite.
+Graphical editor to create causal knowledge bases as described in [_Argumentation-based Causal and Counterfactual Reasoning_](https://www.researchgate.net/publication/363185581_Argumentation-based_Causal_and_Counterfactual_Reasoning). 
+
+Try out at: https://causal-knowledge-base-editor.aig.fernuni-hagen.de
 
 ## Recommended IDE Setup
 
