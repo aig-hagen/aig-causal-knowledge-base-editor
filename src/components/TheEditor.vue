@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useEventListener, useMutationObserver } from '@vueuse/core'
+import { useDebounceFn, useEventListener, useMutationObserver } from '@vueuse/core'
 import { computed, nextTick, ref, useTemplateRef, watchEffect } from 'vue'
 
 const COLOR_HIGHLIGHT = 'LightBlue'
@@ -42,7 +42,7 @@ type Atom = BackgroundAtom | ExplainableAtom
 const atoms = ref<Map<NodeId, Atom>>(new Map())
 const selectedAtomIdRef = ref<AtomId | null>(null)
 // selectedAtomId might be an outdated ID, if the atom was deleted while beeing selected
-const selectedAtom = computed(() => {
+const selectedAtomRef = computed(() => {
   const selectedAtomId = selectedAtomIdRef.value
   if (selectedAtomId === null) return undefined
   return atoms.value.get(selectedAtomId)
@@ -228,6 +228,14 @@ function updatedExplainableAtoms() {
   }
 }
 
+const processNameInput = computed(() => {
+  const selectedAtom = selectedAtomRef.value
+  return useDebounceFn((name) => {
+    if (selectedAtom === undefined) return
+    setName(selectedAtom, name)
+  }, 100)
+})
+
 useEventListener(graphHostRef, 'linkcreated', (event) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const createdLink = (event as any).detail.link
@@ -365,7 +373,7 @@ function setLabel(nodeId: number, newName: string) {
       </div>
     </div>
   </div>
-  <div v-if="selectedAtom !== undefined" class="menu menu-right box m-5">
+  <div v-if="selectedAtomRef !== undefined" class="menu menu-right box m-5">
     <div class="title is-5"><h1>Atom properties</h1></div>
 
     <div class="field">
@@ -373,11 +381,11 @@ function setLabel(nodeId: number, newName: string) {
       <div class="control">
         <input
           ref="name-input"
-          :value="selectedAtom.name"
+          :value="selectedAtomRef.name"
           @input="
             (event) => {
               const target = (event as InputEvent).target as HTMLInputElement
-              setName(selectedAtom!!, target.value)
+              processNameInput(target.value)
             }
           "
           class="input"
@@ -391,7 +399,7 @@ function setLabel(nodeId: number, newName: string) {
       <label class="label">Descritpion</label>
       <div class="control">
         <textarea
-          v-model="selectedAtom.descritpion"
+          v-model="selectedAtomRef.descritpion"
           class="textarea"
           placeholder="Descritpion"
         ></textarea>
@@ -405,7 +413,7 @@ function setLabel(nodeId: number, newName: string) {
           <input
             type="radio"
             name="question"
-            :checked="selectedAtom.type == 'BACKGROUND'"
+            :checked="selectedAtomRef.type == 'BACKGROUND'"
             disabled
           />
           Background atom
@@ -414,7 +422,7 @@ function setLabel(nodeId: number, newName: string) {
           <input
             type="radio"
             name="question"
-            :checked="selectedAtom.type == 'EXPLAINABLE'"
+            :checked="selectedAtomRef.type == 'EXPLAINABLE'"
             disabled
           />
           Explainable atom
@@ -422,11 +430,11 @@ function setLabel(nodeId: number, newName: string) {
       </div>
     </div>
 
-    <div class="field" v-if="selectedAtom.type === 'BACKGROUND'">
+    <div class="field" v-if="selectedAtomRef.type === 'BACKGROUND'">
       <label class="label">Assumption</label>
       <div class="control is-flex is-flex-direction-column" style="width: fit-content">
         <input
-          v-model="selectedAtom.assumption"
+          v-model="selectedAtomRef.assumption"
           type="range"
           min="1"
           max="5"
