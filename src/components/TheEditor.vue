@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useMutationObserver } from '@vueuse/core'
+import { useEventListener, useMutationObserver } from '@vueuse/core'
 import { computed, nextTick, ref, useTemplateRef, watchEffect } from 'vue'
 
 const COLOR_HIGHLIGHT = 'LightBlue'
@@ -17,8 +17,8 @@ const COLOR_NEGATED_LINKS = 'DarkRed'
 type LinkType = 'REGULAR' | 'NEGATED'
 const selectedLinkType = ref<LinkType>('REGULAR')
 
-type NodeId = string
-type AtomId = string
+type NodeId = number
+type AtomId = number
 type AssumptionValue = 1 | 2 | 3 | 4 | 5
 
 const DEFAULT_ASSUMPTION_VALUE = 3
@@ -39,33 +39,41 @@ interface ExplainableAtom {
 }
 
 type Atom = BackgroundAtom | ExplainableAtom
-const atoms = ref<Atom[]>([])
+const atoms = ref<Map<NodeId, Atom>>(new Map())
 const selectedAtomIdRef = ref<AtomId | null>(null)
 // selectedAtomId might be an outdated ID, if the atom was deleted while beeing selected
 const selectedAtom = computed(() => {
-  return atoms.value.find((atom) => atom.id === selectedAtomIdRef.value)
+  const selectedAtomId = selectedAtomIdRef.value
+  if (selectedAtomId === null) return undefined
+  return atoms.value.get(selectedAtomId)
 })
 
-const conjunctions = ref<NodeId[]>([])
+const conjunctions = ref<Set<NodeId>>(new Set())
 
 type LinkId = string
 interface Link {
   id: LinkId
   negated: boolean
 }
-const links = ref<Link[]>([])
-const selectedLinkId = ref<LinkId | null>(null)
+const links = ref<Map<LinkId, Link>>(new Map())
+const selectedLinkIdRef = ref<LinkId | null>(null)
 // selectedLinkId might be an outdated ID, if the link was deleted while beeing selected
 const selectedLinkRef = computed(() => {
-  return links.value.find((link) => link.id === selectedLinkId.value)
+  const selectedLinkId = selectedLinkIdRef.value
+  if (selectedLinkId === null) return undefined
+  return links.value.get(selectedLinkId)
 })
 
-const graphComponentElement = useTemplateRef<HTMLElement>('graph-component-element')
+const graphComponentElementRef = useTemplateRef<HTMLElement>('graph-component-element')
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const graphInstanceRef = ref<any | null>(null)
+const graphHostRef = ref<HTMLElement | null>(null)
+
 const nodeContainerRef = ref<SVGElement | null>(null)
 const linkContainerRef = ref<SVGElement | null>(null)
 
 computed(() => {
-  const nodes = graphComponentElement.value?.getElementsByClassName('.nodes')
+  const nodes = graphComponentElementRef.value?.getElementsByClassName('.nodes')
   if (nodes === undefined) return undefined
   return nodes[0] as HTMLElement
 })
@@ -85,10 +93,10 @@ watchEffect(() => {
 function updateAtomColor(atom: Atom) {
   switch (atom.type) {
     case 'BACKGROUND':
-      instanceRef.value.setNodeColor(COLOR_BACKGROUND_ATOM, atom.id)
+      graphInstanceRef.value.setNodeColor(COLOR_BACKGROUND_ATOM, atom.id)
       break
     case 'EXPLAINABLE':
-      instanceRef.value.setNodeColor(COLOR_EXPLAINABLE_ATOM, atom.id)
+      graphInstanceRef.value.setNodeColor(COLOR_EXPLAINABLE_ATOM, atom.id)
       break
   }
   highlightSelectedNodes()
@@ -109,144 +117,146 @@ function highlightSelectedNodes() {
     const nodeElement = document.getElementById(`gc-node-${nodeId}`)! as unknown as SVGCircleElement
     nodeElement.style.stroke = COLOR_HIGHLIGHT
     nodeElement.style.strokeWidth = '4px'
-    nodeElement.style.strokeDasharray = "5,5"
+    nodeElement.style.strokeDasharray = '5,5'
   }
 }
 
 const { stop } = useMutationObserver(
-  graphComponentElement,
+  graphComponentElementRef,
   () => {
-    if ((graphComponentElement.value?.childNodes ?? []).length == 0) {
-      return
-    }
-
-    graphComponentElement.value?.addEventListener('click', (event) => {
-      const pointerEvent = event as PointerEvent
-      const target = pointerEvent.target as HTMLElement
-
-      selectedAtomIdRef.value =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (target.closest('.graph-controller__node-container') as any)?.__data__?.id ?? null
-      nextTick(() => {
-        if (selectedAtomIdRef.value !== null) {
-          nameInput.value?.focus()
-        }
-      })
-
-      selectedLinkId.value =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (target.closest('.graph-controller__link-container') as any)?.__data__?.id ?? null
-      nextTick(() => {
-        if (selectedLinkId.value !== null) {
-          negatedInput.value?.focus()
-        }
-      })
-    })
+    const graphComponentElement = graphComponentElementRef.value
+    if (graphComponentElement === null) return
+    if (graphComponentElement.childNodes.length === 0) return
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const instance = (graphComponentElement.value as any)?._instance?.exposed
-    instanceRef.value = instance
-    instance.toggleZoom(true)
-    const nodeContainer = graphComponentElement.value?.getElementsByClassName('nodes')[0]
-    const linkContainer = graphComponentElement.value?.getElementsByClassName('links')[0]
-    stop()
+    const graphInstance = (graphComponentElement as any)._instance.exposed
+    graphInstanceRef.value = graphInstance
+    graphInstance.toggleZoom(true)
+    const graphHost = graphComponentElement.getElementsByClassName(
+      'graph-controller__graph-host',
+    )[0]
+    graphHostRef.value = graphHost as HTMLElement
+    const nodeContainer = graphComponentElement.getElementsByClassName('nodes')[0]
     nodeContainerRef.value = nodeContainer as SVGElement
+    const linkContainer = graphComponentElement.getElementsByClassName('links')[0]
     linkContainerRef.value = linkContainer as SVGAElement
+    stop()
   },
   {
     childList: true,
   },
 )
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const instanceRef = ref<any | null>(null)
+useEventListener(graphComponentElementRef, 'click', (event) => {
+  const pointerEvent = event as PointerEvent
+  const target = pointerEvent.target as HTMLElement
 
-// HACK Detect added nodes.
-useMutationObserver(
-  nodeContainerRef,
-  () => {
-    const instance = instanceRef.value
-    const graph = instance.getGraph('json', false, false, false)
-    const nodeIds: NodeId[] = graph.nodes.map((node: { id: number }) => node.id)
-    const knownAtomIds = atoms.value.map((atom) => atom.id)
-    const knownConjunctionIds = conjunctions.value
-    const newNodeIds = nodeIds.filter(
-      (nodeId) => !knownAtomIds.includes(nodeId) && !knownConjunctionIds.includes(nodeId),
-    )
+  selectedAtomIdRef.value =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (target.closest('.graph-controller__node-container') as any)?.__data__?.id ?? null
+  nextTick(() => {
+    if (selectedAtomIdRef.value !== null) {
+      nameInput.value?.focus()
+    }
+  })
 
-    newNodeIds.forEach((nodeId) => {
-      instance.setLabelEditable(false, nodeId)
-      switch (selectedNodeType.value) {
-        case 'ATOM':
-          const atom: Atom = {
-            id: nodeId,
-            type: 'BACKGROUND',
-            name: '',
-            descritpion: '',
-            assumption: DEFAULT_ASSUMPTION_VALUE,
-          }
-          atoms.value.push(atom)
-          updateAtomColor(atom)
-          break
-        case 'CONJUCTION':
-          instance.setNodeColor(COLOR_CONJUNCTION, nodeId)
-          conjunctions.value.push(nodeId)
-          setLabel(nodeId, '$\\land$')
-          break
+  selectedLinkIdRef.value =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (target.closest('.graph-controller__link-container') as any)?.__data__?.id ?? null
+  nextTick(() => {
+    if (selectedLinkIdRef.value !== null) {
+      negatedInput.value?.focus()
+    }
+  })
+})
+
+useEventListener(graphHostRef, 'nodecreated', (event) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const createdNode = (event as any).detail.node
+  const graphInstance = graphInstanceRef.value
+  // When the event is handled, the HTML is not yet rendered.
+  nextTick(() => {
+    graphInstance.setLabelEditable(false, createdNode.id)
+  })
+  switch (selectedNodeType.value) {
+    case 'ATOM':
+      const atom: Atom = {
+        id: createdNode.id,
+        type: 'BACKGROUND',
+        name: '',
+        descritpion: '',
+        assumption: DEFAULT_ASSUMPTION_VALUE,
       }
-    })
-
-    conjunctions.value = conjunctions.value.filter((nodeId) => nodeIds.includes(nodeId))
-    atoms.value = atoms.value.filter((atom) => nodeIds.includes(atom.id))
-  },
-  {
-    childList: true,
-  },
-)
-
-// HACK Detect added links.
-useMutationObserver(
-  linkContainerRef,
-  () => {
-    const instance = instanceRef.value
-    const graph = instance.getGraph('json', false, false, false)
-    const linkIds: string[] = graph.links.map(
-      (link: { sourceId: number; targetId: number }) => `${link.sourceId}-${link.targetId}`,
-    )
-    const knownLinkIds = links.value.map((link) => link.id)
-    const newLinkIds = linkIds.filter((linkId) => !knownLinkIds.includes(linkId))
-
-    instance.setLabelEditable(false, newLinkIds)
-    const negated = selectedLinkType.value === 'NEGATED'
-    const color = negated ? COLOR_NEGATED_LINKS : COLOR_REGULAR_LINKS
-    instance.setLinkColor(color, newLinkIds)
-
-    for (const linkId of newLinkIds) {
-      links.value.push({
-        id: linkId,
-        negated: negated,
+      atoms.value.set(atom.id, atom)
+      // When the event is handled, the HTML is not yet rendered.
+      nextTick(() => {
+        updateAtomColor(atom)
       })
-    }
+      break
+    case 'CONJUCTION':
+      graphInstance.setNodeColor(COLOR_CONJUNCTION, createdNode.id)
+      conjunctions.value.add(createdNode.id)
+      // When the event is handled, the HTML is not yet rendered.
+      nextTick(() => {
+        setLabel(createdNode.id, '$\\land$')
+      })
+      break
+  }
+})
 
-    links.value = links.value.filter((link) => linkIds.includes(link.id))
+useEventListener(graphHostRef, 'nodedeleted', (event) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const deletedNode = (event as any).detail.node
+  conjunctions.value.delete(deletedNode.id)
+  atoms.value.delete(deletedNode.id)
+})
 
-    const explainableAtoms = atoms.value.filter((atom) =>
-      linkIds.some((linkId) => linkId.endsWith(atom.id)),
-    )
-    const backgroundAtoms = atoms.value.filter((atom) => !explainableAtoms.includes(atom))
+function updatedExplainableAtoms() {
+  const explainableAtoms = [...atoms.value.values()].filter((atom) =>
+    [...links.value.values()].some((link) => link.id.endsWith(`${atom.id}`)),
+  )
+  const backgroundAtoms = [...atoms.value.values()].filter(
+    (atom) => !explainableAtoms.includes(atom),
+  )
 
-    for (const atom of explainableAtoms) {
-      changeAtomToExplainableAtom(atom)
-    }
+  for (const atom of explainableAtoms) {
+    changeAtomToExplainableAtom(atom)
+  }
 
-    for (const atom of backgroundAtoms) {
-      changeAtomToBackgroundAtom(atom)
-    }
-  },
-  {
-    childList: true,
-  },
-)
+  for (const atom of backgroundAtoms) {
+    changeAtomToBackgroundAtom(atom)
+  }
+}
+
+useEventListener(graphHostRef, 'linkcreated', (event) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const createdLink = (event as any).detail.link
+  const graphInstance = graphInstanceRef.value
+  const negated = selectedLinkType.value === 'NEGATED'
+
+  const link = {
+    id: createdLink.id,
+    negated: negated,
+  }
+  links.value.set(link.id, link)
+
+  // When the event is handled, the HTML is not yet rendered.
+  nextTick(() => {
+    graphInstance.setLabelEditable(false, graphInstance.id)
+    const color = negated ? COLOR_NEGATED_LINKS : COLOR_REGULAR_LINKS
+    graphInstance.setLinkColor(color, graphInstance.id)
+  })
+
+  updatedExplainableAtoms()
+})
+
+useEventListener(graphHostRef, 'linkdeleted', (event) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const createdLink = (event as any).detail.link
+  links.value.delete(createdLink.id)
+
+  updatedExplainableAtoms()
+})
 
 function changeAtomToBackgroundAtom(atom: Atom) {
   if (atom.type === 'EXPLAINABLE') {
@@ -271,7 +281,7 @@ function updateLinkType() {
   if (selectedLink === undefined) return
   selectedLink.negated = newValue
   const color = newValue ? COLOR_NEGATED_LINKS : COLOR_REGULAR_LINKS
-  instanceRef.value.setLinkColor(color, selectedLink.id)
+  graphInstanceRef.value.setLinkColor(color, selectedLink.id)
 }
 
 function setName(atom: Atom, newName: string) {
@@ -281,7 +291,7 @@ function setName(atom: Atom, newName: string) {
 
 // HACK Change the label in D3 data and HTML.
 // Slightly adapted version of https://github.com/aig-hagen/aig_graph_component/blob/d96e5140aa205a7076f25c6e8a72044ab98f79eb/src/components/GraphComponent.vue#L1510
-function setLabel(nodeId: string, newName: string) {
+function setLabel(nodeId: number, newName: string) {
   const nodeElement = document.getElementById(`gc-node-${nodeId}`)!
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const data = (nodeElement as any).__data__
