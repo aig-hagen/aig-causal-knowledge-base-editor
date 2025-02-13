@@ -194,10 +194,10 @@ useEventListener(graphHostRef, 'nodecreated', (event) => {
       })
       break
     case 'CONJUCTION':
-      graphInstance.setNodeColor(COLOR_CONJUNCTION, createdNode.id)
       conjunctions.value.add(createdNode.id)
       // When the event is handled, the HTML is not yet rendered.
       nextTick(() => {
+        graphInstance.setNodeColor(COLOR_CONJUNCTION, createdNode.id)
         setLabel(createdNode.id, '$\\land$')
       })
       break
