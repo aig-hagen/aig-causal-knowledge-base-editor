@@ -7,11 +7,6 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
-  server: {
-    // Workaround some issues with IPv6 on Windows, WSL2, Docker and development containers.
-    // See https://github.com/vitejs/vite/issues/16522#issuecomment-2082461839
-    host: '127.0.0.1',
-  },
   plugins: [
     vue({
       template: {
