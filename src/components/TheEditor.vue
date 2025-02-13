@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { useMutationObserver } from '@vueuse/core'
-import { computed, nextTick, ref, useTemplateRef } from 'vue'
+import { computed, nextTick, ref, useTemplateRef, watchEffect } from 'vue'
+
+const COLOR_HIGHLIGHT = 'LightBlue'
 
 const COLOR_BACKGROUND_ATOM = 'PapayaWhip'
 const COLOR_EXPLAINABLE_ATOM = 'DarkOrange'
 const COLOR_CONJUNCTION = 'LightGray'
 
-type NodeType = 'BACKGROUND_ATOM' | 'EXPLAINABLE_ATOM' | 'CONJUCTION'
-const selectedNodeType = ref<NodeType>('BACKGROUND_ATOM')
+type NodeType = 'ATOM' | 'CONJUCTION'
+const selectedNodeType = ref<NodeType>('ATOM')
 
 const COLOR_REGULAR_LINKS = 'DarkBlue'
 const COLOR_NEGATED_LINKS = 'DarkRed'
@@ -38,10 +40,10 @@ interface ExplainableAtom {
 
 type Atom = BackgroundAtom | ExplainableAtom
 const atoms = ref<Atom[]>([])
-const selectedAtomId = ref<AtomId | null>(null)
+const selectedAtomIdRef = ref<AtomId | null>(null)
 // selectedAtomId might be an outdated ID, if the atom was deleted while beeing selected
 const selectedAtom = computed(() => {
-  return atoms.value.find((atom) => atom.id === selectedAtomId.value)
+  return atoms.value.find((atom) => atom.id === selectedAtomIdRef.value)
 })
 
 const conjunctions = ref<NodeId[]>([])
@@ -70,6 +72,47 @@ computed(() => {
 const nameInput = useTemplateRef<HTMLInputElement>('name-input')
 const negatedInput = useTemplateRef<HTMLInputElement>('negated-input')
 
+watchEffect(() => {
+  const nodeElements = document.getElementsByClassName(
+    'graph-controller__node',
+  ) as HTMLCollectionOf<SVGCircleElement>
+  for (const nodeElement of nodeElements) {
+    nodeElement.style.stroke = ''
+  }
+  highlightSelectedNodes()
+})
+
+function updateAtomColor(atom: Atom) {
+  switch (atom.type) {
+    case 'BACKGROUND':
+      instanceRef.value.setNodeColor(COLOR_BACKGROUND_ATOM, atom.id)
+      break
+    case 'EXPLAINABLE':
+      instanceRef.value.setNodeColor(COLOR_EXPLAINABLE_ATOM, atom.id)
+      break
+  }
+  highlightSelectedNodes()
+}
+
+function highlightSelectedNodes() {
+  const nodeIdsToHighlight = []
+  const selectedAtomId = selectedAtomIdRef.value
+  if (selectedAtomId !== null) {
+    nodeIdsToHighlight.push(selectedAtomId)
+  }
+  const nodesOfSelectedLink = selectedLinkRef.value?.id.split('-')
+  if (nodesOfSelectedLink !== undefined) {
+    nodeIdsToHighlight.push(...nodesOfSelectedLink)
+  }
+
+  for (const nodeId of nodeIdsToHighlight) {
+    const nodeElement = document.getElementById(`gc-node-${nodeId}`)! as unknown as SVGCircleElement
+    nodeElement.style.stroke = COLOR_HIGHLIGHT
+    nodeElement.style.strokeWidth = '4px'
+    nodeElement.style.strokeDasharray = "5,5"
+  }
+}
+
 const { stop } = useMutationObserver(
   graphComponentElement,
   () => {
@@ -81,11 +124,11 @@ const { stop } = useMutationObserver(
       const pointerEvent = event as PointerEvent
       const target = pointerEvent.target as HTMLElement
 
-      selectedAtomId.value =
+      selectedAtomIdRef.value =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (target.closest('.graph-controller__node-container') as any)?.__data__?.id ?? null
       nextTick(() => {
-        if (selectedAtomId.value !== null) {
+        if (selectedAtomIdRef.value !== null) {
           nameInput.value?.focus()
         }
       })
@@ -134,24 +177,16 @@ useMutationObserver(
     newNodeIds.forEach((nodeId) => {
       instance.setLabelEditable(false, nodeId)
       switch (selectedNodeType.value) {
-        case 'BACKGROUND_ATOM':
-          instance.setNodeColor(COLOR_BACKGROUND_ATOM, nodeId)
-          atoms.value.push({
+        case 'ATOM':
+          const atom: Atom = {
             id: nodeId,
             type: 'BACKGROUND',
             name: '',
             descritpion: '',
             assumption: DEFAULT_ASSUMPTION_VALUE,
-          })
-          break
-        case 'EXPLAINABLE_ATOM':
-          instance.setNodeColor(COLOR_EXPLAINABLE_ATOM, nodeId)
-          atoms.value.push({
-            id: nodeId,
-            type: 'EXPLAINABLE',
-            name: '',
-            descritpion: '',
-          })
+          }
+          atoms.value.push(atom)
+          updateAtomColor(atom)
           break
         case 'CONJUCTION':
           instance.setNodeColor(COLOR_CONJUNCTION, nodeId)
@@ -194,6 +229,19 @@ useMutationObserver(
     }
 
     links.value = links.value.filter((link) => linkIds.includes(link.id))
+
+    const explainableAtoms = atoms.value.filter((atom) =>
+      linkIds.some((linkId) => linkId.endsWith(atom.id)),
+    )
+    const backgroundAtoms = atoms.value.filter((atom) => !explainableAtoms.includes(atom))
+
+    for (const atom of explainableAtoms) {
+      changeAtomToExplainableAtom(atom)
+    }
+
+    for (const atom of backgroundAtoms) {
+      changeAtomToBackgroundAtom(atom)
+    }
   },
   {
     childList: true,
@@ -204,7 +252,7 @@ function changeAtomToBackgroundAtom(atom: Atom) {
   if (atom.type === 'EXPLAINABLE') {
     ;(atom as unknown as BackgroundAtom).type = 'BACKGROUND'
     ;(atom as unknown as BackgroundAtom).assumption = DEFAULT_ASSUMPTION_VALUE
-    instanceRef.value?.setNodeColor(COLOR_BACKGROUND_ATOM, atom.id)
+    updateAtomColor(atom)
   }
 }
 
@@ -213,7 +261,7 @@ function changeAtomToExplainableAtom(atom: Atom) {
     ;(atom as unknown as ExplainableAtom).type = 'EXPLAINABLE'
     // @ts-expect-error: Legal, because we are changig the type here
     delete atom.assumption
-    instanceRef.value?.setNodeColor(COLOR_EXPLAINABLE_ATOM, atom.id)
+    updateAtomColor(atom)
   }
 }
 
@@ -256,7 +304,6 @@ function setLabel(nodeId: string, newName: string) {
 </script>
 
 <template>
-  <!-- <div style="height: 100%;"/> -->
   <graph-component ref="graph-component-element"></graph-component>
 
   <div class="menu menu-top box m-5 p-0 is-flex is-flex-direction-row">
@@ -267,19 +314,16 @@ function setLabel(nodeId: string, newName: string) {
       <div class="title is-5 p-2 m-0"><h1>Node type</h1></div>
       <div
         class="type p-2"
-        :class="{ 'type-selected': selectedNodeType === 'BACKGROUND_ATOM' }"
-        @click="selectedNodeType = 'BACKGROUND_ATOM'"
+        :class="{ 'type-selected': selectedNodeType === 'ATOM' }"
+        @click="selectedNodeType = 'ATOM'"
       >
-        <div class="node-type-legend" :style="{ backgroundColor: COLOR_BACKGROUND_ATOM }"></div>
-        Background atom
-      </div>
-      <div
-        class="type p-2"
-        :class="{ 'type-selected': selectedNodeType === 'EXPLAINABLE_ATOM' }"
-        @click="selectedNodeType = 'EXPLAINABLE_ATOM'"
-      >
-        <div class="node-type-legend" :style="{ backgroundColor: COLOR_EXPLAINABLE_ATOM }"></div>
-        Explainable atom
+        <div
+          class="node-type-legend"
+          :style="{
+            background: `linear-gradient(120deg, ${COLOR_BACKGROUND_ATOM} 0%, ${COLOR_EXPLAINABLE_ATOM} 100%)`,
+          }"
+        ></div>
+        Atom
       </div>
       <div
         class="type p-2"
@@ -352,7 +396,7 @@ function setLabel(nodeId: string, newName: string) {
             type="radio"
             name="question"
             :checked="selectedAtom.type == 'BACKGROUND'"
-            @change="() => changeAtomToBackgroundAtom(selectedAtom!!)"
+            disabled
           />
           Background atom
         </label>
@@ -361,7 +405,7 @@ function setLabel(nodeId: string, newName: string) {
             type="radio"
             name="question"
             :checked="selectedAtom.type == 'EXPLAINABLE'"
-            @change="() => changeAtomToExplainableAtom(selectedAtom!!)"
+            disabled
           />
           Explainable atom
         </label>
@@ -444,7 +488,7 @@ function setLabel(nodeId: string, newName: string) {
 }
 
 .type-selected {
-  background-color: #afdbf5;
+  background-color: LightBlue;
 }
 
 .menu-right {
