@@ -1,6 +1,21 @@
 <script setup lang="ts">
+import type { Atom, ConnectionId } from '@/model/graphicalCausalKnowledgeBase'
+import { useKnowledgeBase } from '@/stores/knowledgeBase'
 import { useDebounceFn, useEventListener, useMutationObserver } from '@vueuse/core'
+import saveAs from 'file-saver'
 import { computed, nextTick, ref, useTemplateRef, watchEffect } from 'vue'
+
+const props = defineProps<{
+  showTextEditor: boolean
+}>()
+
+const emit = defineEmits<{
+  (e: 'update:showTextEditor', showTextEditor: boolean): void
+}>()
+
+function toogleTextEditor() {
+  emit('update:showTextEditor', !props.showTextEditor)
+}
 
 const COLOR_HIGHLIGHT = 'LightBlue'
 
@@ -17,51 +32,26 @@ const COLOR_NEGATED_LINKS = 'DarkRed'
 type LinkType = 'REGULAR' | 'NEGATED'
 const selectedLinkType = ref<LinkType>('REGULAR')
 
-type NodeId = number
 type AtomId = number
-type AssumptionValue = 1 | 2 | 3 | 4 | 5
 
 const DEFAULT_ASSUMPTION_VALUE = 3
 
-interface BackgroundAtom {
-  id: AtomId
-  type: 'BACKGROUND'
-  name: string
-  descritpion: string
-  assumption: AssumptionValue
-}
-
-interface ExplainableAtom {
-  id: AtomId
-  type: 'EXPLAINABLE'
-  name: string
-  descritpion: string
-}
-
-type Atom = BackgroundAtom | ExplainableAtom
-const atoms = ref<Map<NodeId, Atom>>(new Map())
 const selectedAtomIdRef = ref<AtomId | null>(null)
 // selectedAtomId might be an outdated ID, if the atom was deleted while beeing selected
 const selectedAtomRef = computed(() => {
   const selectedAtomId = selectedAtomIdRef.value
   if (selectedAtomId === null) return undefined
-  return atoms.value.get(selectedAtomId)
+  return knowledgeBase.atoms.get(selectedAtomId)
 })
 
-const conjunctions = ref<Set<NodeId>>(new Set())
+const knowledgeBase = useKnowledgeBase()
 
-type LinkId = string
-interface Link {
-  id: LinkId
-  negated: boolean
-}
-const links = ref<Map<LinkId, Link>>(new Map())
-const selectedLinkIdRef = ref<LinkId | null>(null)
+const selectedConnectionIdRef = ref<ConnectionId | null>(null)
 // selectedLinkId might be an outdated ID, if the link was deleted while beeing selected
-const selectedLinkRef = computed(() => {
-  const selectedLinkId = selectedLinkIdRef.value
-  if (selectedLinkId === null) return undefined
-  return links.value.get(selectedLinkId)
+const selectedConnectionRef = computed(() => {
+  const selectedConnectionId = selectedConnectionIdRef.value
+  if (selectedConnectionId === null) return undefined
+  return knowledgeBase.connections.get(selectedConnectionId)
 })
 
 const graphComponentElementRef = useTemplateRef<HTMLElement>('graph-component-element')
@@ -91,12 +81,12 @@ watchEffect(() => {
 })
 
 function updateAtomColor(atom: Atom) {
-  switch (atom.type) {
-    case 'BACKGROUND':
-      graphInstanceRef.value.setNodeColor(COLOR_BACKGROUND_ATOM, atom.id)
-      break
-    case 'EXPLAINABLE':
+  switch (atom.assumption) {
+    case undefined:
       graphInstanceRef.value.setNodeColor(COLOR_EXPLAINABLE_ATOM, atom.id)
+      break
+    default:
+      graphInstanceRef.value.setNodeColor(COLOR_BACKGROUND_ATOM, atom.id)
       break
   }
   highlightSelectedNodes()
@@ -108,9 +98,11 @@ function highlightSelectedNodes() {
   if (selectedAtomId !== null) {
     nodeIdsToHighlight.push(selectedAtomId)
   }
-  const nodesOfSelectedLink = selectedLinkRef.value?.id.split('-')
-  if (nodesOfSelectedLink !== undefined) {
-    nodeIdsToHighlight.push(...nodesOfSelectedLink)
+
+  const selectedConnection = selectedConnectionRef.value
+  if (selectedConnection !== undefined) {
+    nodeIdsToHighlight.push(selectedConnection.id.sourceId)
+    nodeIdsToHighlight.push(selectedConnection.id.targetId)
   }
 
   for (const nodeId of nodeIdsToHighlight) {
@@ -131,6 +123,7 @@ const { stop } = useMutationObserver(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const graphInstance = (graphComponentElement as any)._instance.exposed
     graphInstanceRef.value = graphInstance
+    graphInstance.toggleNodePhysics(false)
     graphInstance.toggleZoom(true)
     const graphHost = graphComponentElement.getElementsByClassName(
       'graph-controller__graph-host',
@@ -151,6 +144,7 @@ useEventListener(graphComponentElementRef, 'click', (event) => {
   const pointerEvent = event as PointerEvent
   const target = pointerEvent.target as HTMLElement
 
+  // TODO check, if `nodeclicked` or `linkclicked` can be used.
   selectedAtomIdRef.value =
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (target.closest('.graph-controller__node-container') as any)?.__data__?.id ?? null
@@ -160,11 +154,11 @@ useEventListener(graphComponentElementRef, 'click', (event) => {
     }
   })
 
-  selectedLinkIdRef.value =
+  selectedConnectionIdRef.value =
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (target.closest('.graph-controller__link-container') as any)?.__data__?.id ?? null
   nextTick(() => {
-    if (selectedLinkIdRef.value !== null) {
+    if (selectedConnectionIdRef.value !== null) {
       negatedInput.value?.focus()
     }
   })
@@ -182,19 +176,29 @@ useEventListener(graphHostRef, 'nodecreated', (event) => {
     case 'ATOM':
       const atom: Atom = {
         id: createdNode.id,
-        type: 'BACKGROUND',
         name: '',
-        descritpion: '',
+        description: '',
         assumption: DEFAULT_ASSUMPTION_VALUE,
+        position: {
+          x: createdNode.x,
+          y: createdNode.y,
+        },
       }
-      atoms.value.set(atom.id, atom)
+      knowledgeBase.atoms.set(atom.id, atom)
       // When the event is handled, the HTML is not yet rendered.
       nextTick(() => {
         updateAtomColor(atom)
       })
       break
     case 'CONJUCTION':
-      conjunctions.value.add(createdNode.id)
+      knowledgeBase.operators.set(createdNode.id, {
+        id: createdNode.id,
+        type: 'conjunction',
+        position: {
+          x: createdNode.x,
+          y: createdNode.y,
+        },
+      })
       // When the event is handled, the HTML is not yet rendered.
       nextTick(() => {
         graphInstance.setNodeColor(COLOR_CONJUNCTION, createdNode.id)
@@ -202,20 +206,33 @@ useEventListener(graphHostRef, 'nodecreated', (event) => {
       })
       break
   }
+
+  nextTick(() => {
+    // const nodeElement = document.getElementById(`gc-node-${createdNode.id}`)!
+    // const nodeContainerElement = nodeElement.closest('.graph-controller__node-container')! as SVGGElement
+    // useMutationObserver(nodeContainerElement, (mutations, observer) => {
+    //   observer.takeRecords()
+    //   mutations.empty()
+    //   console.log(event)
+    //   console.log(graphInstance.getGraph())
+    // }, {
+    //   attributeFilter: ["transform"]
+    // })
+  })
 })
 
 useEventListener(graphHostRef, 'nodedeleted', (event) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const deletedNode = (event as any).detail.node
-  conjunctions.value.delete(deletedNode.id)
-  atoms.value.delete(deletedNode.id)
+  knowledgeBase.operators.delete(deletedNode.id)
+  knowledgeBase.atoms.delete(deletedNode.id)
 })
 
 function updatedExplainableAtoms() {
-  const explainableAtoms = [...atoms.value.values()].filter((atom) =>
-    [...links.value.values()].some((link) => link.id.endsWith(`${atom.id}`)),
+  const explainableAtoms = [...knowledgeBase.atoms.values()].filter((atom) =>
+    [...knowledgeBase.connections.values()].some((connection) => connection.id.targetId == atom.id),
   )
-  const backgroundAtoms = [...atoms.value.values()].filter(
+  const backgroundAtoms = [...knowledgeBase.atoms.values()].filter(
     (atom) => !explainableAtoms.includes(atom),
   )
 
@@ -236,23 +253,40 @@ const processNameInput = computed(() => {
   }, 100)
 })
 
+function parseLinkIdToConnectionId(linkId: string): ConnectionId {
+  const [sourceIdString, targetIdString] = linkId.split('-')
+  if (sourceIdString === undefined)
+    throw `Link with ID \`${linkId}\` is not valid: Missing ID of source node.`
+  if (targetIdString === undefined)
+    throw `Link with ID \`${linkId}\` is not valid: Missing ID of target node..`
+  const sourceId = parseInt(sourceIdString)
+  const tragetId = parseInt(targetIdString)
+  if (!Number.isSafeInteger(sourceId) || sourceId < 0)
+    throw `Link with ID \`${linkId}\` is not valid: Invalid source node ID \`${sourceId}\`.`
+  if (!Number.isSafeInteger(tragetId) || tragetId < 0)
+    throw `Link with ID \`${linkId}\` is not valid: Invalid target node ID \`${tragetId}\`.`
+  return {
+    sourceId: sourceId,
+    targetId: tragetId,
+  }
+}
+
 useEventListener(graphHostRef, 'linkcreated', (event) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const createdLink = (event as any).detail.link
   const graphInstance = graphInstanceRef.value
   const negated = selectedLinkType.value === 'NEGATED'
-
-  const link = {
-    id: createdLink.id,
+  const connectionId = parseLinkIdToConnectionId(createdLink.id)
+  const connection = {
+    id: connectionId,
     negated: negated,
   }
-  links.value.set(link.id, link)
-
+  knowledgeBase.connections.set(connection.id, connection)
   // When the event is handled, the HTML is not yet rendered.
   nextTick(() => {
-    graphInstance.setLabelEditable(false, graphInstance.id)
+    graphInstance.setLabelEditable(false, createdLink.id)
     const color = negated ? COLOR_NEGATED_LINKS : COLOR_REGULAR_LINKS
-    graphInstance.setLinkColor(color, graphInstance.id)
+    graphInstance.setLinkColor(color, createdLink.id)
   })
 
   updatedExplainableAtoms()
@@ -260,24 +294,21 @@ useEventListener(graphHostRef, 'linkcreated', (event) => {
 
 useEventListener(graphHostRef, 'linkdeleted', (event) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const createdLink = (event as any).detail.link
-  links.value.delete(createdLink.id)
-
+  const deletedLink = (event as any).detail.link
+  const connectionId = parseLinkIdToConnectionId(deletedLink.id)
+  knowledgeBase.connections.delete(connectionId)
   updatedExplainableAtoms()
 })
 
 function changeAtomToBackgroundAtom(atom: Atom) {
-  if (atom.type === 'EXPLAINABLE') {
-    ;(atom as unknown as BackgroundAtom).type = 'BACKGROUND'
-    ;(atom as unknown as BackgroundAtom).assumption = DEFAULT_ASSUMPTION_VALUE
+  if (atom.assumption === undefined) {
+    atom.assumption = DEFAULT_ASSUMPTION_VALUE
     updateAtomColor(atom)
   }
 }
 
 function changeAtomToExplainableAtom(atom: Atom) {
-  if (atom.type === 'BACKGROUND') {
-    ;(atom as unknown as ExplainableAtom).type = 'EXPLAINABLE'
-    // @ts-expect-error: Legal, because we are changig the type here
+  if (atom.assumption !== undefined) {
     delete atom.assumption
     updateAtomColor(atom)
   }
@@ -285,7 +316,7 @@ function changeAtomToExplainableAtom(atom: Atom) {
 
 function updateLinkType() {
   const newValue = negatedInput.value!.checked
-  const selectedLink = selectedLinkRef.value
+  const selectedLink = selectedConnectionRef.value
   if (selectedLink === undefined) return
   selectedLink.negated = newValue
   const color = newValue ? COLOR_NEGATED_LINKS : COLOR_REGULAR_LINKS
@@ -319,157 +350,181 @@ function setLabel(nodeId: number, newName: string) {
   nodeForeignObject!.remove()
   nodeContainerElementParent?.append(nodeForeignObject!)
 }
+
+function exportKnowledgeBase() {
+
+  function pad(n: number): string {
+    return n.toString().padStart(2, "0")
+  }
+
+  knowledgeBase.updatePositionData(graphInstanceRef.value.getGraph())
+  const knowledgeBaseData = knowledgeBase.knowledgeBaseExport
+  const json = JSON.stringify(knowledgeBaseData, null, 2)
+  const blob = new Blob([json], { type: 'application/json;charset=utf-8' })
+  const now = new Date()
+  const fileName = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}.knowledgeBase.json`
+  saveAs(blob, fileName)
+}
 </script>
 
 <template>
-  <graph-component ref="graph-component-element"></graph-component>
+  <div>
+    <graph-component ref="graph-component-element"></graph-component>
 
-  <div class="menu menu-top box m-5 p-0 is-flex is-flex-direction-row">
-    <div class="p-4">Menu (WIP)</div>
-  </div>
-  <div class="menu menu-left">
-    <div class="node-selection box m-5 p-0">
-      <div class="title is-5 p-2 m-0"><h1>Node type</h1></div>
-      <div
-        class="type p-2"
-        :class="{ 'type-selected': selectedNodeType === 'ATOM' }"
-        @click="selectedNodeType = 'ATOM'"
-      >
+    <div class="menu menu-top box m-5 p-0 is-flex is-flex-direction-row">
+      <div class="buttons has-addons">
+        <!-- <button class="button" @click="toogleTextEditor">Preview</button> -->
+        <button class="button" @click="exportKnowledgeBase()">Save</button>
+        <button class="button" v-if="false">Load</button>
+        <button class="button" v-if="false" @click="toogleTextEditor">
+          {{ showTextEditor ? 'Close' : 'Open' }} preview
+        </button>
+      </div>
+    </div>
+    <div class="menu menu-left">
+      <div class="node-selection box m-5 p-0">
+        <div class="title is-5 p-2 m-0"><h1>Node type</h1></div>
         <div
-          class="node-type-legend"
-          :style="{
-            background: `linear-gradient(120deg, ${COLOR_BACKGROUND_ATOM} 0%, ${COLOR_EXPLAINABLE_ATOM} 100%)`,
-          }"
-        ></div>
-        Atom
-      </div>
-      <div
-        class="type p-2"
-        :class="{ 'type-selected': selectedNodeType === 'CONJUCTION' }"
-        @click="selectedNodeType = 'CONJUCTION'"
-      >
-        <!-- https://en.wikipedia.org/wiki/Wedge_(symbol) -->
-        <div class="node-type-legend" :style="{ backgroundColor: COLOR_CONJUNCTION }">∧</div>
-        Conjunction
-      </div>
-    </div>
-    <div class="link-selection box m-5 p-0">
-      <div class="title is-5 p-2 m-0"><h1>Connection type</h1></div>
-      <div
-        class="type p-2"
-        :class="{ 'type-selected': selectedLinkType === 'REGULAR' }"
-        @click="selectedLinkType = 'REGULAR'"
-      >
-        <div class="link-type-legend" :style="{ color: COLOR_REGULAR_LINKS }">&#8594;</div>
-        Regular connection
-      </div>
-      <div
-        class="type p-2"
-        :class="{ 'type-selected': selectedLinkType === 'NEGATED' }"
-        @click="selectedLinkType = 'NEGATED'"
-      >
-        <div class="link-type-legend" :style="{ color: COLOR_NEGATED_LINKS }">&#8594;</div>
-        Negated connection
-      </div>
-    </div>
-  </div>
-  <div v-if="selectedAtomRef !== undefined" class="menu menu-right box m-5">
-    <div class="title is-5"><h1>Atom properties</h1></div>
-
-    <div class="field">
-      <label class="label">Name</label>
-      <div class="control">
-        <input
-          ref="name-input"
-          :value="selectedAtomRef.name"
-          @input="
-            (event) => {
-              const target = (event as InputEvent).target as HTMLInputElement
-              processNameInput(target.value)
-            }
-          "
-          class="input"
-          type="text"
-          placeholder="Name"
-        />
-      </div>
-    </div>
-
-    <div class="field">
-      <label class="label">Descritpion</label>
-      <div class="control">
-        <textarea
-          v-model="selectedAtomRef.descritpion"
-          class="textarea"
-          placeholder="Descritpion"
-        ></textarea>
-      </div>
-    </div>
-
-    <div class="field">
-      <label class="label">Atom type</label>
-      <div class="control">
-        <label class="radio is-block">
-          <input
-            type="radio"
-            name="question"
-            :checked="selectedAtomRef.type == 'BACKGROUND'"
-            disabled
-          />
-          Background atom
-        </label>
-        <label class="radio is-block">
-          <input
-            type="radio"
-            name="question"
-            :checked="selectedAtomRef.type == 'EXPLAINABLE'"
-            disabled
-          />
-          Explainable atom
-        </label>
-      </div>
-    </div>
-
-    <div class="field" v-if="selectedAtomRef.type === 'BACKGROUND'">
-      <label class="label">Assumption</label>
-      <div class="control is-flex is-flex-direction-column" style="width: fit-content">
-        <input
-          v-model="selectedAtomRef.assumption"
-          type="range"
-          min="1"
-          max="5"
-          step="1"
-          list="values"
-          value="2"
-        />
-        <datalist
-          id="values"
-          class="is-flex is-flex-direction-row is-justify-content-space-between"
+          class="type p-2"
+          :class="{ 'type-selected': selectedNodeType === 'ATOM' }"
+          @click="selectedNodeType = 'ATOM'"
         >
-          <option value="1" label="1"></option>
-          <option value="2"></option>
-          <option value="3"></option>
-          <option value="4"></option>
-          <option value="5" label="5"></option>
-        </datalist>
+          <div
+            class="node-type-legend"
+            :style="{
+              background: `linear-gradient(120deg, ${COLOR_BACKGROUND_ATOM} 0%, ${COLOR_EXPLAINABLE_ATOM} 100%)`,
+            }"
+          ></div>
+          Atom
+        </div>
+        <div
+          class="type p-2"
+          :class="{ 'type-selected': selectedNodeType === 'CONJUCTION' }"
+          @click="selectedNodeType = 'CONJUCTION'"
+        >
+          <!-- https://en.wikipedia.org/wiki/Wedge_(symbol) -->
+          <div class="node-type-legend" :style="{ backgroundColor: COLOR_CONJUNCTION }">∧</div>
+          Conjunction
+        </div>
+      </div>
+      <div class="link-selection box m-5 p-0">
+        <div class="title is-5 p-2 m-0"><h1>Connection type</h1></div>
+        <div
+          class="type p-2"
+          :class="{ 'type-selected': selectedLinkType === 'REGULAR' }"
+          @click="selectedLinkType = 'REGULAR'"
+        >
+          <div class="link-type-legend" :style="{ color: COLOR_REGULAR_LINKS }">&#8594;</div>
+          Regular connection
+        </div>
+        <div
+          class="type p-2"
+          :class="{ 'type-selected': selectedLinkType === 'NEGATED' }"
+          @click="selectedLinkType = 'NEGATED'"
+        >
+          <div class="link-type-legend" :style="{ color: COLOR_NEGATED_LINKS }">&#8594;</div>
+          Negated connection
+        </div>
       </div>
     </div>
-  </div>
-  <div v-if="selectedLinkRef !== undefined" class="menu menu-right box m-5">
-    <div class="title is-5"><h1>Connection properties</h1></div>
-    <div class="field">
-      <label class="label">Connection type</label>
-      <div class="control">
-        <label class="checkbox">
+    <div v-if="selectedAtomRef !== undefined" class="menu menu-right box m-5">
+      <div class="title is-5"><h1>Atom properties</h1></div>
+
+      <div class="field">
+        <label class="label">Name</label>
+        <div class="control">
           <input
-            ref="negated-input"
-            type="checkbox"
-            name="negated"
-            :checked="selectedLinkRef.negated"
-            @change="updateLinkType"
+            ref="name-input"
+            :value="selectedAtomRef.name"
+            @input="
+              (event) => {
+                const target = (event as InputEvent).target as HTMLInputElement
+                processNameInput(target.value)
+              }
+            "
+            class="input"
+            type="text"
+            placeholder="Name"
           />
-          Negated
-        </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Description</label>
+        <div class="control">
+          <textarea
+            v-model="selectedAtomRef.description"
+            class="textarea"
+            placeholder="Description"
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Atom type</label>
+        <div class="control">
+          <label class="radio is-block">
+            <input
+              type="radio"
+              name="question"
+              :checked="selectedAtomRef.assumption !== undefined"
+              disabled
+            />
+            Background atom
+          </label>
+          <label class="radio is-block">
+            <input
+              type="radio"
+              name="question"
+              :checked="selectedAtomRef.assumption === undefined"
+              disabled
+            />
+            Explainable atom
+          </label>
+        </div>
+      </div>
+
+      <div class="field" v-if="selectedAtomRef.assumption !== undefined">
+        <label class="label">Assumption</label>
+        <div class="control is-flex is-flex-direction-column" style="width: fit-content">
+          <input
+            v-model="selectedAtomRef.assumption"
+            type="range"
+            min="1"
+            max="5"
+            step="1"
+            list="values"
+            value="2"
+          />
+          <datalist
+            id="values"
+            class="is-flex is-flex-direction-row is-justify-content-space-between"
+          >
+            <option value="1" label="1"></option>
+            <option value="2"></option>
+            <option value="3"></option>
+            <option value="4"></option>
+            <option value="5" label="5"></option>
+          </datalist>
+        </div>
+      </div>
+    </div>
+    <div v-if="selectedConnectionRef !== undefined" class="menu menu-right box m-5">
+      <div class="title is-5"><h1>Connection properties</h1></div>
+      <div class="field">
+        <label class="label">Connection type</label>
+        <div class="control">
+          <label class="checkbox">
+            <input
+              ref="negated-input"
+              type="checkbox"
+              name="negated"
+              :checked="selectedConnectionRef.negated"
+              @change="updateLinkType"
+            />
+            Negated
+          </label>
+        </div>
       </div>
     </div>
   </div>
@@ -478,7 +533,6 @@ function setLabel(nodeId: number, newName: string) {
 <style scoped>
 .menu-top {
   position: fixed;
-  border: 1px solid gray;
 }
 
 .menu-top * + * {

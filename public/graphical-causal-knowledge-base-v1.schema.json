@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://causal-knowledge-base-editor.aig.fernuni-hagen.de/graphical-causal-knowledge-base-v1.schema.json",
+  "$defs": {
+    "position": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y"],
+      "properties": {
+        "x": {
+          "type": "integer"
+        },
+        "y": {
+          "type": "integer"
+        }
+      }
+    },
+    "atom": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "description", "position"],
+      "properties": {
+        "id": {
+          "type": "number"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "assumption": {
+          "enum": [1, 2, 3, 4, 5]
+        },
+        "position": {
+          "$ref": "#/$defs/position"
+        }
+      }
+    },
+    "conjunction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "position"],
+      "properties": {
+        "id": {
+          "type": "number"
+        },
+        "type": { "const": "conjunction" },
+        "position": {
+          "$ref": "#/$defs/position"
+        }
+      }
+    },
+    "connectionId": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourceId", "targetId"],
+      "properties": {
+        "sourceId": {
+          "type": "number"
+        },
+        "targetId": {
+          "type": "number"
+        }
+      }
+    },
+    "connection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "negated"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/connectionId"
+        },
+        "negated": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "title": "Graphical causal knowledge base",
+  "description": "Graphcial represenation of causal knowledge base.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "atoms", "operators", "connections"],
+  "properties": {
+    "apiVersion": {
+      "const": "graphical/v1"
+    },
+    "atoms": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/atom"
+      }
+    },
+    "operators": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/conjunction"
+      }
+    },
+    "connections": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/connection"
+      }
+    }
+  }
+}
