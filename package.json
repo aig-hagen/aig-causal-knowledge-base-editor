@@ -46,6 +46,12 @@
     "vitest": "^3.0.2",
     "vue-tsc": "^2.2.0"
   },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "onfail": "warn"
+    }
+  },
   "pnpm": {
     "onlyBuiltDependencies": [
       "esbuild",
