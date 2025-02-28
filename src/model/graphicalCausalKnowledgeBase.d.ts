@@ -5,36 +5,38 @@
  * and run `pnpm generate` to regenerate this file.
  */
 
+export type Id = number
+
 /**
  * Graphcial represenation of causal knowledge base.
  */
 export interface GraphicalCausalKnowledgeBase {
-  apiVersion: "graphical/v1";
-  atoms: Atom[];
-  operators: Conjunction[];
-  connections: Connection[];
+  apiVersion: 'graphical/v1'
+  atoms: Atom[]
+  operators: Conjunction[]
+  connections: Connection[]
 }
 export interface Atom {
-  id: number;
-  name: string;
-  description: string;
-  assumption?: 1 | 2 | 3 | 4 | 5;
-  position: Position;
+  id: Id
+  name: string
+  description: string
+  assumption?: 1 | 2 | 3 | 4 | 5
+  position: Position
 }
 export interface Position {
-  x: number;
-  y: number;
+  x: number
+  y: number
 }
 export interface Conjunction {
-  id: number;
-  type: "conjunction";
-  position: Position;
+  id: Id
+  type: 'conjunction'
+  position: Position
 }
 export interface Connection {
-  id: ConnectionId;
-  negated: boolean;
+  id: ConnectionId
+  negated: boolean
 }
 export interface ConnectionId {
-  sourceId: number;
-  targetId: number;
+  sourceId: Id
+  targetId: Id
 }

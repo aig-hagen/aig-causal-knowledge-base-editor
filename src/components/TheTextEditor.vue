@@ -36,4 +36,4 @@ watchEffect(() => {
 <template>
   <div style="height: 100vh" ref="monaco-element"></div>
 </template>
-<style></style>
+<style scoped></style>

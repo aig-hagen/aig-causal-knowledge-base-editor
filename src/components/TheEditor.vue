@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import type { Atom, ConnectionId } from '@/model/graphicalCausalKnowledgeBase'
-import { useKnowledgeBase } from '@/stores/knowledgeBase'
+import { getConnectionKey, useKnowledgeBase } from '@/stores/knowledgeBase'
+import { useNotifications } from '@/stores/notifications'
 import { useDebounceFn, useEventListener, useMutationObserver } from '@vueuse/core'
 import saveAs from 'file-saver'
 import { computed, nextTick, ref, useTemplateRef, watchEffect } from 'vue'
+
+import { useId } from 'vue'
+
+const uploadElementId = useId()
 
 const props = defineProps<{
   showTextEditor: boolean
@@ -17,11 +22,18 @@ function toogleTextEditor() {
   emit('update:showTextEditor', !props.showTextEditor)
 }
 
+const { addSuccessNotification, addErrorNotification, clearNotifications } = useNotifications()
+
+const loadingData = ref(false)
+
 const COLOR_HIGHLIGHT = 'LightBlue'
 
-const COLOR_BACKGROUND_ATOM = 'PapayaWhip'
-const COLOR_EXPLAINABLE_ATOM = 'DarkOrange'
+const COLOR_BACKGROUND_ATOM = 'rgba(255, 239, 213, 1)' // PapayaWhip
+const COLOR_EXPLAINABLE_ATOM = 'rgba(255, 140, 0, 1)' // DarkOrange
+const COLOR_BACKGROUND_ATOM_TRANSPARENT = 'rgba(255, 239, 213, 0.5)' // PapayaWhip
+const COLOR_EXPLAINABLE_ATOM_TRANSPARENT = 'rgba(255, 140, 0, 0.5)' // DarkOrange
 const COLOR_CONJUNCTION = 'LightGray'
+const LABEL_CONJUNCTION = '$\\land$'
 
 type NodeType = 'ATOM' | 'CONJUCTION'
 const selectedNodeType = ref<NodeType>('ATOM')
@@ -51,7 +63,7 @@ const selectedConnectionIdRef = ref<ConnectionId | null>(null)
 const selectedConnectionRef = computed(() => {
   const selectedConnectionId = selectedConnectionIdRef.value
   if (selectedConnectionId === null) return undefined
-  return knowledgeBase.connections.get(selectedConnectionId)
+  return knowledgeBase.connections.get(getConnectionKey(selectedConnectionId))
 })
 
 const graphComponentElementRef = useTemplateRef<HTMLElement>('graph-component-element')
@@ -154,9 +166,13 @@ useEventListener(graphComponentElementRef, 'click', (event) => {
     }
   })
 
-  selectedConnectionIdRef.value =
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (target.closest('.graph-controller__link-container') as any)?.__data__?.id ?? null
+  const linkContainer = target.closest('.graph-controller__link-container')
+  if (linkContainer !== null) {
+    // @ts-expect-error __data__ is defined by D3
+    selectedConnectionIdRef.value = parseLinkIdToConnectionId(linkContainer.__data__.id)
+  } else {
+    selectedConnectionIdRef.value = null
+  }
   nextTick(() => {
     if (selectedConnectionIdRef.value !== null) {
       negatedInput.value?.focus()
@@ -165,6 +181,7 @@ useEventListener(graphComponentElementRef, 'click', (event) => {
 })
 
 useEventListener(graphHostRef, 'nodecreated', (event) => {
+  if (loadingData.value) return
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const createdNode = (event as any).detail.node
   const graphInstance = graphInstanceRef.value
@@ -202,7 +219,7 @@ useEventListener(graphHostRef, 'nodecreated', (event) => {
       // When the event is handled, the HTML is not yet rendered.
       nextTick(() => {
         graphInstance.setNodeColor(COLOR_CONJUNCTION, createdNode.id)
-        setLabel(createdNode.id, '$\\land$')
+        setLabel(createdNode.id, LABEL_CONJUNCTION)
       })
       break
   }
@@ -222,6 +239,7 @@ useEventListener(graphHostRef, 'nodecreated', (event) => {
 })
 
 useEventListener(graphHostRef, 'nodedeleted', (event) => {
+  if (loadingData.value) return
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const deletedNode = (event as any).detail.node
   knowledgeBase.operators.delete(deletedNode.id)
@@ -272,6 +290,7 @@ function parseLinkIdToConnectionId(linkId: string): ConnectionId {
 }
 
 useEventListener(graphHostRef, 'linkcreated', (event) => {
+  if (loadingData.value) return
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const createdLink = (event as any).detail.link
   const graphInstance = graphInstanceRef.value
@@ -281,7 +300,7 @@ useEventListener(graphHostRef, 'linkcreated', (event) => {
     id: connectionId,
     negated: negated,
   }
-  knowledgeBase.connections.set(connection.id, connection)
+  knowledgeBase.connections.set(getConnectionKey(connection.id), connection)
   // When the event is handled, the HTML is not yet rendered.
   nextTick(() => {
     graphInstance.setLabelEditable(false, createdLink.id)
@@ -293,10 +312,11 @@ useEventListener(graphHostRef, 'linkcreated', (event) => {
 })
 
 useEventListener(graphHostRef, 'linkdeleted', (event) => {
+  if (loadingData.value) return
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const deletedLink = (event as any).detail.link
   const connectionId = parseLinkIdToConnectionId(deletedLink.id)
-  knowledgeBase.connections.delete(connectionId)
+  knowledgeBase.connections.delete(getConnectionKey(connectionId))
   updatedExplainableAtoms()
 })
 
@@ -316,11 +336,17 @@ function changeAtomToExplainableAtom(atom: Atom) {
 
 function updateLinkType() {
   const newValue = negatedInput.value!.checked
-  const selectedLink = selectedConnectionRef.value
-  if (selectedLink === undefined) return
-  selectedLink.negated = newValue
+  const selectedConnection = selectedConnectionRef.value
+  if (selectedConnection === undefined) return
+  selectedConnection.negated = newValue
   const color = newValue ? COLOR_NEGATED_LINKS : COLOR_REGULAR_LINKS
-  graphInstanceRef.value.setLinkColor(color, selectedLink.id)
+  graphInstanceRef.value.setLinkColor(
+    color,
+    // Same as getConnectionKey, but only by chance.
+    // getConnectionKey might change in the future.
+    // But the ID of the link will only change if the graph library changes.
+    `${selectedConnection.id.sourceId}-${selectedConnection.id.targetId}`,
+  )
 }
 
 function setName(atom: Atom, newName: string) {
@@ -351,10 +377,9 @@ function setLabel(nodeId: number, newName: string) {
   nodeContainerElementParent?.append(nodeForeignObject!)
 }
 
-function exportKnowledgeBase() {
-
+function saveKnowledgeBase() {
   function pad(n: number): string {
-    return n.toString().padStart(2, "0")
+    return n.toString().padStart(2, '0')
   }
 
   knowledgeBase.updatePositionData(graphInstanceRef.value.getGraph())
@@ -365,6 +390,81 @@ function exportKnowledgeBase() {
   const fileName = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}.knowledgeBase.json`
   saveAs(blob, fileName)
 }
+
+function loadTextData(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.addEventListener('load', (readerEvent) => {
+      resolve(readerEvent.target!.result as string)
+    })
+    reader.addEventListener('error', (readerEvent) => {
+      reject(readerEvent)
+    })
+    reader.readAsText(file)
+  })
+}
+
+async function loadKnowledgeBase(inputEvent: Event) {
+  const input = inputEvent.target as HTMLInputElement
+  const files = input.files ?? []
+  if (files.length == 0) return
+
+  clearNotifications()
+  try {
+    loadingData.value = true
+    if (files.length !== 1) throw new Error('Only one file can be loaded at a time.')
+    const file = files[0]
+    const text = await loadTextData(file)
+    const errors = knowledgeBase.importKnowledgeBase(text)
+
+    if (errors.length > 0) {
+      errors.forEach((error) => {
+        addErrorNotification(error.message)
+      })
+      return
+    }
+
+    const nodesFromAtoms = [...knowledgeBase.atoms.values()].map((atom) => {
+      return {
+        id: atom.id,
+        label: atom.name,
+        x: atom.position.x,
+        y: atom.position.y,
+        color: atom.assumption === undefined ? COLOR_EXPLAINABLE_ATOM : COLOR_BACKGROUND_ATOM,
+        labelEditable: false,
+      }
+    })
+
+    const nodesFromOperators = [...knowledgeBase.operators.values()].map((atom) => {
+      return {
+        id: atom.id,
+        label: LABEL_CONJUNCTION,
+        x: atom.position.x,
+        y: atom.position.y,
+        color: COLOR_CONJUNCTION,
+        labelEditable: false,
+      }
+    })
+
+    const nodes = [...nodesFromAtoms, ...nodesFromOperators]
+
+    const links = [...knowledgeBase.connections.values()].map((connection) => {
+      return {
+        sourceId: connection.id.sourceId,
+        targetId: connection.id.targetId,
+        labelEditable: false,
+        color: connection.negated ? COLOR_NEGATED_LINKS : COLOR_REGULAR_LINKS,
+      }
+    })
+    const graphAsObject = { nodes, links }
+    graphInstanceRef.value.setGraph(graphAsObject)
+    addSuccessNotification('Knowledge base loaded successfully.')
+  } catch (error) {
+    addErrorNotification(String(error))
+  } finally {
+    loadingData.value = false
+  }
+}
 </script>
 
 <template>
@@ -373,12 +473,18 @@ function exportKnowledgeBase() {
 
     <div class="menu menu-top box m-5 p-0 is-flex is-flex-direction-row">
       <div class="buttons has-addons">
-        <!-- <button class="button" @click="toogleTextEditor">Preview</button> -->
-        <button class="button" @click="exportKnowledgeBase()">Save</button>
-        <button class="button" v-if="false">Load</button>
-        <button class="button" v-if="false" @click="toogleTextEditor">
+        <button class="button" @click="saveKnowledgeBase()">Save</button>
+        <input
+          :id="uploadElementId"
+          type="file"
+          v-show="false"
+          accept="application/json"
+          @change="loadKnowledgeBase($event)"
+        />
+        <label class="button" :for="uploadElementId">Load</label>
+        <!-- <button class="button" @click="toogleTextEditor">
           {{ showTextEditor ? 'Close' : 'Open' }} preview
-        </button>
+        </button> -->
       </div>
     </div>
     <div class="menu menu-left">
@@ -528,11 +634,39 @@ function exportKnowledgeBase() {
       </div>
     </div>
   </div>
+  <div
+    class="overlay"
+    v-if="loadingData"
+    :style="{
+      background: `linear-gradient(120deg, ${COLOR_BACKGROUND_ATOM_TRANSPARENT} 0%, ${COLOR_EXPLAINABLE_ATOM_TRANSPARENT} 100%)`,
+    }"
+  >
+    <div class="overlay-content">
+      <progress class="progress is-small is-primary" max="100">15%</progress>
+    </div>
+  </div>
 </template>
 
 <style scoped>
 .menu-top {
   position: fixed;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+}
+
+.overlay-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 512px;
 }
 
 .menu-top * + * {

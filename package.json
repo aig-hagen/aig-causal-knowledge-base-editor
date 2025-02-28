@@ -11,12 +11,13 @@
     "test:e2e": "playwright test",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
-    "generate": "json2ts public/graphical-causal-knowledge-base-v1.schema.json src/model/graphicalCausalKnowledgeBase.d.ts --bannerComment \"$(cat ./json2ts.banner.txt)\"",
+    "generate": "json2ts src/assets/graphical-causal-knowledge-base-v1.schema.json src/model/graphicalCausalKnowledgeBase.d.ts --bannerComment \"$(cat ./json2ts.banner.txt)\"",
     "lint": "eslint . --fix",
     "format": "prettier --write src/"
   },
   "dependencies": {
     "@vueuse/core": "^12.5.0",
+    "ajv": "^8.17.1",
     "bulma": "^1.0.3",
     "file-saver": "^2.0.5",
     "monaco-editor": "^0.52.2",
@@ -47,6 +48,7 @@
     "prettier": "^3.4.2",
     "typescript": "~5.7.3",
     "vite": "^6.0.11",
+    "vite-plugin-static-copy": "^2.2.0",
     "vite-plugin-vue-devtools": "^7.7.0",
     "vitest": "^3.0.2",
     "vue-tsc": "^2.2.0"
