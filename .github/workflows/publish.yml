@@ -11,6 +11,13 @@ jobs:
   build-and-publish-image:
     runs-on: ubuntu-22.04
 
+    # Permissions required for publishing Docker image
+    # See https://docs.github.com/en/actions/use-cases-and-examples/publishing-packages/publishing-docker-images#publishing-images-to-github-packages
+    permissions:
+      packages: write
+      attestations: write
+      id-token: write
+
     steps:
       - uses: actions/checkout@v4
 
@@ -32,6 +39,7 @@ jobs:
       - name: Build
         run: pnpm build
 
+      # The Docker setup follows https://docs.github.com/en/actions/use-cases-and-examples/publishing-packages/publishing-docker-images#publishing-images-to-github-packages
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
