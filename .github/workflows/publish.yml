@@ -11,13 +11,11 @@ jobs:
   build-and-publish-image:
     runs-on: ubuntu-22.04
 
-    # Permissions required for publishing Docker image
+    # Permissions required for publishing Docker image.
     # See https://docs.github.com/en/actions/use-cases-and-examples/publishing-packages/publishing-docker-images#publishing-images-to-github-packages
     permissions:
       contents: read
       packages: write
-      attestations: write
-      id-token: write
 
     steps:
       - uses: actions/checkout@v4
@@ -40,7 +38,10 @@ jobs:
       - name: Build
         run: pnpm build
 
-      # The Docker setup follows https://docs.github.com/en/actions/use-cases-and-examples/publishing-packages/publishing-docker-images#publishing-images-to-github-packages
+      # The Docker setup follows
+      # https://docs.github.com/en/actions/use-cases-and-examples/publishing-packages/publishing-docker-images#publishing-images-to-github-packages
+      # Attestation is disabled because it is only available for public repositories.
+      # See https://docs.github.com/en/actions/security-for-github-actions/using-artifact-attestations/using-artifact-attestations-to-establish-provenance-for-builds
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
@@ -62,10 +63,3 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
-      - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v2
-        with:
-          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
-          subject-digest: ${{ steps.push.outputs.digest }}
-          push-to-registry: true
