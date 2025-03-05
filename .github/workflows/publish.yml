@@ -14,6 +14,7 @@ jobs:
     # Permissions required for publishing Docker image
     # See https://docs.github.com/en/actions/use-cases-and-examples/publishing-packages/publishing-docker-images#publishing-images-to-github-packages
     permissions:
+      contents: read
       packages: write
       attestations: write
       id-token: write
