@@ -1,8 +1,0 @@
-{
-  "packages": {
-    "nodejs": "latest"
-  },
-  "env": {
-    "DEVBOX_COREPACK_ENABLED": "true"
-  }
-}
