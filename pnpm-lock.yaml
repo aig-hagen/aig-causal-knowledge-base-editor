@@ -55,8 +55,8 @@ importers:
         specifier: 4.1.1
         version: 4.1.1(vite@6.2.1(@types/node@22.13.9)(jiti@2.4.2))(vue@3.5.13(typescript@5.7.3))
       '@vitest/eslint-plugin':
-        specifier: 1.1.25
-        version: 1.1.25(@typescript-eslint/utils@8.23.0(eslint@9.21.0(jiti@2.4.2))(typescript@5.7.3))(eslint@9.21.0(jiti@2.4.2))(typescript@5.7.3)(vitest@3.0.8(@types/node@22.13.9)(jiti@2.4.2)(jsdom@26.0.0))
+        specifier: 1.1.36
+        version: 1.1.36(@typescript-eslint/utils@8.23.0(eslint@9.21.0(jiti@2.4.2))(typescript@5.7.3))(eslint@9.21.0(jiti@2.4.2))(typescript@5.7.3)(vitest@3.0.8(@types/node@22.13.9)(jiti@2.4.2)(jsdom@26.0.0))
       '@vue/eslint-config-prettier':
         specifier: 10.2.0
         version: 10.2.0(eslint@9.21.0(jiti@2.4.2))(prettier@3.5.3)
@@ -751,10 +751,10 @@ packages:
       vite: ^5.0.0 || ^6.0.0
       vue: ^3.2.25
 
-  '@vitest/eslint-plugin@1.1.25':
-    resolution: {integrity: sha512-u8DpDnMbPcqBmJOB4PeEtn6q7vKmLVTLFMpzoxSAo0hjYdl4iYSHRleqwPQo0ywc7UV0S6RKIahYRQ3BnZdMVw==}
+  '@vitest/eslint-plugin@1.1.36':
+    resolution: {integrity: sha512-IjBV/fcL9NJRxGw221ieaDsqKqj8qUo7rvSupDxMjTXyhsCusHC6M+jFUNqBp4PCkYFcf5bjrKxeZoCEWoPxig==}
     peerDependencies:
-      '@typescript-eslint/utils': '>= 8.0'
+      '@typescript-eslint/utils': ^8.24.0
       eslint: '>= 8.57.0'
       typescript: '>= 5.0.0'
       vitest: '*'
@@ -2869,7 +2869,7 @@ snapshots:
       vite: 6.2.1(@types/node@22.13.9)(jiti@2.4.2)
       vue: 3.5.13(typescript@5.7.3)
 
-  '@vitest/eslint-plugin@1.1.25(@typescript-eslint/utils@8.23.0(eslint@9.21.0(jiti@2.4.2))(typescript@5.7.3))(eslint@9.21.0(jiti@2.4.2))(typescript@5.7.3)(vitest@3.0.8(@types/node@22.13.9)(jiti@2.4.2)(jsdom@26.0.0))':
+  '@vitest/eslint-plugin@1.1.36(@typescript-eslint/utils@8.23.0(eslint@9.21.0(jiti@2.4.2))(typescript@5.7.3))(eslint@9.21.0(jiti@2.4.2))(typescript@5.7.3)(vitest@3.0.8(@types/node@22.13.9)(jiti@2.4.2)(jsdom@26.0.0))':
     dependencies:
       '@typescript-eslint/utils': 8.23.0(eslint@9.21.0(jiti@2.4.2))(typescript@5.7.3)
       eslint: 9.21.0(jiti@2.4.2)
