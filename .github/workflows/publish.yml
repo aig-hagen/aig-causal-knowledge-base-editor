@@ -9,7 +9,7 @@ env:
 
 jobs:
   build-and-publish-image:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     # Permissions required for publishing Docker image.
     # See https://docs.github.com/en/actions/use-cases-and-examples/publishing-packages/publishing-docker-images#publishing-images-to-github-packages
