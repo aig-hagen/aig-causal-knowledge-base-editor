@@ -26,7 +26,7 @@ export default defineConfigWithVueTs(
   vueTsConfigs.stylisticTypeChecked,
   {
     ...pluginVitest.configs.recommended,
-    files: ['src/**/__tests__/*'],
+    files: ['src/**/*.test.js'],
   },
 
   {
