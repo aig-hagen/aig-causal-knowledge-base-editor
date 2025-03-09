@@ -19,7 +19,7 @@ test('fail importing JSON with syntax error ', () => {
   expect(errors).toHaveLength(1)
   expect.soft(errors[0]).toBeInstanceOf(JsonSyntaxError)
   expect
-    .soft(errors[0]!.message)
+    .soft(errors[0].message)
     .toBe(
       "The provided file is not a valid JSON file: Expected property name or '}' in JSON at position 2 (line 1 column 3)",
     )
@@ -33,25 +33,25 @@ test('fail importing JSON not matching schema', () => {
   expect(errors).toHaveLength(4)
   expect.soft(errors[0]).toBeInstanceOf(SchemaMismatchError)
   expect
-    .soft(errors[0]!.message)
+    .soft(errors[0].message)
     .toBe(
       "The provided file does not match the expected schema: must have required property 'apiVersion'",
     )
   expect.soft(errors[1]).toBeInstanceOf(SchemaMismatchError)
   expect
-    .soft(errors[1]!.message)
+    .soft(errors[1].message)
     .toBe(
       "The provided file does not match the expected schema: must have required property 'atoms'",
     )
   expect.soft(errors[2]).toBeInstanceOf(SchemaMismatchError)
   expect
-    .soft(errors[2]!.message)
+    .soft(errors[2].message)
     .toBe(
       "The provided file does not match the expected schema: must have required property 'operators'",
     )
   expect.soft(errors[3]).toBeInstanceOf(SchemaMismatchError)
   expect
-    .soft(errors[3]!.message)
+    .soft(errors[3].message)
     .toBe(
       "The provided file does not match the expected schema: must have required property 'connections'",
     )
@@ -80,7 +80,7 @@ test('fail importing JSON with invalid IDs', () => {
   expect(errors).toHaveLength(2)
   expect.soft(errors[0]).toBeInstanceOf(SchemaMismatchError)
   expect
-    .soft(errors[0]!.message)
+    .soft(errors[0].message)
     .toBe(
       'The provided file does not match the expected schema: /connections/0/id/sourceId must be >= 0',
     )
@@ -88,7 +88,7 @@ test('fail importing JSON with invalid IDs', () => {
   // The ID should not be greater than 9007199254740991 otherwise it will not be a safe integer.
   // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER
   expect
-    .soft(errors[1]!.message)
+    .soft(errors[1].message)
     .toBe(
       'The provided file does not match the expected schema: /connections/0/id/targetId must be <= 9007199254740991',
     )
@@ -141,7 +141,7 @@ test('fail importing duplicate connections', () => {
   expect(errors).toHaveLength(1)
   expect.soft(errors[0]).toBeInstanceOf(InvalidDataError)
   expect
-    .soft(errors[0]!.message)
+    .soft(errors[0].message)
     .toBe(
       'The provided file contains invalid data: Multiple connections from the source `1` to the target `2` exist.',
     )
@@ -170,11 +170,11 @@ test('fail importing connections referencing missing IDs', () => {
   expect(errors).toHaveLength(2)
   expect.soft(errors[0]).toBeInstanceOf(InvalidDataError)
   expect
-    .soft(errors[0]!.message)
+    .soft(errors[0].message)
     .toBe("The provided file contains invalid data: A connection's source ID `1` does not exist.")
   expect.soft(errors[1]).toBeInstanceOf(InvalidDataError)
   expect
-    .soft(errors[1]!.message)
+    .soft(errors[1].message)
     .toBe("The provided file contains invalid data: A connection's target ID `2` does not exist.")
 })
 
@@ -212,7 +212,7 @@ test('fail importing JSON with duplicate atom IDs', () => {
   expect(errors).toHaveLength(1)
   expect.soft(errors[0]).toBeInstanceOf(InvalidDataError)
   expect
-    .soft(errors[0]!.message)
+    .soft(errors[0].message)
     .toBe(
       'The provided file contains invalid data: Multiple atoms or operators with the ID `1` exist.',
     )
@@ -250,7 +250,7 @@ test('fail importing JSON with duplicate operator IDs', () => {
   expect(errors).toHaveLength(1)
   expect.soft(errors[0]).toBeInstanceOf(InvalidDataError)
   expect
-    .soft(errors[0]!.message)
+    .soft(errors[0].message)
     .toBe(
       'The provided file contains invalid data: Multiple atoms or operators with the ID `1` exist.',
     )
@@ -290,7 +290,7 @@ test('fail importing JSON with duplicate operator and atom IDs', () => {
   expect(errors).toHaveLength(1)
   expect.soft(errors[0]).toBeInstanceOf(InvalidDataError)
   expect
-    .soft(errors[0]!.message)
+    .soft(errors[0].message)
     .toBe(
       'The provided file contains invalid data: Multiple atoms or operators with the ID `1` exist.',
     )

@@ -66,7 +66,7 @@ const selectedConnectionRef = computed(() => {
 
 const graphComponentElementRef = useTemplateRef<HTMLElement>('graph-component-element')
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const graphInstanceRef = ref<any | null>(null)
+const graphInstanceRef = ref<any>(null)
 const graphHostRef = ref<HTMLElement | null>(null)
 
 const nodeContainerRef = ref<SVGElement | null>(null)
@@ -153,12 +153,13 @@ const { stop } = useMutationObserver(
 useEventListener(graphComponentElementRef, 'click', (event) => {
   const pointerEvent = event as PointerEvent
   const target = pointerEvent.target as HTMLElement
+  const nodeContainer = target.closest('.graph-controller__node-container')
 
   // TODO check, if `nodeclicked` or `linkclicked` can be used.
   selectedAtomIdRef.value =
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (target.closest('.graph-controller__node-container') as any)?.__data__?.id ?? null
-  nextTick(() => {
+    (nodeContainer as any)?.__data__?.id ?? null
+  void nextTick(() => {
     if (selectedAtomIdRef.value !== null) {
       nameInput.value?.focus()
     }
@@ -171,7 +172,7 @@ useEventListener(graphComponentElementRef, 'click', (event) => {
   } else {
     selectedConnectionIdRef.value = null
   }
-  nextTick(() => {
+  void nextTick(() => {
     if (selectedConnectionIdRef.value !== null) {
       negatedInput.value?.focus()
     }
@@ -184,7 +185,7 @@ useEventListener(graphHostRef, 'nodecreated', (event) => {
   const createdNode = (event as any).detail.node
   const graphInstance = graphInstanceRef.value
   // When the event is handled, the HTML is not yet rendered.
-  nextTick(() => {
+  void nextTick(() => {
     graphInstance.setLabelEditable(false, createdNode.id)
   })
   switch (selectedNodeType.value) {
@@ -201,7 +202,7 @@ useEventListener(graphHostRef, 'nodecreated', (event) => {
       }
       knowledgeBase.atoms.set(atom.id, atom)
       // When the event is handled, the HTML is not yet rendered.
-      nextTick(() => {
+      void nextTick(() => {
         updateAtomColor(atom)
       })
       break
@@ -215,14 +216,14 @@ useEventListener(graphHostRef, 'nodecreated', (event) => {
         },
       })
       // When the event is handled, the HTML is not yet rendered.
-      nextTick(() => {
+      void nextTick(() => {
         graphInstance.setNodeColor(COLOR_CONJUNCTION, createdNode.id)
         setLabel(createdNode.id, LABEL_CONJUNCTION)
       })
       break
   }
 
-  nextTick(() => {
+  void nextTick(() => {
     // const nodeElement = document.getElementById(`gc-node-${createdNode.id}`)!
     // const nodeContainerElement = nodeElement.closest('.graph-controller__node-container')! as SVGGElement
     // useMutationObserver(nodeContainerElement, (mutations, observer) => {
@@ -272,15 +273,15 @@ const processNameInput = computed(() => {
 function parseLinkIdToConnectionId(linkId: string): ConnectionId {
   const [sourceIdString, targetIdString] = linkId.split('-')
   if (sourceIdString === undefined)
-    throw `Link with ID \`${linkId}\` is not valid: Missing ID of source node.`
+    throw new Error(`Link with ID \`${linkId}\` is not valid: Missing ID of source node.`)
   if (targetIdString === undefined)
-    throw `Link with ID \`${linkId}\` is not valid: Missing ID of target node..`
+    throw new Error(`Link with ID \`${linkId}\` is not valid: Missing ID of target node.`)
   const sourceId = parseInt(sourceIdString)
   const tragetId = parseInt(targetIdString)
   if (!Number.isSafeInteger(sourceId) || sourceId < 0)
-    throw `Link with ID \`${linkId}\` is not valid: Invalid source node ID \`${sourceId}\`.`
+    throw new Error(`Link with ID \`${linkId}\` is not valid: Invalid source node ID \`${sourceId}\`.`)
   if (!Number.isSafeInteger(tragetId) || tragetId < 0)
-    throw `Link with ID \`${linkId}\` is not valid: Invalid target node ID \`${tragetId}\`.`
+    throw new Error(`Link with ID \`${linkId}\` is not valid: Invalid target node ID \`${tragetId}\`.`)
   return {
     sourceId: sourceId,
     targetId: tragetId,
@@ -300,7 +301,7 @@ useEventListener(graphHostRef, 'linkcreated', (event) => {
   }
   knowledgeBase.connections.set(getConnectionKey(connection.id), connection)
   // When the event is handled, the HTML is not yet rendered.
-  nextTick(() => {
+  void nextTick(() => {
     graphInstance.setLabelEditable(false, createdLink.id)
     const color = negated ? COLOR_NEGATED_LINKS : COLOR_REGULAR_LINKS
     graphInstance.setLinkColor(color, createdLink.id)
@@ -361,7 +362,7 @@ function setLabel(nodeId: number, newName: string) {
   data.label = newName
   const nodeContainerElement = nodeElement.closest('.graph-controller__node-container')!
   const nodeForeignObject = nodeContainerElement.querySelector('foreignObject')
-  const labelDiv = nodeContainerElement.getElementsByTagName('div')[0]!
+  const labelDiv = nodeContainerElement.getElementsByTagName('div')[0]
   labelDiv.setAttribute('class', `graph-controller__node-label`)
   labelDiv.textContent = newName
 
@@ -395,8 +396,8 @@ function loadTextData(file: File): Promise<string> {
     reader.addEventListener('load', (readerEvent) => {
       resolve(readerEvent.target!.result as string)
     })
-    reader.addEventListener('error', (readerEvent) => {
-      reject(readerEvent)
+    reader.addEventListener('error', () => {
+      reject(reader.error!)
     })
     reader.readAsText(file)
   })
