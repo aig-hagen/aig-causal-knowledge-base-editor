@@ -12,8 +12,10 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
     "generate": "json2ts src/assets/graphical-causal-knowledge-base-v1.schema.json src/model/graphicalCausalKnowledgeBase.d.ts --bannerComment \"$(cat ./json2ts.banner.txt)\"",
-    "lint": "eslint . --fix",
-    "format": "prettier --write src/"
+    "lint:check": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format:check": "prettier --check src/",
+    "format:fix": "prettier --write src/"
   },
   "dependencies": {
     "@vueuse/core": "^12.5.0",
