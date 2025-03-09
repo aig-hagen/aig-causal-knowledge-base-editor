@@ -14,9 +14,7 @@ const props = defineProps<{
   showTextEditor: boolean
 }>()
 
-const emit = defineEmits<{
-  (e: 'update:showTextEditor', showTextEditor: boolean): void
-}>()
+const emit = defineEmits<(e: 'update:showTextEditor', showTextEditor: boolean) => void>()
 
 function toogleTextEditor() {
   emit('update:showTextEditor', !props.showTextEditor)
@@ -482,9 +480,9 @@ async function loadKnowledgeBase(inputEvent: Event) {
           @change="loadKnowledgeBase($event)"
         />
         <label class="button" :for="uploadElementId">Load</label>
-        <!-- <button class="button" @click="toogleTextEditor">
+        <button v-if="false" class="button" @click="toogleTextEditor">
           {{ showTextEditor ? 'Close' : 'Open' }} preview
-        </button> -->
+        </button>
       </div>
     </div>
     <div class="menu menu-left">

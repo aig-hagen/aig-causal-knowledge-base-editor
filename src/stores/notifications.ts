@@ -11,7 +11,7 @@ export const useNotifications = defineStore('notifications', () => {
   const notifications = ref<Notification[]>([])
   const nextId = ref(1)
 
-  function addSuccessNotification(message: string, timeout: number = 5_000) {
+  function addSuccessNotification(message: string, timeout = 5_000) {
     const id = nextId.value++
     notifications.value.push({ id, message, type: 'success' })
 
