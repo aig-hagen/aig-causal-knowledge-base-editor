@@ -116,9 +116,9 @@ function highlightSelectedNodes() {
   }
 
   for (const nodeId of nodeIdsToHighlight) {
-    const nodeElement = document.getElementById(`gc-node-${nodeId}`)
+    const nodeElement = document.getElementById(`gc-node-${nodeId.toString()}`)
     if (nodeElement === null) {
-      throw new Error(`Node element for node \`${nodeId}\` not found.`)
+      throw new Error(`Node element for node ${nodeIdToMessageString(nodeId)} not found.`)
     }
     nodeElement.style.stroke = COLOR_HIGHLIGHT
     nodeElement.style.strokeWidth = '4px'
@@ -250,7 +250,9 @@ useEventListener(graphHostRef, 'nodedeleted', (event) => {
 
 function updatedExplainableAtoms() {
   const explainableAtoms = [...knowledgeBase.atoms.values()].filter((atom) =>
-    [...knowledgeBase.connections.values()].some((connection) => connection.id.targetId === atom.id),
+    [...knowledgeBase.connections.values()].some(
+      (connection) => connection.id.targetId === atom.id,
+    ),
   )
   const backgroundAtoms = [...knowledgeBase.atoms.values()].filter(
     (atom) => !explainableAtoms.includes(atom),
@@ -273,18 +275,30 @@ const processNameInput = computed(() => {
   }, 100)
 })
 
+function nodeIdToMessageString(nodeId: number): string {
+  return `\`${nodeId.toString()}\``
+}
+
 function parseLinkIdToConnectionId(linkId: string): ConnectionId {
-  const [sourceIdString, targetIdString] = linkId.split('-')
-  if (sourceIdString === undefined)
-    throw new Error(`Link with ID \`${linkId}\` is not valid: Missing ID of source node.`)
-  if (targetIdString === undefined)
-    throw new Error(`Link with ID \`${linkId}\` is not valid: Missing ID of target node.`)
-  const sourceId = parseInt(sourceIdString)
-  const tragetId = parseInt(targetIdString)
+  const linkParts = linkId.split('-')
+  if (linkParts.length < 2) {
+    throw new Error(`Link with ID \`${linkId}\` is not valid: Seperator \`-\` is not contained.`)
+  }
+  if (linkParts.length > 2) {
+    throw new Error(
+      `Link with ID \`${linkId}\` is not valid: Seperator \`-\` is contained more then once.`,
+    )
+  }
+  const sourceId = parseInt(linkParts[0])
+  const tragetId = parseInt(linkParts[1])
   if (!Number.isSafeInteger(sourceId) || sourceId < 0)
-    throw new Error(`Link with ID \`${linkId}\` is not valid: Invalid source node ID \`${sourceId}\`.`)
+    throw new Error(
+      `Link with ID \`${linkId}\` is not valid: Invalid source node ID ${nodeIdToMessageString(sourceId)}.`,
+    )
   if (!Number.isSafeInteger(tragetId) || tragetId < 0)
-    throw new Error(`Link with ID \`${linkId}\` is not valid: Invalid target node ID \`${tragetId}\`.`)
+    throw new Error(
+      `Link with ID \`${linkId}\` is not valid: Invalid target node ID ${nodeIdToMessageString(tragetId)}.`,
+    )
   return {
     sourceId: sourceId,
     targetId: tragetId,
@@ -346,7 +360,7 @@ function updateLinkType(newValue: boolean) {
     // Same as getConnectionKey, but only by chance.
     // getConnectionKey might change in the future.
     // But the ID of the link will only change if the graph library changes.
-    `${selectedConnection.id.sourceId}-${selectedConnection.id.targetId}`,
+    `${selectedConnection.id.sourceId.toString()}-${selectedConnection.id.targetId.toString()}`,
   )
 }
 
@@ -358,20 +372,20 @@ function setName(atom: Atom, newName: string) {
 // HACK Change the label in D3 data and HTML.
 // Slightly adapted version of https://github.com/aig-hagen/aig_graph_component/blob/d96e5140aa205a7076f25c6e8a72044ab98f79eb/src/components/GraphComponent.vue#L1510
 function setLabel(nodeId: number, newName: string) {
-  const nodeElement = document.getElementById(`gc-node-${nodeId}`)
+  const nodeElement = document.getElementById(`gc-node-${nodeId.toString()}`)
   if (nodeElement === null) {
-    throw new Error(`Node element for node \`${nodeId}\` not found.`)
+    throw new Error(`Node element for node ${nodeIdToMessageString(nodeId)} not found.`)
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const data = (nodeElement as any).__data__
   data.label = newName
   const nodeContainerElement = nodeElement.closest('.graph-controller__node-container')
   if (nodeContainerElement === null) {
-    throw new Error(`Node container element for node \`${nodeId}\` not found.`)
+    throw new Error(`Node container element for node ${nodeIdToMessageString(nodeId)} not found.`)
   }
   const nodeForeignObject = nodeContainerElement.querySelector('foreignObject')
   if (nodeForeignObject === null) {
-    throw new Error(`Node foreign object for node \`${nodeId}\` not found.`)
+    throw new Error(`Node foreign object for node ${nodeIdToMessageString(nodeId)} not found.`)
   }
   const labelDiv = nodeContainerElement.getElementsByTagName('div')[0]
   labelDiv.setAttribute('class', `graph-controller__node-label`)
@@ -384,15 +398,15 @@ function setLabel(nodeId: number, newName: string) {
   // Only adding removing and readding `nodeForeignObject` makes the hack to detect added nodes more peformant, because the mutation observer is not triggered needlessly.
   const nodeForeignObjectParent = nodeForeignObject.parentElement
   if (nodeForeignObjectParent === null) {
-    throw new Error(`Node foreign object for node \`${nodeId}\` has no parent.`)
+    throw new Error(`Node foreign object for node ${nodeIdToMessageString(nodeId)} has no parent.`)
   }
   nodeForeignObject.remove()
   nodeForeignObjectParent.append(nodeForeignObject)
 }
 
 function saveKnowledgeBase() {
-  function pad(n: number): string {
-    return n.toString().padStart(2, '0')
+  function pad(value: number, maxLenght: number): string {
+    return value.toString().padStart(maxLenght, '0')
   }
 
   knowledgeBase.updatePositionData(graphInstanceRef.value.getGraph())
@@ -400,7 +414,7 @@ function saveKnowledgeBase() {
   const json = JSON.stringify(knowledgeBaseData, null, 2)
   const blob = new Blob([json], { type: 'application/json;charset=utf-8' })
   const now = new Date()
-  const fileName = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}.knowledgeBase.json`
+  const fileName = `${pad(now.getFullYear(), 4)}-${pad(now.getMonth() + 1, 2)}-${pad(now.getDate(), 2)}.knowledgeBase.json`
   saveAs(blob, fileName)
 }
 
@@ -413,7 +427,7 @@ function loadTextData(file: File): Promise<string> {
     reader.addEventListener('error', () => {
       const error = reader.error
       if (error === null) {
-        throw new Error("Error callback called but reader provided no error.")
+        throw new Error('Error callback called but reader provided no error.')
       }
       reject(error)
     })

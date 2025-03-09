@@ -37,8 +37,12 @@ export class InvalidDataError extends ImportError {
   }
 }
 
+function atomIdToMessageString(atomId: number): string {
+  return `\`${atomId.toString()}\``
+}
+
 export function getConnectionKey(connnectionId: ConnectionId): string {
-  return `${connnectionId.sourceId}-${connnectionId.targetId}`
+  return `${connnectionId.sourceId.toString()}-${connnectionId.targetId.toString()}`
 }
 
 const ajv = new Ajv({ allErrors: true })
@@ -100,7 +104,7 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
       const operators = byIdOperators.get(id) ?? []
       if (atoms.length + operators.length > 1) {
         const error = new InvalidDataError(
-          `Multiple atoms or operators with the ID \`${id}\` exist.`,
+          `Multiple atoms or operators with the ID ${atomIdToMessageString(id)} exist.`,
         )
         idErrors.push(error)
       }
@@ -119,8 +123,9 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
 
     for (const connections of byIdConnections.values()) {
       if (connections.length > 1) {
+        const connectionId = connections[0].id
         const error = new InvalidDataError(
-          `Multiple connections from the source \`${connections[0].id.sourceId}\` to the target \`${connections[0].id.targetId}\` exist.`,
+          `Multiple connections from the source ${atomIdToMessageString(connectionId.sourceId)} to the target ${atomIdToMessageString(connectionId.targetId)} exist.`,
         )
         idErrors.push(error)
       }
@@ -129,13 +134,13 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
     for (const connection of data.connections) {
       if (!byIdAtoms.has(connection.id.sourceId) && !byIdOperators.has(connection.id.sourceId)) {
         const error = new InvalidDataError(
-          `A connection's source ID \`${connection.id.sourceId}\` does not exist.`,
+          `A connection's source ID ${atomIdToMessageString(connection.id.sourceId)} does not exist.`,
         )
         idErrors.push(error)
       }
       if (!byIdAtoms.has(connection.id.targetId) && !byIdOperators.has(connection.id.targetId)) {
         const error = new InvalidDataError(
-          `A connection's target ID \`${connection.id.targetId}\` does not exist.`,
+          `A connection's target ID ${atomIdToMessageString(connection.id.targetId)} does not exist.`,
         )
         idErrors.push(error)
       }
@@ -155,12 +160,12 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
     if (!valid) {
       const errors = validate.errors
       if (errors === undefined || errors === null || errors.length === 0) {
-        throw new Error("The validation failed, but unexpectedly did not provide any errors.")
+        throw new Error('The validation failed, but unexpectedly did not provide any errors.')
       }
       return errors.map((error) => {
         const message = [error.instancePath, error.message]
-        .filter((part) => part !== undefined && part !== '')
-        .join(' ')
+          .filter((part) => part !== undefined && part !== '')
+          .join(' ')
         return new SchemaMismatchError(message)
       })
     }

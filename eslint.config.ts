@@ -21,8 +21,7 @@ export default defineConfigWithVueTs(
   },
 
   pluginVue.configs['flat/essential'],
-  vueTsConfigs.recommendedTypeChecked,
-  vueTsConfigs.strict,
+  vueTsConfigs.strictTypeChecked,
   vueTsConfigs.stylisticTypeChecked,
   {
     ...pluginVitest.configs.recommended,
@@ -34,4 +33,9 @@ export default defineConfigWithVueTs(
     files: ['e2e/**/*.{test,spec}.{js,ts,jsx,tsx}'],
   },
   skipFormatting,
+  // {
+  //   rules: {
+  //     '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
+  //   },
+  // }
 )
