@@ -76,18 +76,22 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
 
     const byIdAtoms = new Map<number, Atom[]>()
     for (const atom of data.atoms) {
-      if (!byIdAtoms.has(atom.id)) {
-        byIdAtoms.set(atom.id, [])
+      let atoms = byIdAtoms.get(atom.id)
+      if (atoms === undefined) {
+        atoms = []
+        byIdAtoms.set(atom.id, atoms)
       }
-      byIdAtoms.get(atom.id)!.push(atom)
+      atoms.push(atom)
     }
 
     const byIdOperators = new Map<number, Conjunction[]>()
     for (const operator of data.operators) {
-      if (!byIdOperators.has(operator.id)) {
-        byIdOperators.set(operator.id, [])
+      let operators = byIdOperators.get(operator.id)
+      if (operators === undefined) {
+        operators = []
+        byIdOperators.set(operator.id, operators)
       }
-      byIdOperators.get(operator.id)!.push(operator)
+      operators.push(operator)
     }
 
     const idsOfAtomsAndOperators = new Set<number>([...byIdAtoms.keys(), ...byIdOperators.keys()])
@@ -105,10 +109,12 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
     const byIdConnections = new Map<string, Connection[]>()
     for (const connection of data.connections) {
       const key = getConnectionKey(connection.id)
-      if (!byIdConnections.has(key)) {
-        byIdConnections.set(key, [])
+      let connections = byIdConnections.get(key)
+      if (connections === undefined) {
+        connections = []
+        byIdConnections.set(key, connections)
       }
-      byIdConnections.get(key)!.push(connection)
+      connections.push(connection)
     }
 
     for (const connections of byIdConnections.values()) {
@@ -147,10 +153,14 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
     }
     const valid = validate(data)
     if (!valid) {
-      return validate.errors!.map((error) => {
+      const errors = validate.errors
+      if (errors === undefined || errors === null || errors.length === 0) {
+        throw new Error("The validation failed, but unexpectedly did not provide any errors.")
+      }
+      return errors.map((error) => {
         const message = [error.instancePath, error.message]
-          .filter((part) => part !== undefined && part !== '')
-          .join(' ')
+        .filter((part) => part !== undefined && part !== '')
+        .join(' ')
         return new SchemaMismatchError(message)
       })
     }

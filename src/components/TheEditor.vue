@@ -116,7 +116,10 @@ function highlightSelectedNodes() {
   }
 
   for (const nodeId of nodeIdsToHighlight) {
-    const nodeElement = document.getElementById(`gc-node-${nodeId}`)! as unknown as SVGCircleElement
+    const nodeElement = document.getElementById(`gc-node-${nodeId}`)
+    if (nodeElement === null) {
+      throw new Error(`Node element for node \`${nodeId}\` not found.`)
+    }
     nodeElement.style.stroke = COLOR_HIGHLIGHT
     nodeElement.style.strokeWidth = '4px'
     nodeElement.style.strokeDasharray = '5,5'
@@ -247,7 +250,7 @@ useEventListener(graphHostRef, 'nodedeleted', (event) => {
 
 function updatedExplainableAtoms() {
   const explainableAtoms = [...knowledgeBase.atoms.values()].filter((atom) =>
-    [...knowledgeBase.connections.values()].some((connection) => connection.id.targetId == atom.id),
+    [...knowledgeBase.connections.values()].some((connection) => connection.id.targetId === atom.id),
   )
   const backgroundAtoms = [...knowledgeBase.atoms.values()].filter(
     (atom) => !explainableAtoms.includes(atom),
@@ -333,8 +336,7 @@ function changeAtomToExplainableAtom(atom: Atom) {
   }
 }
 
-function updateLinkType() {
-  const newValue = negatedInput.value!.checked
+function updateLinkType(newValue: boolean) {
   const selectedConnection = selectedConnectionRef.value
   if (selectedConnection === undefined) return
   selectedConnection.negated = newValue
@@ -356,12 +358,21 @@ function setName(atom: Atom, newName: string) {
 // HACK Change the label in D3 data and HTML.
 // Slightly adapted version of https://github.com/aig-hagen/aig_graph_component/blob/d96e5140aa205a7076f25c6e8a72044ab98f79eb/src/components/GraphComponent.vue#L1510
 function setLabel(nodeId: number, newName: string) {
-  const nodeElement = document.getElementById(`gc-node-${nodeId}`)!
+  const nodeElement = document.getElementById(`gc-node-${nodeId}`)
+  if (nodeElement === null) {
+    throw new Error(`Node element for node \`${nodeId}\` not found.`)
+  }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const data = (nodeElement as any).__data__
   data.label = newName
-  const nodeContainerElement = nodeElement.closest('.graph-controller__node-container')!
+  const nodeContainerElement = nodeElement.closest('.graph-controller__node-container')
+  if (nodeContainerElement === null) {
+    throw new Error(`Node container element for node \`${nodeId}\` not found.`)
+  }
   const nodeForeignObject = nodeContainerElement.querySelector('foreignObject')
+  if (nodeForeignObject === null) {
+    throw new Error(`Node foreign object for node \`${nodeId}\` not found.`)
+  }
   const labelDiv = nodeContainerElement.getElementsByTagName('div')[0]
   labelDiv.setAttribute('class', `graph-controller__node-label`)
   labelDiv.textContent = newName
@@ -371,9 +382,12 @@ function setLabel(nodeId: number, newName: string) {
   // removes and readds the `nodeContainer`.
   // Removing and readding the `nodeForeignObject` is enough.
   // Only adding removing and readding `nodeForeignObject` makes the hack to detect added nodes more peformant, because the mutation observer is not triggered needlessly.
-  const nodeContainerElementParent = nodeForeignObject!.parentElement
-  nodeForeignObject!.remove()
-  nodeContainerElementParent?.append(nodeForeignObject!)
+  const nodeForeignObjectParent = nodeForeignObject.parentElement
+  if (nodeForeignObjectParent === null) {
+    throw new Error(`Node foreign object for node \`${nodeId}\` has no parent.`)
+  }
+  nodeForeignObject.remove()
+  nodeForeignObjectParent.append(nodeForeignObject)
 }
 
 function saveKnowledgeBase() {
@@ -393,11 +407,15 @@ function saveKnowledgeBase() {
 function loadTextData(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
-    reader.addEventListener('load', (readerEvent) => {
-      resolve(readerEvent.target!.result as string)
+    reader.addEventListener('load', () => {
+      resolve(reader.result as string)
     })
     reader.addEventListener('error', () => {
-      reject(reader.error!)
+      const error = reader.error
+      if (error === null) {
+        throw new Error("Error callback called but reader provided no error.")
+      }
+      reject(error)
     })
     reader.readAsText(file)
   })
@@ -406,7 +424,7 @@ function loadTextData(file: File): Promise<string> {
 async function loadKnowledgeBase(inputEvent: Event) {
   const input = inputEvent.target as HTMLInputElement
   const files = input.files ?? []
-  if (files.length == 0) return
+  if (files.length === 0) return
 
   clearNotifications()
   try {
@@ -625,7 +643,7 @@ async function loadKnowledgeBase(inputEvent: Event) {
               type="checkbox"
               name="negated"
               :checked="selectedConnectionRef.negated"
-              @change="updateLinkType"
+              @change="updateLinkType(!selectedConnectionRef.negated)"
             />
             Negated
           </label>
