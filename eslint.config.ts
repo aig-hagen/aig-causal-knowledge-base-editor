@@ -22,7 +22,7 @@ export default defineConfigWithVueTs(
 
   pluginVue.configs['flat/essential'],
   vueTsConfigs.recommendedTypeChecked,
-
+  vueTsConfigs.stylisticTypeChecked,
   {
     ...pluginVitest.configs.recommended,
     files: ['src/**/__tests__/*'],
