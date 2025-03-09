@@ -15,9 +15,9 @@ export abstract class ImportError {
 }
 export class JsonSyntaxError extends ImportError {
   message: string
-  constructor(cause: string) {
+  constructor(cause: string, fileName: string) {
     super()
-    this.message = `The provided file is not a valid JSON file: ${cause}`
+    this.message = `The provided file \`${fileName}\` is not a valid JSON file: ${cause}`
   }
 }
 
@@ -25,15 +25,16 @@ export class SchemaMismatchError extends ImportError {
   message: string
   constructor(public cause: string) {
     super()
-    this.message = `The provided file does not match the expected schema: ${cause}`
+    // The `cause` will already contain a file name
+    this.message = `Data does not match the expected schema: ${cause}`
   }
 }
 
 export class InvalidDataError extends ImportError {
   message: string
-  constructor(public cause: string) {
+  constructor(public cause: string, fileName: string) {
     super()
-    this.message = `The provided file contains invalid data: ${cause}`
+    this.message = `The provided file \`${fileName}\` contains invalid data: ${cause}`
   }
 }
 
@@ -75,7 +76,7 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
     }
   }
 
-  function validateIds(data: GraphicalCausalKnowledgeBase): ImportError[] {
+  function validateIds(data: GraphicalCausalKnowledgeBase, fileName: string): ImportError[] {
     const idErrors: ImportError[] = []
 
     const byIdAtoms = new Map<number, Atom[]>()
@@ -105,6 +106,7 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
       if (atoms.length + operators.length > 1) {
         const error = new InvalidDataError(
           `Multiple atoms or operators with the ID ${atomIdToMessageString(id)} exist.`,
+          fileName
         )
         idErrors.push(error)
       }
@@ -126,6 +128,7 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
         const connectionId = connections[0].id
         const error = new InvalidDataError(
           `Multiple connections from the source ${atomIdToMessageString(connectionId.sourceId)} to the target ${atomIdToMessageString(connectionId.targetId)} exist.`,
+          fileName
         )
         idErrors.push(error)
       }
@@ -135,12 +138,14 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
       if (!byIdAtoms.has(connection.id.sourceId) && !byIdOperators.has(connection.id.sourceId)) {
         const error = new InvalidDataError(
           `A connection's source ID ${atomIdToMessageString(connection.id.sourceId)} does not exist.`,
+          fileName
         )
         idErrors.push(error)
       }
       if (!byIdAtoms.has(connection.id.targetId) && !byIdOperators.has(connection.id.targetId)) {
         const error = new InvalidDataError(
           `A connection's target ID ${atomIdToMessageString(connection.id.targetId)} does not exist.`,
+          fileName
         )
         idErrors.push(error)
       }
@@ -149,12 +154,12 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
     return idErrors
   }
 
-  function importKnowledgeBase(content: string): ImportError[] {
+  function importKnowledgeBase(fileName: string, content: string): ImportError[] {
     let data: GraphicalCausalKnowledgeBase
     try {
       data = JSON.parse(content)
     } catch (e) {
-      return [new JsonSyntaxError((e as Error).message)]
+      return [new JsonSyntaxError((e as Error).message, fileName)]
     }
     const valid = validate(data)
     if (!valid) {
@@ -163,14 +168,12 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
         throw new Error('The validation failed, but unexpectedly did not provide any errors.')
       }
       return errors.map((error) => {
-        const message = [error.instancePath, error.message]
-          .filter((part) => part !== undefined && part !== '')
-          .join(' ')
+        const message =  ajv.errorsText([error], { dataVar: fileName })
         return new SchemaMismatchError(message)
       })
     }
 
-    const idErrors: ImportError[] = validateIds(data)
+    const idErrors: ImportError[] = validateIds(data, fileName)
 
     if (idErrors.length > 0) {
       return idErrors

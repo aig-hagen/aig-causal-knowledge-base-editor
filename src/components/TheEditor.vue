@@ -446,7 +446,7 @@ async function loadKnowledgeBase(inputEvent: Event) {
     if (files.length !== 1) throw new Error('Only one file can be loaded at a time.')
     const file = files[0]
     const text = await loadTextData(file)
-    const errors = knowledgeBase.importKnowledgeBase(text)
+    const errors = knowledgeBase.importKnowledgeBase(file.name, text)
 
     if (errors.length > 0) {
       errors.forEach((error) => {

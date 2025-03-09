@@ -11,49 +11,51 @@ beforeEach(() => {
   setActivePinia(createPinia())
 })
 
+const TEST_FILE_NAME = 'test.json'
+
 test('fail importing JSON with syntax error ', () => {
   const knowledgeBase = useKnowledgeBase()
 
-  const errors = knowledgeBase.importKnowledgeBase(`{ a }`)
+  const errors = knowledgeBase.importKnowledgeBase(TEST_FILE_NAME, `{ a }`)
 
   expect(errors).toHaveLength(1)
   expect.soft(errors[0]).toBeInstanceOf(JsonSyntaxError)
   expect
     .soft(errors[0].message)
     .toBe(
-      "The provided file is not a valid JSON file: Expected property name or '}' in JSON at position 2 (line 1 column 3)",
+      "The provided file `test.json` is not a valid JSON file: Expected property name or '}' in JSON at position 2 (line 1 column 3)",
     )
 })
 
 test('fail importing JSON not matching schema', () => {
   const knowledgeBase = useKnowledgeBase()
 
-  const errors = knowledgeBase.importKnowledgeBase('{}')
+  const errors = knowledgeBase.importKnowledgeBase(TEST_FILE_NAME, '{}')
 
   expect(errors).toHaveLength(4)
   expect.soft(errors[0]).toBeInstanceOf(SchemaMismatchError)
   expect
     .soft(errors[0].message)
     .toBe(
-      "The provided file does not match the expected schema: must have required property 'apiVersion'",
+      "Data does not match the expected schema: test.json must have required property 'apiVersion'",
     )
   expect.soft(errors[1]).toBeInstanceOf(SchemaMismatchError)
   expect
     .soft(errors[1].message)
     .toBe(
-      "The provided file does not match the expected schema: must have required property 'atoms'",
+      "Data does not match the expected schema: test.json must have required property 'atoms'",
     )
   expect.soft(errors[2]).toBeInstanceOf(SchemaMismatchError)
   expect
     .soft(errors[2].message)
     .toBe(
-      "The provided file does not match the expected schema: must have required property 'operators'",
+      "Data does not match the expected schema: test.json must have required property 'operators'",
     )
   expect.soft(errors[3]).toBeInstanceOf(SchemaMismatchError)
   expect
     .soft(errors[3].message)
     .toBe(
-      "The provided file does not match the expected schema: must have required property 'connections'",
+      "Data does not match the expected schema: test.json must have required property 'connections'",
     )
 })
 
@@ -61,6 +63,7 @@ test('fail importing JSON with invalid IDs', () => {
   const knowledgeBase = useKnowledgeBase()
 
   const errors = knowledgeBase.importKnowledgeBase(
+    TEST_FILE_NAME,
     `{
       "apiVersion": "graphical/v1",
       "atoms": [],
@@ -82,7 +85,7 @@ test('fail importing JSON with invalid IDs', () => {
   expect
     .soft(errors[0].message)
     .toBe(
-      'The provided file does not match the expected schema: /connections/0/id/sourceId must be >= 0',
+      'Data does not match the expected schema: test.json/connections/0/id/sourceId must be >= 0',
     )
   expect.soft(errors[1]).toBeInstanceOf(SchemaMismatchError)
   // The ID should not be greater than 9007199254740991 otherwise it will not be a safe integer.
@@ -90,7 +93,7 @@ test('fail importing JSON with invalid IDs', () => {
   expect
     .soft(errors[1].message)
     .toBe(
-      'The provided file does not match the expected schema: /connections/0/id/targetId must be <= 9007199254740991',
+      'Data does not match the expected schema: test.json/connections/0/id/targetId must be <= 9007199254740991',
     )
 })
 
@@ -98,6 +101,7 @@ test('fail importing duplicate connections', () => {
   const knowledgeBase = useKnowledgeBase()
 
   const errors = knowledgeBase.importKnowledgeBase(
+    TEST_FILE_NAME,
     `{
       "apiVersion": "graphical/v1",
       "atoms": [],
@@ -143,7 +147,7 @@ test('fail importing duplicate connections', () => {
   expect
     .soft(errors[0].message)
     .toBe(
-      'The provided file contains invalid data: Multiple connections from the source `1` to the target `2` exist.',
+      'The provided file `test.json` contains invalid data: Multiple connections from the source `1` to the target `2` exist.',
     )
 })
 
@@ -151,6 +155,7 @@ test('fail importing connections referencing missing IDs', () => {
   const knowledgeBase = useKnowledgeBase()
 
   const errors = knowledgeBase.importKnowledgeBase(
+    TEST_FILE_NAME,
     `{
       "apiVersion": "graphical/v1",
       "atoms": [],
@@ -171,17 +176,18 @@ test('fail importing connections referencing missing IDs', () => {
   expect.soft(errors[0]).toBeInstanceOf(InvalidDataError)
   expect
     .soft(errors[0].message)
-    .toBe("The provided file contains invalid data: A connection's source ID `1` does not exist.")
+    .toBe("The provided file `test.json` contains invalid data: A connection's source ID `1` does not exist.")
   expect.soft(errors[1]).toBeInstanceOf(InvalidDataError)
   expect
     .soft(errors[1].message)
-    .toBe("The provided file contains invalid data: A connection's target ID `2` does not exist.")
+    .toBe("The provided file `test.json` contains invalid data: A connection's target ID `2` does not exist.")
 })
 
 test('fail importing JSON with duplicate atom IDs', () => {
   const knowledgeBase = useKnowledgeBase()
 
   const errors = knowledgeBase.importKnowledgeBase(
+    TEST_FILE_NAME,
     `{
       "apiVersion": "graphical/v1",
       "atoms": [
@@ -214,7 +220,7 @@ test('fail importing JSON with duplicate atom IDs', () => {
   expect
     .soft(errors[0].message)
     .toBe(
-      'The provided file contains invalid data: Multiple atoms or operators with the ID `1` exist.',
+      'The provided file `test.json` contains invalid data: Multiple atoms or operators with the ID `1` exist.',
     )
 })
 
@@ -222,6 +228,7 @@ test('fail importing JSON with duplicate operator IDs', () => {
   const knowledgeBase = useKnowledgeBase()
 
   const errors = knowledgeBase.importKnowledgeBase(
+    TEST_FILE_NAME,
     `{
       "apiVersion": "graphical/v1",
       "atoms": [],
@@ -252,7 +259,7 @@ test('fail importing JSON with duplicate operator IDs', () => {
   expect
     .soft(errors[0].message)
     .toBe(
-      'The provided file contains invalid data: Multiple atoms or operators with the ID `1` exist.',
+      'The provided file `test.json` contains invalid data: Multiple atoms or operators with the ID `1` exist.',
     )
 })
 
@@ -260,6 +267,7 @@ test('fail importing JSON with duplicate operator and atom IDs', () => {
   const knowledgeBase = useKnowledgeBase()
 
   const errors = knowledgeBase.importKnowledgeBase(
+    TEST_FILE_NAME,
     `{
       "apiVersion": "graphical/v1",
       "atoms": [
@@ -292,6 +300,6 @@ test('fail importing JSON with duplicate operator and atom IDs', () => {
   expect
     .soft(errors[0].message)
     .toBe(
-      'The provided file contains invalid data: Multiple atoms or operators with the ID `1` exist.',
+      'The provided file `test.json` contains invalid data: Multiple atoms or operators with the ID `1` exist.',
     )
 })
