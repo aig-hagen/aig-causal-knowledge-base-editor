@@ -153,33 +153,46 @@ const { stop } = useMutationObserver(
   },
 )
 
+function selectAtom(atomId: number | null) {
+  selectedAtomIdRef.value = atomId
+  if (atomId !== null) {
+    selectedConnectionIdRef.value = null
+    void nextTick(() => {
+      if (selectedAtomIdRef.value !== null) {
+        nameInput.value?.focus()
+      }
+    })
+  }
+}
+
+function selectConnection(connectionId: ConnectionId | null) {
+  selectedConnectionIdRef.value = connectionId
+  if (connectionId !== null) {
+    selectedAtomIdRef.value = null
+    void nextTick(() => {
+      if (selectedConnectionIdRef.value !== null) {
+        negatedInput.value?.focus()
+      }
+    })
+  }
+}
+
 useEventListener(graphComponentElementRef, 'click', (event) => {
   const pointerEvent = event as PointerEvent
   const target = pointerEvent.target as HTMLElement
   const nodeContainer = target.closest('.graph-controller__node-container')
 
   // TODO check, if `nodeclicked` or `linkclicked` can be used.
-  selectedAtomIdRef.value =
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (nodeContainer as any)?.__data__?.id ?? null
-  void nextTick(() => {
-    if (selectedAtomIdRef.value !== null) {
-      nameInput.value?.focus()
-    }
-  })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  selectAtom((nodeContainer as any)?.__data__?.id ?? null)
 
   const linkContainer = target.closest('.graph-controller__link-container')
   if (linkContainer !== null) {
     // @ts-expect-error __data__ is defined by D3
-    selectedConnectionIdRef.value = parseLinkIdToConnectionId(linkContainer.__data__.id)
+    selectConnection(parseLinkIdToConnectionId(linkContainer.__data__.id))
   } else {
-    selectedConnectionIdRef.value = null
+    selectConnection(null)
   }
-  void nextTick(() => {
-    if (selectedConnectionIdRef.value !== null) {
-      negatedInput.value?.focus()
-    }
-  })
 })
 
 useEventListener(graphHostRef, 'nodecreated', (event) => {
@@ -204,6 +217,7 @@ useEventListener(graphHostRef, 'nodecreated', (event) => {
         },
       }
       knowledgeBase.atoms.set(atom.id, atom)
+      selectAtom(atom.id)
       // When the event is handled, the HTML is not yet rendered.
       void nextTick(() => {
         updateAtomColor(atom)
@@ -317,6 +331,8 @@ useEventListener(graphHostRef, 'linkcreated', (event) => {
     negated: negated,
   }
   knowledgeBase.connections.set(getConnectionKey(connection.id), connection)
+  selectConnection(connection.id)
+
   // When the event is handled, the HTML is not yet rendered.
   void nextTick(() => {
     graphInstance.setLabelEditable(false, createdLink.id)
