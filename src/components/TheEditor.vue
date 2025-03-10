@@ -177,25 +177,23 @@ function selectConnection(connectionId: ConnectionId | null) {
   }
 }
 
-useEventListener(graphComponentElementRef, 'click', (event) => {
-  const pointerEvent = event as PointerEvent
-  const target = pointerEvent.target as HTMLElement
-  const nodeContainer = target.closest('.graph-controller__node-container')
+function selectClickedElement(clickTarget: HTMLElement) {
+  const nodeContainer = clickTarget.closest('.graph-controller__node-container')
 
   // TODO check, if `nodeclicked` or `linkclicked` can be used.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   selectAtom((nodeContainer as any)?.__data__?.id ?? null)
 
-  const linkContainer = target.closest('.graph-controller__link-container')
+  const linkContainer = clickTarget.closest('.graph-controller__link-container')
   if (linkContainer !== null) {
     // @ts-expect-error __data__ is defined by D3
     selectConnection(parseLinkIdToConnectionId(linkContainer.__data__.id))
   } else {
     selectConnection(null)
   }
-})
+}
 
-useEventListener(graphHostRef, 'nodecreated', (event) => {
+function onNodeCreated(event: Event) {
   if (loadingData.value) return
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const createdNode = (event as any).detail.node
@@ -252,15 +250,15 @@ useEventListener(graphHostRef, 'nodecreated', (event) => {
     //   attributeFilter: ["transform"]
     // })
   })
-})
+}
 
-useEventListener(graphHostRef, 'nodedeleted', (event) => {
+function onNodeDeleted(event: Event) {
   if (loadingData.value) return
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const deletedNode = (event as any).detail.node
   knowledgeBase.operators.delete(deletedNode.id)
   knowledgeBase.atoms.delete(deletedNode.id)
-})
+}
 
 function updatedExplainableAtoms() {
   const explainableAtoms = [...knowledgeBase.atoms.values()].filter((atom) =>
@@ -319,7 +317,7 @@ function parseLinkIdToConnectionId(linkId: string): ConnectionId {
   }
 }
 
-useEventListener(graphHostRef, 'linkcreated', (event) => {
+function onLinkCreated(event: Event) {
   if (loadingData.value) return
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const createdLink = (event as any).detail.link
@@ -341,16 +339,16 @@ useEventListener(graphHostRef, 'linkcreated', (event) => {
   })
 
   updatedExplainableAtoms()
-})
+}
 
-useEventListener(graphHostRef, 'linkdeleted', (event) => {
+function onLinkDeleted(event: Event) {
   if (loadingData.value) return
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const deletedLink = (event as any).detail.link
   const connectionId = parseLinkIdToConnectionId(deletedLink.id)
   knowledgeBase.connections.delete(getConnectionKey(connectionId))
   updatedExplainableAtoms()
-})
+}
 
 function changeAtomToBackgroundAtom(atom: Atom) {
   if (atom.assumption === undefined) {
@@ -512,11 +510,20 @@ async function loadKnowledgeBase(inputEvent: Event) {
     loadingData.value = false
   }
 }
+
+useEventListener(graphHostRef, 'nodecreated', onNodeCreated)
+useEventListener(graphHostRef, 'nodedeleted', onNodeDeleted)
+useEventListener(graphHostRef, 'linkcreated', onLinkCreated)
+useEventListener(graphHostRef, 'linkdeleted', onLinkDeleted)
 </script>
 
 <template>
   <div>
-    <graph-component ref="graph-component-element"></graph-component>
+    <graph-component
+      @click="selectClickedElement($event.target)"
+      @nodedeleted="onNodeDeleted"
+      ref="graph-component-element"
+    ></graph-component>
 
     <div class="menu menu-top box m-5 p-0 is-flex is-flex-direction-row">
       <div class="buttons has-addons">
