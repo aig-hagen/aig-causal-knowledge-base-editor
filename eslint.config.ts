@@ -33,9 +33,4 @@ export default defineConfigWithVueTs(
     files: ['e2e/**/*.{test,spec}.{js,ts,jsx,tsx}'],
   },
   skipFormatting,
-  // {
-  //   rules: {
-  //     '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
-  //   },
-  // }
 )
