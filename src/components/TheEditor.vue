@@ -469,6 +469,10 @@ async function loadKnowledgeBase(inputEvent: Event) {
       return
     }
 
+    // Reset UI state related to the old graph
+    selectConnection(null)
+    selectAtom(null)
+
     const nodesFromAtoms = [...knowledgeBase.atoms.values()].map((atom) => {
       return {
         id: atom.id,
