@@ -177,22 +177,6 @@ function selectConnection(connectionId: ConnectionId | null) {
   }
 }
 
-function selectClickedElement(clickTarget: HTMLElement) {
-  const nodeContainer = clickTarget.closest('.graph-controller__node-container')
-
-  // TODO check, if `nodeclicked` or `linkclicked` can be used.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  selectAtom((nodeContainer as any)?.__data__?.id ?? null)
-
-  const linkContainer = clickTarget.closest('.graph-controller__link-container')
-  if (linkContainer !== null) {
-    // @ts-expect-error __data__ is defined by D3
-    selectConnection(parseLinkIdToConnectionId(linkContainer.__data__.id))
-  } else {
-    selectConnection(null)
-  }
-}
-
 function onNodeCreated(event: Event) {
   if (loadingData.value) return
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -383,39 +367,9 @@ function setName(atom: Atom, newName: string) {
   setLabel(atom.id, newName)
 }
 
-// HACK Change the label in D3 data and HTML.
-// Slightly adapted version of https://github.com/aig-hagen/aig_graph_component/blob/d96e5140aa205a7076f25c6e8a72044ab98f79eb/src/components/GraphComponent.vue#L1510
 function setLabel(nodeId: number, newName: string) {
-  const nodeElement = document.getElementById(`gc-node-${nodeId.toString()}`)
-  if (nodeElement === null) {
-    throw new Error(`Node element for node ${nodeIdToMessageString(nodeId)} not found.`)
-  }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const data = (nodeElement as any).__data__
-  data.label = newName
-  const nodeContainerElement = nodeElement.closest('.graph-controller__node-container')
-  if (nodeContainerElement === null) {
-    throw new Error(`Node container element for node ${nodeIdToMessageString(nodeId)} not found.`)
-  }
-  const nodeForeignObject = nodeContainerElement.querySelector('foreignObject')
-  if (nodeForeignObject === null) {
-    throw new Error(`Node foreign object for node ${nodeIdToMessageString(nodeId)} not found.`)
-  }
-  const labelDiv = nodeContainerElement.getElementsByTagName('div')[0]
-  labelDiv.setAttribute('class', `graph-controller__node-label`)
-  labelDiv.textContent = newName
-
-  // _redrawNodeContainer
-  // Orignal implementation in https://github.com/aig-hagen/aig_graph_component/blob/d96e5140aa205a7076f25c6e8a72044ab98f79eb/src/components/GraphComponent.vue#L1475
-  // removes and readds the `nodeContainer`.
-  // Removing and readding the `nodeForeignObject` is enough.
-  // Only adding removing and readding `nodeForeignObject` makes the hack to detect added nodes more peformant, because the mutation observer is not triggered needlessly.
-  const nodeForeignObjectParent = nodeForeignObject.parentElement
-  if (nodeForeignObjectParent === null) {
-    throw new Error(`Node foreign object for node ${nodeIdToMessageString(nodeId)} has no parent.`)
-  }
-  nodeForeignObject.remove()
-  nodeForeignObjectParent.append(nodeForeignObject)
+  const graphInstance = graphInstanceRef.value
+  graphInstance.setLabel(newName, nodeId)
 }
 
 function saveKnowledgeBase() {
@@ -515,16 +469,43 @@ async function loadKnowledgeBase(inputEvent: Event) {
   }
 }
 
+const LEFT_MOUSE_BUTTON = 0
+
+function onNodeClicked(event: Event) {
+  console.log('onNodeClicked')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const detail = (event as any).detail
+  if (detail.button !== LEFT_MOUSE_BUTTON) {
+    return
+  }
+  const atomId = detail.node.id
+  selectAtom(atomId)
+}
+
+function updateSelection(clickTarget: HTMLElement) {
+  selectAtom(null)
+
+  const linkContainer = clickTarget.closest('.graph-controller__link-container')
+  if (linkContainer !== null) {
+    // @ts-expect-error __data__ is defined by D3
+    selectConnection(parseLinkIdToConnectionId(linkContainer.__data__.id))
+  } else {
+    selectConnection(null)
+  }
+}
+
 useEventListener(graphHostRef, 'nodecreated', onNodeCreated)
 useEventListener(graphHostRef, 'nodedeleted', onNodeDeleted)
 useEventListener(graphHostRef, 'linkcreated', onLinkCreated)
 useEventListener(graphHostRef, 'linkdeleted', onLinkDeleted)
+useEventListener(graphHostRef, 'nodeclicked', onNodeClicked)
+// `labelclicked` is not used, because clicking a label also triggers the click event that updates `updateSelection`.
 </script>
 
 <template>
   <div>
     <graph-component
-      @click="selectClickedElement($event.target)"
+      @click="updateSelection($event.target)"
       @nodedeleted="onNodeDeleted"
       ref="graph-component-element"
     ></graph-component>
