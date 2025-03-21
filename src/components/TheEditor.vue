@@ -93,10 +93,10 @@ watchEffect(() => {
 function updateAtomColor(atom: Atom) {
   switch (atom.assumption) {
     case undefined:
-      graphInstanceRef.value.setNodeColor(COLOR_EXPLAINABLE_ATOM, atom.id)
+      graphInstanceRef.value.setColor(COLOR_EXPLAINABLE_ATOM, atom.id)
       break
     default:
-      graphInstanceRef.value.setNodeColor(COLOR_BACKGROUND_ATOM, atom.id)
+      graphInstanceRef.value.setColor(COLOR_BACKGROUND_ATOM, atom.id)
       break
   }
   highlightSelectedNodes()
@@ -216,7 +216,7 @@ function onNodeCreated(event: Event) {
       })
       // When the event is handled, the HTML is not yet rendered.
       void nextTick(() => {
-        graphInstance.setNodeColor(COLOR_CONJUNCTION, createdNode.id)
+        graphInstance.setColor(COLOR_CONJUNCTION, createdNode.id)
         setLabel(createdNode.id, LABEL_CONJUNCTION)
       })
       break
@@ -319,7 +319,7 @@ function onLinkCreated(event: Event) {
   void nextTick(() => {
     graphInstance.setLabelEditable(false, createdLink.id)
     const color = negated ? COLOR_NEGATED_LINKS : COLOR_REGULAR_LINKS
-    graphInstance.setLinkColor(color, createdLink.id)
+    graphInstance.setColor(color, createdLink.id)
   })
 
   updatedExplainableAtoms()
@@ -353,7 +353,7 @@ function updateLinkType(newValue: boolean) {
   if (selectedConnection === undefined) return
   selectedConnection.negated = newValue
   const color = newValue ? COLOR_NEGATED_LINKS : COLOR_REGULAR_LINKS
-  graphInstanceRef.value.setLinkColor(
+  graphInstanceRef.value.setColor(
     color,
     // Same as getConnectionKey, but only by chance.
     // getConnectionKey might change in the future.
