@@ -13,7 +13,7 @@ beforeEach(() => {
 
 const TEST_FILE_NAME = 'test.json'
 
-test('fail importing JSON with syntax error ', () => {
+test('fail importing JSON with syntax error', () => {
   const knowledgeBase = useKnowledgeBase()
 
   const errors = knowledgeBase.importKnowledgeBase(TEST_FILE_NAME, `{ a }`)
@@ -42,9 +42,7 @@ test('fail importing JSON not matching schema', () => {
   expect.soft(errors[1]).toBeInstanceOf(SchemaMismatchError)
   expect
     .soft(errors[1].message)
-    .toBe(
-      "Data does not match the expected schema: test.json must have required property 'atoms'",
-    )
+    .toBe("Data does not match the expected schema: test.json must have required property 'atoms'")
   expect.soft(errors[2]).toBeInstanceOf(SchemaMismatchError)
   expect
     .soft(errors[2].message)
@@ -176,11 +174,15 @@ test('fail importing connections referencing missing IDs', () => {
   expect.soft(errors[0]).toBeInstanceOf(InvalidDataError)
   expect
     .soft(errors[0].message)
-    .toBe("The provided file `test.json` contains invalid data: A connection's source ID `1` does not exist.")
+    .toBe(
+      "The provided file `test.json` contains invalid data: A connection's source ID `1` does not exist.",
+    )
   expect.soft(errors[1]).toBeInstanceOf(InvalidDataError)
   expect
     .soft(errors[1].message)
-    .toBe("The provided file `test.json` contains invalid data: A connection's target ID `2` does not exist.")
+    .toBe(
+      "The provided file `test.json` contains invalid data: A connection's target ID `2` does not exist.",
+    )
 })
 
 test('fail importing JSON with duplicate atom IDs', () => {

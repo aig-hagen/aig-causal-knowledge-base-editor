@@ -23,7 +23,7 @@ export class JsonSyntaxError extends ImportError {
 
 export class SchemaMismatchError extends ImportError {
   message: string
-  constructor(public cause: string) {
+  constructor(cause: string) {
     super()
     // The `cause` will already contain a file name
     this.message = `Data does not match the expected schema: ${cause}`
@@ -32,7 +32,7 @@ export class SchemaMismatchError extends ImportError {
 
 export class InvalidDataError extends ImportError {
   message: string
-  constructor(public cause: string, fileName: string) {
+  constructor(cause: string, fileName: string) {
     super()
     this.message = `The provided file \`${fileName}\` contains invalid data: ${cause}`
   }
@@ -106,7 +106,7 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
       if (atoms.length + operators.length > 1) {
         const error = new InvalidDataError(
           `Multiple atoms or operators with the ID ${atomIdToMessageString(id)} exist.`,
-          fileName
+          fileName,
         )
         idErrors.push(error)
       }
@@ -128,7 +128,7 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
         const connectionId = connections[0].id
         const error = new InvalidDataError(
           `Multiple connections from the source ${atomIdToMessageString(connectionId.sourceId)} to the target ${atomIdToMessageString(connectionId.targetId)} exist.`,
-          fileName
+          fileName,
         )
         idErrors.push(error)
       }
@@ -138,14 +138,14 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
       if (!byIdAtoms.has(connection.id.sourceId) && !byIdOperators.has(connection.id.sourceId)) {
         const error = new InvalidDataError(
           `A connection's source ID ${atomIdToMessageString(connection.id.sourceId)} does not exist.`,
-          fileName
+          fileName,
         )
         idErrors.push(error)
       }
       if (!byIdAtoms.has(connection.id.targetId) && !byIdOperators.has(connection.id.targetId)) {
         const error = new InvalidDataError(
           `A connection's target ID ${atomIdToMessageString(connection.id.targetId)} does not exist.`,
-          fileName
+          fileName,
         )
         idErrors.push(error)
       }
@@ -168,7 +168,7 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
         throw new Error('The validation failed, but unexpectedly did not provide any errors.')
       }
       return errors.map((error) => {
-        const message =  ajv.errorsText([error], { dataVar: fileName })
+        const message = ajv.errorsText([error], { dataVar: fileName })
         return new SchemaMismatchError(message)
       })
     }
@@ -204,3 +204,29 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
     importKnowledgeBase,
   }
 })
+
+export function getDisplayName(atom: Atom, negated: boolean): string {
+  const idString = String(atom.id)
+  const displayName = atom.name.length == 0 ? `unnamed[id=${idString}]` : atom.name
+
+  if (negated) {
+    return `not ${displayName}`
+  } else {
+    return displayName
+  }
+}
+
+export function getAssumptions(atom: Atom): boolean[] {
+  if (atom.assumption === undefined) {
+    throw new Error(`Assumption should not be undefined for atom with id ${String(atom.id)}.`)
+  }
+  let binaryAssumptions = []
+  if ([4, 5].includes(atom.assumption)) {
+    binaryAssumptions = [true]
+  } else if ([1, 2].includes(atom.assumption)) {
+    binaryAssumptions = [false]
+  } else {
+    binaryAssumptions = [true, false]
+  }
+  return binaryAssumptions
+}
