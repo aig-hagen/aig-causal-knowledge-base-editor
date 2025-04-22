@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  tweetyproject-web-server:
+    image: ghcr.io/odzhychko/tweetyproject/tweetyproject-web-server:causal-reasoner-snapshot
+    ports:
+      - "8080:8080"
+
+  aig-causal-knowledge-base-editor:
+    image: ghcr.io/aig-hagen/aig-causal-knowledge-base-editor:latest
+    ports:
+      - "3000:80"
+    environment:
+      - TWEETY_API_URL=http://localhost:8080
+    depends_on:
+      - tweetyproject-web-server
