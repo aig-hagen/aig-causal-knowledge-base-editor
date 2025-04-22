@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   tweetyproject-web-server:
-    image: ghcr.io/odzhychko/tweetyproject/tweetyproject-web-server:causal-reasoner-snapshot
+    image: ghcr.io/odzhychko/tweetyproject/tweetyproject-web-server:causal-reasoner-snapshot@sha256:425444d8988f9c4c0533383a405fec9eeca3df52bbf7dbab7344f98899c181ed
     ports:
       - "8080:8080"
 
