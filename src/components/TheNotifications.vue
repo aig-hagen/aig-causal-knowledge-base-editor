@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useNotifications } from '@/stores/notifications'
-// TODO animate in and out
 const notifications = useNotifications()
 </script>
 

@@ -17,7 +17,12 @@ export default defineConfigWithVueTs(
 
   {
     name: 'app/files-to-ignore',
-    ignores: ['**/dist/**', '**/dist-ssr/**', '**/coverage/**', '**/public/aig_graph_component-*/**'],
+    ignores: [
+      '**/dist/**',
+      '**/dist-ssr/**',
+      '**/coverage/**',
+      '**/public/aig_graph_component-*/**',
+    ],
   },
 
   pluginVue.configs['flat/essential'],

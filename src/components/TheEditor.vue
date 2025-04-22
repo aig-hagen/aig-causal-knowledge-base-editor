@@ -12,12 +12,20 @@ const uploadElementId = useId()
 
 const props = defineProps<{
   showTextEditor: boolean
+  showEvaluationConsole: boolean
 }>()
 
-const emit = defineEmits<(e: 'update:showTextEditor', showTextEditor: boolean) => void>()
+const emit = defineEmits<{
+  'update:showTextEditor': [showTextEditor: boolean]
+  'update:showEvaluationConsole': [showEvaluationConsole: boolean]
+}>()
 
 function toogleTextEditor() {
   emit('update:showTextEditor', !props.showTextEditor)
+}
+
+function toogleEvaluationConsole() {
+  emit('update:showEvaluationConsole', !props.showEvaluationConsole)
 }
 
 const { addSuccessNotification, addErrorNotification, clearNotifications } = useNotifications()
@@ -31,7 +39,9 @@ const COLOR_EXPLAINABLE_ATOM = 'rgba(255, 140, 0, 1)' // DarkOrange
 const COLOR_BACKGROUND_ATOM_TRANSPARENT = 'rgba(255, 239, 213, 0.5)' // PapayaWhip
 const COLOR_EXPLAINABLE_ATOM_TRANSPARENT = 'rgba(255, 140, 0, 0.5)' // DarkOrange
 const COLOR_CONJUNCTION = 'LightGray'
-const LABEL_CONJUNCTION = '$\\land$'
+const LABEL_CONJUNCTION = '∧'
+// Use LaTex notation, after enabling LaTex support.
+// const LABEL_CONJUNCTION = '$\\land$'
 
 type NodeType = 'ATOM' | 'CONJUCTION'
 const selectedNodeType = ref<NodeType>('ATOM')
@@ -104,9 +114,9 @@ function updateAtomColor(atom: Atom) {
 
 function highlightSelectedNodes() {
   const nodeIdsToHighlight = []
-  const selectedAtomId = selectedAtomIdRef.value
-  if (selectedAtomId !== null) {
-    nodeIdsToHighlight.push(selectedAtomId)
+  const selectedAtom = selectedAtomRef.value
+  if (selectedAtom !== undefined) {
+    nodeIdsToHighlight.push(selectedAtom.id)
   }
 
   const selectedConnection = selectedConnectionRef.value
@@ -472,7 +482,6 @@ async function loadKnowledgeBase(inputEvent: Event) {
 const LEFT_MOUSE_BUTTON = 0
 
 function onNodeClicked(event: Event) {
-  console.log('onNodeClicked')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const detail = (event as any).detail
   if (detail.button !== LEFT_MOUSE_BUTTON) {
@@ -494,6 +503,47 @@ function updateSelection(clickTarget: HTMLElement) {
   }
 }
 
+function toogleAsumption(toogledValue: boolean) {
+  const selectedAtom = selectedAtomRef.value
+  if (selectedAtom === undefined) return
+  const currentAssumption = selectedAtom.assumption
+  if (currentAssumption === undefined) return
+  if ([1, 2].includes(currentAssumption)) {
+    // current assumption is false
+    if (toogledValue) {
+      // true is added
+      // changed assumption is true and false
+      selectedAtom.assumption = 3
+    } else {
+      // false is removed
+      // changed assumption is automatically changed to true
+      selectedAtom.assumption = 5
+    }
+  } else if (currentAssumption === 3) {
+    // current assumption is true and false
+    if (toogledValue) {
+      // true is removed
+      // changed assumption is false
+      selectedAtom.assumption = 1
+    } else {
+      // false is removed
+      // changed assumption is true
+      selectedAtom.assumption = 5
+    }
+  } else {
+    // current assumption is true
+    if (toogledValue) {
+      // true is removed
+      // changed assumption is automatically changed to false
+      selectedAtom.assumption = 1
+    } else {
+      // false is added
+      // changed assumption is true and false
+      selectedAtom.assumption = 3
+    }
+  }
+}
+
 useEventListener(graphHostRef, 'nodecreated', onNodeCreated)
 useEventListener(graphHostRef, 'nodedeleted', onNodeDeleted)
 useEventListener(graphHostRef, 'linkcreated', onLinkCreated)
@@ -503,7 +553,7 @@ useEventListener(graphHostRef, 'nodeclicked', onNodeClicked)
 </script>
 
 <template>
-  <div>
+  <div class="editor">
     <graph-component
       @click="updateSelection($event.target)"
       @nodedeleted="onNodeDeleted"
@@ -522,7 +572,10 @@ useEventListener(graphHostRef, 'nodeclicked', onNodeClicked)
         />
         <label class="button" :for="uploadElementId">Load</label>
         <button v-if="false" class="button" @click="toogleTextEditor">
-          {{ showTextEditor ? 'Close' : 'Open' }} preview
+          {{ showTextEditor ? 'Hide' : 'Show' }} preview
+        </button>
+        <button class="button" @click="toogleEvaluationConsole">
+          {{ showEvaluationConsole ? 'Hide' : 'Show' }} evaluation console
         </button>
       </div>
     </div>
@@ -628,8 +681,8 @@ useEventListener(graphHostRef, 'nodeclicked', onNodeClicked)
           </label>
         </div>
       </div>
-
-      <div class="field" v-if="selectedAtomRef.assumption !== undefined">
+      <!-- UI for sliders, when we enable selecting between five values again. -->
+      <!-- <div class="field" v-if="selectedAtomRef.assumption !== undefined">
         <label class="label">Assumption</label>
         <div class="control is-flex is-flex-direction-column" style="width: fit-content">
           <input
@@ -652,6 +705,30 @@ useEventListener(graphHostRef, 'nodeclicked', onNodeClicked)
             <option value="5" label="5"></option>
           </datalist>
         </div>
+      </div> -->
+
+      <div class="field" v-if="selectedAtomRef.assumption !== undefined">
+        <label class="label">Assumptions</label>
+        <div class="control">
+          <div class="checkboxes">
+            <label class="checkbox">
+              <input
+                type="checkbox"
+                :checked="[3, 4, 5].includes(selectedAtomRef.assumption)"
+                @change="toogleAsumption(true)"
+              />
+              true
+            </label>
+            <label class="checkbox">
+              <input
+                type="checkbox"
+                :checked="[1, 2, 3].includes(selectedAtomRef.assumption)"
+                @change="toogleAsumption(false)"
+              />
+              false
+            </label>
+          </div>
+        </div>
       </div>
     </div>
     <div v-if="selectedConnectionRef !== undefined" class="menu menu-right box m-5">
@@ -659,16 +736,18 @@ useEventListener(graphHostRef, 'nodeclicked', onNodeClicked)
       <div class="field">
         <label class="label">Connection type</label>
         <div class="control">
-          <label class="checkbox">
-            <input
-              ref="negated-input"
-              type="checkbox"
-              name="negated"
-              :checked="selectedConnectionRef.negated"
-              @change="updateLinkType(!selectedConnectionRef.negated)"
-            />
-            Negated
-          </label>
+          <div class="checkboxes">
+            <label class="checkbox">
+              <input
+                ref="negated-input"
+                type="checkbox"
+                name="negated"
+                :checked="selectedConnectionRef.negated"
+                @change="updateLinkType(!selectedConnectionRef.negated)"
+              />
+              Negated
+            </label>
+          </div>
         </div>
       </div>
     </div>
@@ -687,8 +766,13 @@ useEventListener(graphHostRef, 'nodeclicked', onNodeClicked)
 </template>
 
 <style scoped>
+.editor {
+  position: relative;
+  height: 100%;
+}
+
 .menu-top {
-  position: fixed;
+  position: absolute;
 }
 
 .overlay {
@@ -714,7 +798,7 @@ useEventListener(graphHostRef, 'nodeclicked', onNodeClicked)
 
 .menu-left {
   top: 128px;
-  position: fixed;
+  position: absolute;
 }
 
 .node-selection,
@@ -739,7 +823,7 @@ useEventListener(graphHostRef, 'nodeclicked', onNodeClicked)
 .menu-right {
   top: 128px;
   right: 0;
-  position: fixed;
+  position: absolute;
   border: 1px solid gray;
 }
 
