@@ -4,4 +4,5 @@
     "config:best-practices",
   ],
   dependencyDashboardLabels: ["type/maintenance", "planning/next"],
+  dependencyDashboardAutoclose: true,
 }
