@@ -12,6 +12,11 @@ beforeEach(() => {
 })
 
 const TEST_FILE_NAME = 'test.json'
+const STATIC_SCHEMA_DATA =
+  `
+    "$schema": "https://causal-knowledge-base-editor.aig.fernuni-hagen.de/graphical-causal-knowledge-base-v1.schema.json",
+    "apiVersion": "graphical/v1",
+  `
 
 test('fail importing JSON with syntax error', () => {
   const knowledgeBase = useKnowledgeBase()
@@ -32,26 +37,32 @@ test('fail importing JSON not matching schema', () => {
 
   const errors = knowledgeBase.importKnowledgeBase(TEST_FILE_NAME, '{}')
 
-  expect(errors).toHaveLength(4)
+  expect(errors).toHaveLength(5)
   expect.soft(errors[0]).toBeInstanceOf(SchemaMismatchError)
   expect
     .soft(errors[0].message)
     .toBe(
-      "Data does not match the expected schema: test.json must have required property 'apiVersion'",
+      "Data does not match the expected schema: test.json must have required property '$schema'",
     )
   expect.soft(errors[1]).toBeInstanceOf(SchemaMismatchError)
   expect
     .soft(errors[1].message)
-    .toBe("Data does not match the expected schema: test.json must have required property 'atoms'")
+    .toBe(
+      "Data does not match the expected schema: test.json must have required property 'apiVersion'",
+    )
   expect.soft(errors[2]).toBeInstanceOf(SchemaMismatchError)
   expect
     .soft(errors[2].message)
-    .toBe(
-      "Data does not match the expected schema: test.json must have required property 'operators'",
-    )
+    .toBe("Data does not match the expected schema: test.json must have required property 'atoms'")
   expect.soft(errors[3]).toBeInstanceOf(SchemaMismatchError)
   expect
     .soft(errors[3].message)
+    .toBe(
+      "Data does not match the expected schema: test.json must have required property 'operators'",
+    )
+  expect.soft(errors[4]).toBeInstanceOf(SchemaMismatchError)
+  expect
+    .soft(errors[4].message)
     .toBe(
       "Data does not match the expected schema: test.json must have required property 'connections'",
     )
@@ -63,7 +74,7 @@ test('fail importing JSON with invalid IDs', () => {
   const errors = knowledgeBase.importKnowledgeBase(
     TEST_FILE_NAME,
     `{
-      "apiVersion": "graphical/v1",
+      ${STATIC_SCHEMA_DATA}
       "atoms": [],
       "operators": [],
       "connections": [
@@ -101,7 +112,7 @@ test('fail importing duplicate connections', () => {
   const errors = knowledgeBase.importKnowledgeBase(
     TEST_FILE_NAME,
     `{
-      "apiVersion": "graphical/v1",
+      ${STATIC_SCHEMA_DATA}
       "atoms": [],
       "operators": [
         {
@@ -155,7 +166,7 @@ test('fail importing connections referencing missing IDs', () => {
   const errors = knowledgeBase.importKnowledgeBase(
     TEST_FILE_NAME,
     `{
-      "apiVersion": "graphical/v1",
+      ${STATIC_SCHEMA_DATA}
       "atoms": [],
       "operators": [],
       "connections": [
@@ -191,7 +202,7 @@ test('fail importing JSON with duplicate atom IDs', () => {
   const errors = knowledgeBase.importKnowledgeBase(
     TEST_FILE_NAME,
     `{
-      "apiVersion": "graphical/v1",
+      ${STATIC_SCHEMA_DATA}
       "atoms": [
         {
           "id": 1,
@@ -232,7 +243,7 @@ test('fail importing JSON with duplicate operator IDs', () => {
   const errors = knowledgeBase.importKnowledgeBase(
     TEST_FILE_NAME,
     `{
-      "apiVersion": "graphical/v1",
+      ${STATIC_SCHEMA_DATA}
       "atoms": [],
       "operators": [
         {
@@ -271,7 +282,7 @@ test('fail importing JSON with duplicate operator and atom IDs', () => {
   const errors = knowledgeBase.importKnowledgeBase(
     TEST_FILE_NAME,
     `{
-      "apiVersion": "graphical/v1",
+      ${STATIC_SCHEMA_DATA}
       "atoms": [
         {
           "id": 1,
