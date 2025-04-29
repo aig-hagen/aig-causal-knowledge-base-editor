@@ -11,9 +11,15 @@ import { setupServer } from 'msw/node'
 import { afterAll, afterEach } from 'vitest'
 
 const server = setupServer()
-beforeAll(() => { server.listen({ onUnhandledRequest: 'error' }) })
-afterAll(() => { server.close() })
-afterEach(() => { server.resetHandlers() })
+beforeAll(() => {
+  server.listen({ onUnhandledRequest: 'error' })
+})
+afterAll(() => {
+  server.close()
+})
+afterEach(() => {
+  server.resetHandlers()
+})
 
 async function useOkResponse(responseBody: Record<string, unknown>) {
   return useResponse(HttpResponse.json(responseBody))
@@ -32,7 +38,7 @@ function fakePayload(): EvaluationRequestPayload {
 }
 
 it('should disable request for invalid payload', () => {
-  const error = new ConjunctionIsNotTargetedError({ sourceId: 1, targetId: 1})
+  const error = new ConjunctionIsNotTargetedError({ sourceId: 1, targetId: 1 })
 
   const { evaluationBlocker, evaluate } = useEvaluationRequest(error)
 
@@ -223,7 +229,7 @@ it('should parse correct empty reply', async () => {
 })
 
 it('should report response with error status', async () => {
-  const response = HttpResponse.text("Internal server errror.", { status: 500 })
+  const response = HttpResponse.text('Internal server errror.', { status: 500 })
 
   const { result, error } = await useResponse(response)
 
@@ -231,9 +237,8 @@ it('should report response with error status', async () => {
   expect(result).toBeNull()
 })
 
-
 it('should report error for response with invalid json', async () => {
-  const response = HttpResponse.text("[")
+  const response = HttpResponse.text('[')
 
   const { result, error } = await useResponse(response)
 
@@ -242,14 +247,13 @@ it('should report error for response with invalid json', async () => {
 })
 
 it('should report error for response with non-object JSON', async () => {
-  const response = HttpResponse.text("[]")
+  const response = HttpResponse.text('[]')
 
   const { result, error } = await useResponse(response)
 
   expect(error).toBe(`Unexpected evaluation result.`)
   expect(result).toBeNull()
 })
-
 
 it('should report error for empty response', async () => {
   const response = HttpResponse.text()
@@ -259,4 +263,3 @@ it('should report error for empty response', async () => {
   expect(error).toBe(`Unexpected evaluation result.`)
   expect(result).toBeNull()
 })
-

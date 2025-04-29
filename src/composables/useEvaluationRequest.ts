@@ -12,11 +12,10 @@ declare global {
   }
 }
 
-
 export function useEvaluationRequest(
   payload: MaybeRef<EvaluationRequestPayload | NonEvaluableKnowledgebaseError>,
 ) {
-  const url = window.TWEETY_API_URL + "/causal"
+  const url = window.TWEETY_API_URL + '/causal'
 
   const evaluationBlocker: Ref<Error | null> = computed(() => {
     const payloadValue = unref(payload)
@@ -33,8 +32,7 @@ export function useEvaluationRequest(
 
   const { error, data, abort, canAbort, execute, isFetching, isFinished } = useFetch(url, {
     immediate: false,
-  })
-    .post(payload, 'json')
+  }).post(payload, 'json')
 
   const evaluate = computed(() => {
     if (isFetching.value || evaluationBlocker.value !== null) {
@@ -99,9 +97,9 @@ function handleReponseData(data: unknown): {
   result: Literal[] | null
   error: string | null
 } {
-  let dataObject;
+  let dataObject
 
-  if (typeof data !== "string") {
+  if (typeof data !== 'string') {
     console.error(`Unexpected response: ${String(data)}`)
     return {
       result: null,
@@ -111,7 +109,7 @@ function handleReponseData(data: unknown): {
 
   try {
     dataObject = JSON.parse(data)
-  } catch(error) {
+  } catch (error) {
     console.error(`Unexpected response: ${data}`, error)
     return {
       result: null,
@@ -119,7 +117,7 @@ function handleReponseData(data: unknown): {
     }
   }
 
-  if (typeof dataObject !== "object") {
+  if (typeof dataObject !== 'object') {
     console.error(`Unexpected response: ${data}`)
     return {
       result: null,
