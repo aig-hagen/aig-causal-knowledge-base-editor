@@ -237,7 +237,7 @@ test('fail to construct when cycle exists', () => {
 
   const payload = constructPayload({ atoms, conjunctions, connections })
 
-  expect(payload).toEqual(new CycleError([1, 2, 3, 2]))
+  expect(payload).toEqual(new CycleError([2, 3, 2]))
 })
 
 test('construct when node appears twice in equation and do not detect cycle', () => {

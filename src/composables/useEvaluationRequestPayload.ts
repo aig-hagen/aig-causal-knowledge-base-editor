@@ -1,3 +1,4 @@
+import { findCycle } from '@/model/cycles'
 import type { Connection, ConnectionId } from '@/model/graphicalCausalKnowledgeBase'
 import { computed, unref, type MaybeRef } from 'vue'
 
@@ -44,7 +45,7 @@ export class ConjunctionIsNotTargetedError extends NonEvaluableKnowledgebaseErro
 
 export class CycleError extends NonEvaluableKnowledgebaseError {
   constructor(public cycle: number[]) {
-    super(`Detectd a cycle ${JSON.stringify(cycle)}.`)
+    super(`Detected a cycle ${JSON.stringify(cycle)}.`)
     this.name = 'CycleError'
   }
 }
@@ -124,17 +125,12 @@ function constructEquations(
     targetingConnections.push(connection)
   }
 
-  function createrFormulaForSource(
-    connection: Connection,
-    path: number[]
-  ): string | null {
+  const cycle = findCycle(connections.map((connection) => connection.id))
+  if (cycle !== null) {
+    throw new CycleError(cycle)
+  }
+  function createrFormulaForSource(connection: Connection): string | null {
     const sourceId = connection.id.sourceId
-
-    const indexOfSourceIdInPaht = path.indexOf(sourceId)
-    if (indexOfSourceIdInPaht != -1) {
-      const cycle = [...path.slice(indexOfSourceIdInPaht), sourceId]
-      throw new CycleError(cycle)
-    }
 
     if (atoms.has(sourceId)) {
       atomsUsedInRightSide.add(sourceId)
@@ -144,8 +140,6 @@ function constructEquations(
       })
     }
 
-    path.push(sourceId)
-
     if (!conjunctions.has(sourceId)) {
       throw new Error(`Source ID ${String(sourceId)} is not an atom or conjunction.`)
     }
@@ -154,10 +148,8 @@ function constructEquations(
       throw new ConjunctionIsNotTargetedError(connection.id)
     }
     const conjuncts = connectionsTargetingSource
-      .map((connection) => createrFormulaForSource(connection, path))
+      .map((connection) => createrFormulaForSource(connection))
       .join(' && ')
-
-    path.pop()
 
     if (connection.negated) {
       return `!(${conjuncts})`
@@ -171,9 +163,7 @@ function constructEquations(
     if (!atoms.has(target)) {
       continue
     }
-    const disjuncts = connectionsToTarget.map((connection) =>
-      createrFormulaForSource(connection, [target]),
-    )
+    const disjuncts = connectionsToTarget.map((connection) => createrFormulaForSource(connection))
 
     const lefthandSide = getLiteralString({
       atomId: target,
