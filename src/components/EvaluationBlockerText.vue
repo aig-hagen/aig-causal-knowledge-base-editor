@@ -29,9 +29,9 @@ const connectionIdWithNotTargetedConjunction = computed(() => {
   }
 })
 
-const trailWithCycle = computed(() => {
+const cycle = computed(() => {
   if (props.blocker instanceof CycleError) {
-    return props.blocker.trail
+    return props.blocker.cycle
   } else {
     return null
   }
@@ -49,23 +49,19 @@ Evaluation is therefore not possible.
         }}</span>
         has no incomming edges.
       </template>
-      <template v-if="trailWithCycle !== null">
-        It exists a
-        <template
-          v-if="
-            trailWithCycle[trailWithCycle.length - 1] === trailWithCycle[trailWithCycle.length - 2]
-          "
-          >self-loop</template
+      <template v-if="cycle !== null">
+        <template v-if="cycle.length == 2"
+          >It exists a self-loop for
+          <span class="is-underlined">{{ getName(cycle[cycle.length - 0]) }}</span
+          >.</template
         >
-        <template v-else>cycle</template>
-        for
-        <span class="is-underlined">{{ getName(trailWithCycle[trailWithCycle.length - 1]) }}</span>
-        <template v-if="trailWithCycle.length == 2"> . </template>
-        <template v-else>
-          : <span class="is-underlined">{{ getName(trailWithCycle[0]) }}</span
-          ><template v-for="(nodeId, index) in trailWithCycle.slice(1)" :key="index">
-            ← <span class="is-underlined">{{ getName(nodeId) }}</span></template
-          >.
+        <template v-else
+          >It exists the following cycle:
+          <ul>
+            <li v-for="(nodeId, index) in cycle" :key="index">
+              <span class="is-underlined">{{ getName(nodeId) }}</span>
+            </li>
+          </ul>
         </template>
       </template>
     </p>
@@ -75,7 +71,7 @@ Evaluation is therefore not possible.
 
 <style scoped>
 ul {
-  list-style-type: '- ';
+  list-style-type: '→ ';
 }
 
 li {
