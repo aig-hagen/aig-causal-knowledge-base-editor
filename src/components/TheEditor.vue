@@ -7,6 +7,7 @@ import saveAs from 'file-saver'
 import { computed, nextTick, ref, useTemplateRef, watchEffect } from 'vue'
 
 import { useId } from 'vue'
+import ControlsExplanation from './ControlsExplanation.vue'
 
 const uploadElementId = useId()
 
@@ -27,6 +28,8 @@ function toogleTextEditor() {
 function toogleEvaluationConsole() {
   emit('update:showEvaluationConsole', !props.showEvaluationConsole)
 }
+
+const isShowControlExplanationModal = ref(false)
 
 const { addSuccessNotification, addErrorNotification, clearNotifications } = useNotifications()
 
@@ -560,23 +563,34 @@ useEventListener(graphHostRef, 'nodeclicked', onNodeClicked)
       ref="graph-component-element"
     ></graph-component>
 
-    <div class="menu menu-top box m-5 p-0 is-flex is-flex-direction-row">
-      <div class="buttons has-addons">
-        <button class="button" @click="saveKnowledgeBase()">Save</button>
-        <input
-          :id="uploadElementId"
-          type="file"
-          v-show="false"
-          accept="application/json"
-          @change="loadKnowledgeBase($event)"
-        />
-        <label class="button" :for="uploadElementId">Load</label>
-        <button v-if="false" class="button" @click="toogleTextEditor">
-          {{ showTextEditor ? 'Hide' : 'Show' }} preview
-        </button>
-        <button class="button" @click="toogleEvaluationConsole">
-          {{ showEvaluationConsole ? 'Hide' : 'Show' }} evaluation console
-        </button>
+    <div class="menu menu-top m-5 p-0 is-flex is-flex-direction-row">
+      <div class="buttons is-grouped is-align-items-flex-start">
+        <div class="buttons has-addons">
+          <button class="button" @click="saveKnowledgeBase()">Save</button>
+          <input
+            :id="uploadElementId"
+            type="file"
+            v-show="false"
+            accept="application/json"
+            @change="loadKnowledgeBase($event)"
+          />
+          <label class="button" :for="uploadElementId">Load</label>
+          <button v-if="false" class="button" @click="toogleTextEditor">
+            {{ showTextEditor ? 'Hide' : 'Show' }} preview
+          </button>
+        </div>
+
+        <div class="buttons has-addons">
+          <button class="button" @click="toogleEvaluationConsole">
+            {{ showEvaluationConsole ? 'Hide' : 'Show' }} evaluation console
+          </button>
+        </div>
+
+        <div class="buttons has-addons">
+          <button class="button" @click="isShowControlExplanationModal = true">
+            Show controls
+          </button>
+        </div>
       </div>
     </div>
     <div class="menu menu-left">
@@ -763,6 +777,7 @@ useEventListener(graphHostRef, 'nodeclicked', onNodeClicked)
       <progress class="progress is-small is-primary" max="100">15%</progress>
     </div>
   </div>
+  <ControlsExplanation v-model:show="isShowControlExplanationModal" />
 </template>
 
 <style scoped>
@@ -790,10 +805,6 @@ useEventListener(graphHostRef, 'nodeclicked', onNodeClicked)
   left: 50%;
   transform: translate(-50%, -50%);
   width: 512px;
-}
-
-.menu-top * + * {
-  border-left: 1px solid gray;
 }
 
 .menu-left {
