@@ -70,7 +70,14 @@ function getName(atomId: Id, negated: boolean): string {
         }}</span
         ><span v-html="` `"></span>
       </template>
-      <template v-if="conclusionsToShow.length === 0">follow no conclusions.</template>
+      <template v-if="conclusionsToShow.length === 0">
+        <template v-if="requesedAtomsForConclusion.length == 1"
+          >follow no conclusions for
+          <span class="is-underlined">{{ getName(requesedAtomsForConclusion[0], false) }}</span
+          >.
+        </template>
+        <template v-else>follow no conclusions.</template>
+      </template>
       <template v-else-if="conclusionsToShow.length === 1"
         >follows
         <span class="is-underlined">{{

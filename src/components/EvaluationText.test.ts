@@ -181,3 +181,17 @@ test('renders message about no further conclusions', () => {
     'Given the assumptions and the causal model, from no observations follows a. For other atoms, no conclusions can be made.',
   )
 })
+
+test('renders message about missing one conclusion', () => {
+  const observations: Literal[] = []
+  const conclusions: Literal[] = []
+  const requesedAtomsForConclusion: Id[] = [1]
+
+  const wrapper = mount(EvaluationText, {
+    props: { atoms, observations, conclusions, requesedAtomsForConclusion },
+  })
+
+  expect(wrapper.text()).toContain(
+    'Given the assumptions and the causal model, from no observations follow no conclusions for a.',
+  )
+})

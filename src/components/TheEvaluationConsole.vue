@@ -8,14 +8,15 @@ import {
   parseLiteralString,
   useEvaluationRequestPayload,
 } from '@/composables/useEvaluationRequestPayload'
-import type { Atom } from '@/model/graphicalCausalKnowledgeBase'
+import type { Atom, Id } from '@/model/graphicalCausalKnowledgeBase'
 import { useEvaluationRequest } from '@/composables/useEvaluationRequest'
 import EvaluationErrorText from './EvaluationBlockerText.vue'
 
 const knowledgeBase = useKnowledgeBase()
 
+const atoms = computed(() => [...knowledgeBase.atoms.values()])
 const assumptions = computed(() =>
-  [...knowledgeBase.atoms.values()]
+  atoms.value
     .filter((atom) => atom.assumption !== undefined)
     .flatMap((atom) =>
       getAssumptions(atom).map((assumption) => ({ atomId: atom.id, negated: !assumption })),
@@ -42,7 +43,7 @@ function convertToOptions(atoms: Atom[]): { label: string; value: string }[] {
 }
 
 const explainableAtoms = computed(() => {
-  return [...knowledgeBase.atoms.values()].filter((atom) => atom.assumption === undefined)
+  return atoms.value.filter((atom) => atom.assumption === undefined)
 })
 
 const observationOptions = computed(() => {
@@ -50,9 +51,7 @@ const observationOptions = computed(() => {
 })
 
 const assumptionOptions = computed(() => {
-  const backgroundAtoms = [...knowledgeBase.atoms.values()].filter(
-    (atom) => atom.assumption !== undefined,
-  )
+  const backgroundAtoms = atoms.value.filter((atom) => atom.assumption !== undefined)
   return convertToOptions(backgroundAtoms)
 })
 
@@ -98,6 +97,29 @@ const evaluationRequestPayload = useEvaluationRequestPayload(
   obserervationAtoms,
   assumptions,
 )
+
+const nonSelected = Symbol('nonSelected')
+const selectedAtomToShowConclusionFor = ref<Id | typeof nonSelected>(nonSelected)
+
+watchEffect(() => {
+  const selectedAtom = selectedAtomToShowConclusionFor.value
+  if (selectedAtom == nonSelected) {
+    return
+  }
+  if (knowledgeBase.atoms.has(selectedAtom)) {
+    return
+  }
+  selectedAtomToShowConclusionFor.value = nonSelected
+})
+
+const atomsToShowConclusionFor = computed(() => {
+  const selectedAtom = selectedAtomToShowConclusionFor.value
+  if (selectedAtom == nonSelected) {
+    return [...knowledgeBase.atoms.keys()]
+  } else {
+    return [selectedAtom]
+  }
+})
 
 const {
   evaluationBlocker,
@@ -153,10 +175,23 @@ const {
         </div>
       </div>
       <div class="field is-grouped">
-        <div class="control">
-          <button :disabled="evaluate === null" type="submit" class="button is-primary">
-            Evaluate
-          </button>
+        <div class="field has-addons">
+          <div class="control">
+            <button :disabled="evaluate === null" type="submit" class="button is-primary">
+              Evaluate
+            </button>
+          </div>
+          <div class="control">
+            <span class="select">
+              <select v-model="selectedAtomToShowConclusionFor">
+                <option :value="nonSelected">all</option>
+                <hr />
+                <option v-for="atom in atoms" :key="atom.id" :value="atom.id">
+                  {{ getDisplayName(atom, false) }}
+                </option>
+              </select>
+            </span>
+          </div>
         </div>
         <div class="control">
           <button
@@ -190,7 +225,7 @@ const {
           :atoms="knowledgeBase.atoms"
           :observations="obserervationAtoms"
           :conclusions="evaluationResult"
-          :requesed-atoms-for-conclusion="[...knowledgeBase.atoms.keys()]"
+          :requesed-atoms-for-conclusion="atomsToShowConclusionFor"
         />
       </div>
     </article>
