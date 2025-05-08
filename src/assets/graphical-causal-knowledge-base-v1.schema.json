@@ -87,10 +87,10 @@
   "description": "Graphcial represenation of causal knowledge base.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["$schema", "apiVersion", "atoms", "operators", "connections"],
+  "required": ["apiVersion", "atoms", "operators", "connections"],
   "properties": {
     "$schema": {
-      "const": "https://causal-knowledge-base-editor.aig.fernuni-hagen.de/graphical-causal-knowledge-base-v1.schema.json"
+      "type": "string"
     },
     "apiVersion": {
       "const": "graphical/v1"

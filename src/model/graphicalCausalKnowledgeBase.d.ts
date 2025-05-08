@@ -11,7 +11,7 @@ export type Id = number
  * Graphcial represenation of causal knowledge base.
  */
 export interface GraphicalCausalKnowledgeBase {
-  $schema?: 'https://causal-knowledge-base-editor.aig.fernuni-hagen.de/graphical-causal-knowledge-base-v1.schema.json'
+  $schema?: string
   apiVersion: 'graphical/v1'
   atoms: Atom[]
   operators: Conjunction[]
