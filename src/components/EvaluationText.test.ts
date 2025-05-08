@@ -2,7 +2,7 @@ import { test, expect } from 'vitest'
 
 import { mount, VueWrapper } from '@vue/test-utils'
 import EvaluationText from './EvaluationText.vue'
-import type { Atom } from '@/model/graphicalCausalKnowledgeBase'
+import type { Atom, Id } from '@/model/graphicalCausalKnowledgeBase'
 import type { Literal } from '@/composables/useEvaluationRequestPayload'
 
 const atoms = new Map<number, Atom>()
@@ -32,8 +32,11 @@ function getCleanHtml(wrapper: VueWrapper) {
 test('renders no observations and no conclusion', () => {
   const observations: Literal[] = []
   const conclusions: Literal[] = []
+  const requesedAtomsForConclusion: Id[] = []
 
-  const wrapper = mount(EvaluationText, { props: { atoms, observations, conclusions } })
+  const wrapper = mount(EvaluationText, {
+    props: { atoms, observations, conclusions, requesedAtomsForConclusion },
+  })
 
   expect(wrapper.text()).toContain(
     'Given the assumptions and the causal model, from no observations follow no conclusions.',
@@ -48,8 +51,11 @@ test('renders one observation', () => {
     },
   ]
   const conclusions: Literal[] = []
+  const requesedAtomsForConclusion: Id[] = []
 
-  const wrapper = mount(EvaluationText, { props: { atoms, observations, conclusions } })
+  const wrapper = mount(EvaluationText, {
+    props: { atoms, observations, conclusions, requesedAtomsForConclusion },
+  })
 
   expect(wrapper.text()).toContain(
     'Given the assumptions and the causal model, from the observation a follow no conclusions.',
@@ -65,8 +71,11 @@ test('renders negated observation', () => {
     },
   ]
   const conclusions: Literal[] = []
+  const requesedAtomsForConclusion: Id[] = []
 
-  const wrapper = mount(EvaluationText, { props: { atoms, observations, conclusions } })
+  const wrapper = mount(EvaluationText, {
+    props: { atoms, observations, conclusions, requesedAtomsForConclusion },
+  })
 
   expect(wrapper.text()).toContain(
     'Given the assumptions and the causal model, from the observation not a follow no conclusions.',
@@ -90,8 +99,11 @@ test('renders multiple observation', () => {
     },
   ]
   const conclusions: Literal[] = []
+  const requesedAtomsForConclusion: Id[] = []
 
-  const wrapper = mount(EvaluationText, { props: { atoms, observations, conclusions } })
+  const wrapper = mount(EvaluationText, {
+    props: { atoms, observations, conclusions, requesedAtomsForConclusion },
+  })
 
   expect(wrapper.text()).toContain(
     'Given the assumptions and the causal model, from the observations a, b and c follow no conclusions.',
@@ -110,8 +122,11 @@ test('renders one conclusion', () => {
       negated: false,
     },
   ]
+  const requesedAtomsForConclusion: Id[] = [1]
 
-  const wrapper = mount(EvaluationText, { props: { atoms, observations, conclusions } })
+  const wrapper = mount(EvaluationText, {
+    props: { atoms, observations, conclusions, requesedAtomsForConclusion },
+  })
 
   expect(wrapper.text()).toContain(
     'Given the assumptions and the causal model, from no observations follows a.',
@@ -131,16 +146,38 @@ test('renders multiple conclusion', () => {
       negated: false,
     },
   ]
+  const requesedAtomsForConclusion: Id[] = [1, 2]
 
-  const wrapper = mount(EvaluationText, { props: { atoms, observations, conclusions } })
+  const wrapper = mount(EvaluationText, {
+    props: { atoms, observations, conclusions, requesedAtomsForConclusion },
+  })
 
   expect(wrapper.text()).toContain(
-    'Given the assumptions and the causal model, from no observations  follows: ab.',
+    'Given the assumptions and the causal model, from no observations follows: ab.',
   )
   expect(getCleanHtml(wrapper)).toContain(
     `<ul>
-    <li><span class="is-underlined">a</span></li>
-    <li><span class="is-underlined">b</span>. </li>
+    <li><span><span class="is-underlined">a</span></span></li>
+    <li><span><span class="is-underlined">b</span>.</span></li>
   </ul>`,
+  )
+})
+
+test('renders message about no further conclusions', () => {
+  const observations: Literal[] = []
+  const conclusions = [
+    {
+      atomId: 1,
+      negated: false,
+    },
+  ]
+  const requesedAtomsForConclusion: Id[] = [1, 2]
+
+  const wrapper = mount(EvaluationText, {
+    props: { atoms, observations, conclusions, requesedAtomsForConclusion },
+  })
+
+  expect(wrapper.text()).toContain(
+    'Given the assumptions and the causal model, from no observations follows a. For other atoms, no conclusions can be made.',
   )
 })

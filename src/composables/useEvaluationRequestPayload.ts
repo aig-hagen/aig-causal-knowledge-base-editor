@@ -65,15 +65,15 @@ export function useEvaluationRequestPayload(
   observations: MaybeRef<Literal[]>,
   assumptions: MaybeRef<Literal[]>,
 ) {
-  return computed(() =>
-    constructEvaluationRequestPayload(
+  return computed(() => {
+    return constructEvaluationRequestPayload(
       unref(atoms),
       unref(conjunctions),
       unref(connections),
       unref(observations),
       unref(assumptions),
-    ),
-  )
+    )
+  })
 }
 
 function constructEvaluationRequestPayload(

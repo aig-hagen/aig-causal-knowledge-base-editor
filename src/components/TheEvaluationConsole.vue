@@ -41,21 +41,30 @@ function convertToOptions(atoms: Atom[]): { label: string; value: string }[] {
   })
 }
 
-const options = computed(() => {
-  const [backgroundAtom, explainableAtom] = [
-    [...knowledgeBase.atoms.values()].filter((atom) => atom.assumption !== undefined),
-    [...knowledgeBase.atoms.values()].filter((atom) => atom.assumption === undefined),
-  ]
-  return {
-    assumptionOptions: convertToOptions(backgroundAtom),
-    observationOptions: convertToOptions(explainableAtom),
-  }
+const explainableAtoms = computed(() => {
+  return [...knowledgeBase.atoms.values()].filter((atom) => atom.assumption === undefined)
+})
+
+const observationOptions = computed(() => {
+  return convertToOptions(explainableAtoms.value)
+})
+
+const assumptionOptions = computed(() => {
+  const backgroundAtoms = [...knowledgeBase.atoms.values()].filter(
+    (atom) => atom.assumption !== undefined,
+  )
+  return convertToOptions(backgroundAtoms)
 })
 
 const selectedObservations = ref<string[]>([])
 
 const validSelectedObservations = computed(() => {
-  const sourceValues = options.value.observationOptions.map((atom) => atom.value)
+  const sourceValues = explainableAtoms.value.flatMap((atom) => {
+    return [
+      getLiteralString({ atomId: atom.id, negated: false }),
+      getLiteralString({ atomId: atom.id, negated: true }),
+    ]
+  })
   return selectedObservations.value.filter((observation) => sourceValues.includes(observation))
 })
 
@@ -116,7 +125,7 @@ const {
            This leads to some values from `assumptions` not beeing shown in the multiselect.
            See https://github.com/vueform/multiselect/issues/446 -->
           <Multiselect
-            :options="options.assumptionOptions"
+            :options="assumptionOptions"
             v-model="assumptionLiteralStrings"
             mode="tags"
             :searchable="true"
@@ -133,7 +142,7 @@ const {
         <div class="control">
           <Multiselect
             :value="selectedObservations"
-            :options="options.observationOptions"
+            :options="observationOptions"
             mode="tags"
             :searchable="true"
             :close-on-select="false"
@@ -181,6 +190,7 @@ const {
           :atoms="knowledgeBase.atoms"
           :observations="obserervationAtoms"
           :conclusions="evaluationResult"
+          :requesed-atoms-for-conclusion="[...knowledgeBase.atoms.keys()]"
         />
       </div>
     </article>

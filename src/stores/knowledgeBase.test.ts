@@ -12,8 +12,7 @@ beforeEach(() => {
 })
 
 const TEST_FILE_NAME = 'test.json'
-const STATIC_SCHEMA_DATA =
-  `
+const STATIC_SCHEMA_DATA = `
     "$schema": "https://causal-knowledge-base-editor.aig.fernuni-hagen.de/graphical-causal-knowledge-base-v1.schema.json",
     "apiVersion": "graphical/v1",
   `
