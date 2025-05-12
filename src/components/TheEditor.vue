@@ -43,6 +43,8 @@ const COLOR_BACKGROUND_ATOM_TRANSPARENT = 'rgba(255, 239, 213, 0.5)' // PapayaWh
 const COLOR_EXPLAINABLE_ATOM_TRANSPARENT = 'rgba(255, 140, 0, 0.5)' // DarkOrange
 const COLOR_CONJUNCTION = 'LightGray'
 const LABEL_CONJUNCTION = '∧'
+const ATOM_WIDTH_IN_PX = 128
+const ATOM_HEIGHT_IN_PX = 32
 // Use LaTex notation, after enabling LaTex support.
 // const LABEL_CONJUNCTION = '$\\land$'
 
@@ -151,6 +153,12 @@ const { stop } = useMutationObserver(
     graphInstanceRef.value = graphInstance
     graphInstance.toggleNodePhysics(false)
     graphInstance.toggleZoom(true)
+    graphInstance.setNodeProps({
+      shape: 'rect',
+       width: ATOM_WIDTH_IN_PX,
+       height: ATOM_HEIGHT_IN_PX,
+       cornerRadius: 4
+    })
     const graphHost = graphComponentElement.getElementsByClassName(
       'graph-controller__graph-host',
     )[0]
@@ -195,6 +203,7 @@ function onNodeCreated(event: Event) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const createdNode = (event as any).detail.node
   const graphInstance = graphInstanceRef.value
+  // graphInstance.setNodeSize()
   // When the event is handled, the HTML is not yet rendered.
   void nextTick(() => {
     graphInstance.setLabelEditable(false, createdNode.id)
