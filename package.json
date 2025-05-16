@@ -48,7 +48,7 @@
     "jsdom": "26.1.0",
     "json-schema-to-typescript": "15.0.4",
     "msw": "2.8.2",
-    "npm-run-all2": "8.0.1",
+    "npm-run-all2": "8.0.2",
     "prettier": "3.5.3",
     "typescript": "5.8.3",
     "vite": "6.3.5",
