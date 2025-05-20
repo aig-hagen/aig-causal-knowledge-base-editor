@@ -155,9 +155,9 @@ const { stop } = useMutationObserver(
     graphInstance.toggleZoom(true)
     graphInstance.setNodeProps({
       shape: 'rect',
-       width: ATOM_WIDTH_IN_PX,
-       height: ATOM_HEIGHT_IN_PX,
-       cornerRadius: 4
+      width: ATOM_WIDTH_IN_PX,
+      height: ATOM_HEIGHT_IN_PX,
+      cornerRadius: 4,
     })
     const graphHost = graphComponentElement.getElementsByClassName(
       'graph-controller__graph-host',
@@ -503,18 +503,30 @@ function onNodeClicked(event: Event) {
   selectAtom(atomId)
 }
 
-function updateSelection(clickTarget: HTMLElement) {
-  selectAtom(null)
-
-  const linkContainer = clickTarget.closest('.graph-controller__link-container')
-  if (linkContainer !== null) {
-    // @ts-expect-error __data__ is defined by D3
-    selectConnection(parseLinkIdToConnectionId(linkContainer.__data__.id))
-  } else {
-    selectConnection(null)
+function onLinkClicked(event: Event) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const detail = (event as any).detail
+  if (detail.button !== LEFT_MOUSE_BUTTON) {
+    return
   }
+  const linkId = detail.link.id
+  const connectionId = parseLinkIdToConnectionId(linkId)
+  selectConnection(connectionId)
 }
 
+function updateSelection(clickTarget: HTMLElement) {
+  // If clicked outside a link.
+  const linkContainer = clickTarget.closest('.graph-controller__link-container')
+  if (linkContainer === null) {
+    selectConnection(null)
+  }
+
+  // If clicked outside a node.
+  const nodeContainer = clickTarget.closest('.graph-controller__node-container')
+  if (nodeContainer === null) {
+    selectAtom(null)
+  }
+}
 function toogleAsumption(toogledValue: boolean) {
   const selectedAtom = selectedAtomRef.value
   if (selectedAtom === undefined) return
@@ -561,7 +573,7 @@ useEventListener(graphHostRef, 'nodedeleted', onNodeDeleted)
 useEventListener(graphHostRef, 'linkcreated', onLinkCreated)
 useEventListener(graphHostRef, 'linkdeleted', onLinkDeleted)
 useEventListener(graphHostRef, 'nodeclicked', onNodeClicked)
-// `labelclicked` is not used, because clicking a label also triggers the click event that updates `updateSelection`.
+useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
 </script>
 
 <template>
