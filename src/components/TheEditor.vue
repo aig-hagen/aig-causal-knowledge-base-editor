@@ -203,7 +203,6 @@ function onNodeCreated(event: Event) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const createdNode = (event as any).detail.node
   const graphInstance = graphInstanceRef.value
-  // graphInstance.setNodeSize()
   // When the event is handled, the HTML is not yet rendered.
   void nextTick(() => {
     graphInstance.setLabelEditable(false, createdNode.id)
