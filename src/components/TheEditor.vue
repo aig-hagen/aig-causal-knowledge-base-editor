@@ -527,6 +527,7 @@ function updateSelection(clickTarget: HTMLElement) {
     selectAtom(null)
   }
 }
+
 function toogleAsumption(toogledValue: boolean) {
   const selectedAtom = selectedAtomRef.value
   if (selectedAtom === undefined) return
@@ -660,7 +661,11 @@ useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
         </div>
       </div>
     </div>
-    <div v-if="selectedAtomRef !== undefined" class="menu menu-right box m-5">
+    <div
+      v-if="selectedAtomRef !== undefined"
+      class="menu menu-right box m-5"
+      @keydown.esc="selectAtom(null)"
+    >
       <div class="title is-5"><h1>Atom properties</h1></div>
 
       <div class="field">
@@ -766,7 +771,11 @@ useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
         </div>
       </div>
     </div>
-    <div v-if="selectedConnectionRef !== undefined" class="menu menu-right box m-5">
+    <div
+      v-if="selectedConnectionRef !== undefined"
+      class="menu menu-right box m-5"
+      @keydown.esc="selectConnection(null)"
+    >
       <div class="title is-5"><h1>Connection properties</h1></div>
       <div class="field">
         <label class="label">Connection type</label>
