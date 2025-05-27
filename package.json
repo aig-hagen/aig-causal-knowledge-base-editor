@@ -47,7 +47,7 @@
     "jiti": "2.4.2",
     "jsdom": "26.1.0",
     "json-schema-to-typescript": "15.0.4",
-    "msw": "2.8.4",
+    "msw": "2.8.5",
     "npm-run-all2": "8.0.4",
     "prettier": "3.5.3",
     "typescript": "5.8.3",
