@@ -2,6 +2,7 @@
 import {
   ConjunctionIsNotTargetedError,
   CycleError,
+  EmptyKnowlegeBaseError,
   NonEvaluableKnowledgebaseError,
 } from '@/composables/useEvaluationRequestPayload'
 import type { Atom, Id } from '@/model/graphicalCausalKnowledgeBase'
@@ -36,6 +37,8 @@ const cycle = computed(() => {
     return null
   }
 })
+
+const isEmptyKnowlegeBase = computed(() => props.blocker instanceof EmptyKnowlegeBaseError)
 </script>
 
 Evaluation is therefore not possible.
@@ -64,6 +67,7 @@ Evaluation is therefore not possible.
           </ul>
         </template>
       </template>
+      <template v-if="isEmptyKnowlegeBase">The knowledge base has no atoms.</template>
     </p>
     <p>Evaluation is therefore not possible.</p>
   </div>

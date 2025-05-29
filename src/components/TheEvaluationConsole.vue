@@ -174,23 +174,27 @@ const {
           />
         </div>
       </div>
-      <div class="field is-grouped">
-        <div class="field has-addons">
+      <div class="field is-grouped is-gapless">
+        <div class="field has-addons is-flex-grow-1">
           <div class="control">
             <button :disabled="evaluate === null" type="submit" class="button is-primary">
               Evaluate
             </button>
           </div>
-          <div class="control">
-            <span class="select">
-              <select v-model="selectedAtomToShowConclusionFor">
+          <div class="control is-flex-grow-1">
+            <div class="select is-fullwidth">
+              <select
+                class="is-fullwidt"
+                v-model="selectedAtomToShowConclusionFor"
+                :disabled="evaluate === null"
+              >
                 <option :value="nonSelected">all</option>
                 <hr />
                 <option v-for="atom in atoms" :key="atom.id" :value="atom.id">
                   {{ getDisplayName(atom, false) }}
                 </option>
               </select>
-            </span>
+            </div>
           </div>
         </div>
         <div class="control">

@@ -50,6 +50,13 @@ export class CycleError extends NonEvaluableKnowledgebaseError {
   }
 }
 
+export class EmptyKnowlegeBaseError extends NonEvaluableKnowledgebaseError {
+  constructor() {
+    super('The knowledge base is empty')
+    this.name = 'EmptyKnowlegeBaseError'
+  }
+}
+
 export interface EvaluationRequestPayload {
   cmd: string
   kb: string
@@ -113,6 +120,9 @@ function constructEquations(
   conjunctions: Set<number>,
   connections: Connection[],
 ): { equations: string[]; atomsUsedInRightSide: Set<number> } {
+  if (atoms.size === 0) {
+    throw new EmptyKnowlegeBaseError()
+  }
   const atomsUsedInRightSide = new Set<number>()
   const perTargetIdConncections = new Map<number, Connection[]>()
   for (const connection of connections) {

@@ -2,6 +2,7 @@ import { expect, test } from 'vitest'
 import {
   ConjunctionIsNotTargetedError,
   CycleError,
+  EmptyKnowlegeBaseError,
   NonEvaluableKnowledgebaseError,
   useEvaluationRequestPayload,
   type Literal,
@@ -339,6 +340,7 @@ test('construct ignoring unused background atoms', () => {
 })
 
 test('constructs observations', () => {
+  const atoms = new Set([1])
   const observations: Literal[] = [
     {
       atomId: 1,
@@ -350,7 +352,14 @@ test('constructs observations', () => {
     },
   ]
 
-  const payload = constructPayloadSuccessfully({ observations })
+  const payload = constructPayloadSuccessfully({ atoms, observations })
 
   expect(payload.observations).toEqual('1, !2')
+})
+
+test('fail to construct with no atoms', () => {
+  const atoms = new Set<number>()
+  const payload = constructPayload({ atoms })
+
+  expect(payload).toEqual(new EmptyKnowlegeBaseError())
 })
