@@ -1,0 +1,148 @@
+{
+  "apiVersion": "graphical/v1",
+  "atoms": [
+    {
+      "id": 0,
+      "name": "at-risk",
+      "description": "",
+      "assumption": 3,
+      "position": {
+        "x": 291.30987548828125,
+        "y": 300.3379821777344
+      }
+    },
+    {
+      "id": 1,
+      "name": "corona",
+      "description": "",
+      "assumption": 3,
+      "position": {
+        "x": 500.52921641062585,
+        "y": 298.66344174695286
+      }
+    },
+    {
+      "id": 2,
+      "name": "influenza",
+      "description": "",
+      "assumption": 3,
+      "position": {
+        "x": 706.01953590972,
+        "y": 298.82610967491394
+      }
+    },
+    {
+      "id": 3,
+      "name": "short-of-breath",
+      "description": "",
+      "position": {
+        "x": 295.8028259277344,
+        "y": 731.6761779785156
+      }
+    },
+    {
+      "id": 4,
+      "name": "covid",
+      "description": "",
+      "position": {
+        "x": 497.4224853515625,
+        "y": 485.3943786621094
+      }
+    },
+    {
+      "id": 5,
+      "name": "flu",
+      "description": "",
+      "position": {
+        "x": 702.0985717773438,
+        "y": 480.0986022949219
+      }
+    },
+    {
+      "id": 6,
+      "name": "fever",
+      "description": "",
+      "position": {
+        "x": 597.6901245117188,
+        "y": 587.1126708984375
+      }
+    },
+    {
+      "id": 8,
+      "name": "chills",
+      "description": "",
+      "position": {
+        "x": 595.887451171875,
+        "y": 732.6762084960938
+      }
+    }
+  ],
+  "operators": [
+    {
+      "id": 9,
+      "type": "conjunction",
+      "position": {
+        "x": 297.07029724121094,
+        "y": 586.5634460449219
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": {
+        "sourceId": 4,
+        "targetId": 6
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 5,
+        "targetId": 6
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 2,
+        "targetId": 5
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 1,
+        "targetId": 4
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 6,
+        "targetId": 8
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 0,
+        "targetId": 9
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 9,
+        "targetId": 3
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 4,
+        "targetId": 9
+      },
+      "negated": false
+    }
+  ]
+}

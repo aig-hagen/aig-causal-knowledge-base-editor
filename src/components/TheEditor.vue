@@ -5,6 +5,8 @@ import { useNotifications } from '@/stores/notifications'
 import { useDebounceFn, useEventListener, useMutationObserver } from '@vueuse/core'
 import saveAs from 'file-saver'
 import { computed, nextTick, ref, useTemplateRef, watchEffect } from 'vue'
+import exampleDrowning from '@/assets/examples/drowning.json'
+import exampleDiagnosis from '@/assets/examples/diagnosis.json'
 
 import { useId } from 'vue'
 import ControlsExplanation from './ControlsExplanation.vue'
@@ -424,18 +426,45 @@ function loadTextData(file: File): Promise<string> {
   })
 }
 
-async function loadKnowledgeBase(inputEvent: Event) {
+async function loadKnowledgeBaseFromFileInput(inputEvent: Event) {
   const input = inputEvent.target as HTMLInputElement
   const files = input.files ?? []
   if (files.length === 0) return
 
-  clearNotifications()
-  try {
-    loadingData.value = true
+  async function loadFileData() {
     if (files.length !== 1) throw new Error('Only one file can be loaded at a time.')
     const file = files[0]
     const text = await loadTextData(file)
-    const errors = knowledgeBase.importKnowledgeBase(file.name, text)
+    return { fileName: file.name, fileText: text }
+  }
+
+  await loadKnowledgeBase(loadFileData)
+}
+
+async function loadExampleDrowning() {
+  function loadFileData() {
+    return Promise.resolve({ fileName: 'drowning.json', fileText: JSON.stringify(exampleDrowning) })
+  }
+
+  await loadKnowledgeBase(loadFileData)
+}
+
+async function loadExampleDiagnosis() {
+  function loadFileData() {
+    return Promise.resolve({ fileName: 'diagnosis.json', fileText: JSON.stringify(exampleDiagnosis) })
+  }
+
+  await loadKnowledgeBase(loadFileData)
+}
+
+async function loadKnowledgeBase(
+  loadFileData: () => Promise<{ fileName: string; fileText: string }>,
+) {
+  clearNotifications()
+  try {
+    loadingData.value = true
+    const { fileName, fileText } = await loadFileData()
+    const errors = knowledgeBase.importKnowledgeBase(fileName, fileText)
 
     if (errors.length > 0) {
       errors.forEach((error) => {
@@ -593,12 +622,17 @@ useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
             type="file"
             v-show="false"
             accept="application/json"
-            @change="loadKnowledgeBase($event)"
+            @change="loadKnowledgeBaseFromFileInput($event)"
           />
           <label class="button" :for="uploadElementId">Load</label>
           <button v-if="false" class="button" @click="toogleTextEditor">
             {{ showTextEditor ? 'Hide' : 'Show' }} preview
           </button>
+        </div>
+
+        <div class="buttons has-addons">
+          <button class="button" @click="loadExampleDiagnosis">Open example 1</button>
+          <button class="button" @click="loadExampleDrowning">Open example 2</button>
         </div>
 
         <div class="buttons has-addons">

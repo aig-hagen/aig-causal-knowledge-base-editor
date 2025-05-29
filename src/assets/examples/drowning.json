@@ -1,0 +1,139 @@
+{
+  "apiVersion": "graphical/v1",
+  "atoms": [
+    {
+      "id": 0,
+      "name": "giant-wave",
+      "description": "",
+      "assumption": 3,
+      "position": {
+        "x": 299,
+        "y": 330
+      }
+    },
+    {
+      "id": 1,
+      "name": "strong-current",
+      "description": "",
+      "assumption": 3,
+      "position": {
+        "x": 511.5150562543759,
+        "y": 331.621235936406
+      }
+    },
+    {
+      "id": 2,
+      "name": "jellyfish",
+      "description": "",
+      "assumption": 3,
+      "position": {
+        "x": 731.28711403472,
+        "y": 336.1782214913202
+      }
+    },
+    {
+      "id": 3,
+      "name": "broken-board",
+      "description": "",
+      "position": {
+        "x": 298,
+        "y": 479
+      }
+    },
+    {
+      "id": 4,
+      "name": "submersion",
+      "description": "",
+      "position": {
+        "x": 515,
+        "y": 481
+      }
+    },
+    {
+      "id": 5,
+      "name": "cramp",
+      "description": "",
+      "position": {
+        "x": 701,
+        "y": 479
+      }
+    },
+    {
+      "id": 6,
+      "name": "drowning",
+      "description": "",
+      "position": {
+        "x": 590,
+        "y": 597
+      }
+    }
+  ],
+  "operators": [
+    {
+      "id": 7,
+      "type": "conjunction",
+      "position": {
+        "x": 449,
+        "y": 411
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": {
+        "sourceId": 4,
+        "targetId": 6
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 5,
+        "targetId": 6
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 2,
+        "targetId": 5
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 1,
+        "targetId": 7
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 0,
+        "targetId": 7
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 7,
+        "targetId": 4
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 0,
+        "targetId": 3
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 1,
+        "targetId": 5
+      },
+      "negated": false
+    }
+  ]
+}
