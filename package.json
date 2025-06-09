@@ -54,7 +54,7 @@
     "vite": "6.3.5",
     "vite-plugin-static-copy": "3.0.0",
     "vite-plugin-vue-devtools": "7.7.6",
-    "vitest": "3.2.2",
+    "vitest": "3.2.3",
     "vue-tsc": "2.2.10"
   },
   "devEngines": {
