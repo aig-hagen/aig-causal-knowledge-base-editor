@@ -106,8 +106,8 @@ importers:
         specifier: 6.3.5
         version: 6.3.5(@types/node@22.15.33)(jiti@2.4.2)
       vite-plugin-static-copy:
-        specifier: 3.0.2
-        version: 3.0.2(vite@6.3.5(@types/node@22.15.33)(jiti@2.4.2))
+        specifier: 3.1.0
+        version: 3.1.0(vite@6.3.5(@types/node@22.15.33)(jiti@2.4.2))
       vite-plugin-vue-devtools:
         specifier: 7.7.7
         version: 7.7.7(rollup@4.40.0)(vite@6.3.5(@types/node@22.15.33)(jiti@2.4.2))(vue@3.5.17(typescript@5.8.3))
@@ -2328,11 +2328,11 @@ packages:
       '@nuxt/kit':
         optional: true
 
-  vite-plugin-static-copy@3.0.2:
-    resolution: {integrity: sha512-/seLvhUg44s1oU9RhjTZZy/0NPbfNctozdysKcvPovxxXZdI5l19mGq6Ri3IaTf1Dy/qChS4BSR7ayxeu8o9aQ==}
+  vite-plugin-static-copy@3.1.0:
+    resolution: {integrity: sha512-ONFBaYoN1qIiCxMCfeHI96lqLza7ujx/QClIXp4kEULUbyH2qLgYoaL8JHhk3FWjSB4TpzoaN3iMCyCFldyXzw==}
     engines: {node: ^18.0.0 || >=20.0.0}
     peerDependencies:
-      vite: ^5.0.0 || ^6.0.0
+      vite: ^5.0.0 || ^6.0.0 || ^7.0.0
 
   vite-plugin-vue-devtools@7.7.7:
     resolution: {integrity: sha512-d0fIh3wRcgSlr4Vz7bAk4va1MkdqhQgj9ANE/rBhsAjOnRfTLs2ocjFMvSUOsv6SRRXU9G+VM7yMgqDb6yI4iQ==}
@@ -4759,7 +4759,7 @@ snapshots:
       - rollup
       - supports-color
 
-  vite-plugin-static-copy@3.0.2(vite@6.3.5(@types/node@22.15.33)(jiti@2.4.2)):
+  vite-plugin-static-copy@3.1.0(vite@6.3.5(@types/node@22.15.33)(jiti@2.4.2)):
     dependencies:
       chokidar: 3.6.0
       fs-extra: 11.3.0
