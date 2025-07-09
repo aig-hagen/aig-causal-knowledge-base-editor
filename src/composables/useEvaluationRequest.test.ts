@@ -6,7 +6,7 @@ import {
   type EvaluationRequestPayload,
 } from './useEvaluationRequestPayload'
 
-import { http, HttpResponse, type DefaultBodyType } from 'msw'
+import { type AsyncResponseResolverReturnType, http, HttpResponse, type DefaultBodyType } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach } from 'vitest'
 
@@ -25,7 +25,9 @@ async function useOkResponse(responseBody: Record<string, unknown>) {
   return useResponse(HttpResponse.json(responseBody))
 }
 
-async function useResponse<BodyType extends DefaultBodyType>(response: HttpResponse<BodyType>) {
+async function useResponse<BodyType extends DefaultBodyType>(
+  response: AsyncResponseResolverReturnType<BodyType>,
+) {
   server.use(http.all('*', () => response))
   const { evaluationResult, evaluationError, evaluate } = useEvaluationRequest(fakePayload())
   evaluate.value?.()
