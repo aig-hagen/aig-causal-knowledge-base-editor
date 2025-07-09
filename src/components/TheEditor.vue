@@ -451,7 +451,10 @@ async function loadExampleDrowning() {
 
 async function loadExampleDiagnosis() {
   function loadFileData() {
-    return Promise.resolve({ fileName: 'diagnosis.json', fileText: JSON.stringify(exampleDiagnosis) })
+    return Promise.resolve({
+      fileName: 'diagnosis.json',
+      fileText: JSON.stringify(exampleDiagnosis),
+    })
   }
 
   await loadKnowledgeBase(loadFileData)
