@@ -160,6 +160,10 @@ const { stop } = useMutationObserver(
       width: ATOM_WIDTH_IN_PX,
       height: ATOM_HEIGHT_IN_PX,
       cornerRadius: 4,
+      // Just choose left because, it looked ok.
+      // There is not much consideration behind it.
+      // Usually knowledge bases will not contain self-loops.
+      reflexiveEdgeStart: 'LEFT'
     })
     const graphHost = graphComponentElement.getElementsByClassName(
       'graph-controller__graph-host',
