@@ -1,4 +1,4 @@
-FROM nginx:stable-alpine@sha256:d83c0138ea82c9f05c4378a5001e0c71256b647603c10c186bd7697a4db722d3
+FROM nginx:stable-alpine@sha256:ffa1b2237b1626cc23eb89e35d3944d514d28b2e568a2ce099c9d2e0871560bf
 COPY ./dist /usr/share/nginx/html
 EXPOSE 80
 ENTRYPOINT [ "/bin/sh", "-c"]
