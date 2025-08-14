@@ -1,6 +1,6 @@
 import { beforeAll, expect, it, vi } from 'vitest'
 import { nextTick, ref } from 'vue'
-import { useEvaluationRequest } from './useEvaluationRequest'
+import { handleConclusionsReply, useEvaluationRequest } from './useEvaluationRequest'
 import {
   ConjunctionIsNotTargetedError,
   type EvaluationRequestPayload,
@@ -29,7 +29,10 @@ async function useResponse<BodyType extends DefaultBodyType>(
   response: AsyncResponseResolverReturnType<BodyType>,
 ) {
   server.use(http.all('*', () => response))
-  const { evaluationResult, evaluationError, evaluate } = useEvaluationRequest(fakePayload())
+  const { evaluationResult, evaluationError, evaluate } = useEvaluationRequest(
+    fakePayload(),
+    handleConclusionsReply,
+  )
   evaluate.value?.()
   await vi.waitUntil(() => evaluationError.value !== null || evaluationResult.value != null)
   return { result: evaluationResult.value, error: evaluationError.value }
@@ -42,21 +45,27 @@ function fakePayload(): EvaluationRequestPayload {
 it('should disable request for invalid payload', () => {
   const error = new ConjunctionIsNotTargetedError({ sourceId: 1, targetId: 1 })
 
-  const { evaluationBlocker, evaluate } = useEvaluationRequest(error)
+  const { evaluationBlocker, evaluate } = useEvaluationRequest(error, handleConclusionsReply)
 
   expect(evaluate.value).toBeNull()
   expect(evaluationBlocker.value).toEqual(error)
 })
 
 it('should enable request for valid payload', () => {
-  const { evaluationBlocker, evaluate } = useEvaluationRequest(fakePayload())
+  const { evaluationBlocker, evaluate } = useEvaluationRequest(
+    fakePayload(),
+    handleConclusionsReply,
+  )
 
   expect(evaluate.value).not.toBeNull()
   expect(evaluationBlocker.value).toBeNull()
 })
 
 it('should not evaluate immediatly', () => {
-  const { isEvaluating, abortEvaluation } = useEvaluationRequest(fakePayload())
+  const { isEvaluating, abortEvaluation } = useEvaluationRequest(
+    fakePayload(),
+    handleConclusionsReply,
+  )
 
   expect(abortEvaluation.value).toBeNull()
   expect(isEvaluating.value).toBeFalsy()
@@ -72,7 +81,7 @@ it('should abort evaluation', async () => {
     }),
   )
   const { evaluate, isEvaluating, evaluationError, evaluationResult, abortEvaluation } =
-    useEvaluationRequest(fakePayload())
+    useEvaluationRequest(fakePayload(), handleConclusionsReply)
 
   evaluate.value?.()
   await nextTick()
@@ -104,7 +113,7 @@ it('changing payload should reset result', async () => {
     }),
   )
   const { evaluate, isEvaluating, evaluationError, evaluationResult, abortEvaluation } =
-    useEvaluationRequest(payload)
+    useEvaluationRequest(payload, handleConclusionsReply)
   evaluate.value?.()
   await vi.waitUntil(() => evaluationResult.value !== null)
 
@@ -129,7 +138,7 @@ it('changing payload to new payload should abort executeion', async () => {
     }),
   )
   const { evaluate, isEvaluating, evaluationError, evaluationResult, abortEvaluation } =
-    useEvaluationRequest(payload)
+    useEvaluationRequest(payload, handleConclusionsReply)
   evaluate.value?.()
   await vi.waitUntil(() => isEvaluating.value)
 

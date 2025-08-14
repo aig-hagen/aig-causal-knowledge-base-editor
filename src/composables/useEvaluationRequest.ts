@@ -34,7 +34,7 @@ export function useConclusionEvaluationRequest(
   return useEvaluationRequest(payload, handleConclusionsReply)
 }
 
-function handleConclusionsReply(reply: string) {
+export function handleConclusionsReply(reply: string) {
   if (!/^\[\]|\[(!?\d+)(,\s*(!?\d+))*\]$/.test(reply)) {
     console.error(`Could not parse reply ${reply}.`)
     return {
