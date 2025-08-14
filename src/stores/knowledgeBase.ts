@@ -7,8 +7,8 @@ import type {
   ConnectionId,
   GraphicalCausalKnowledgeBase,
 } from '@/model/graphicalCausalKnowledgeBase'
-import Ajv from 'ajv'
 import schema from '@/assets/graphical-causal-knowledge-base-v1.schema.json'
+import { ajv } from '@/ajvInstance'
 
 export abstract class ImportError {
   abstract message: string
@@ -46,7 +46,6 @@ export function getConnectionKey(connnectionId: ConnectionId): string {
   return `${connnectionId.sourceId.toString()}-${connnectionId.targetId.toString()}`
 }
 
-const ajv = new Ajv({ allErrors: true })
 const validate = ajv.compile<GraphicalCausalKnowledgeBase>(schema)
 
 export const useKnowledgeBase = defineStore('knowledgeBase', () => {

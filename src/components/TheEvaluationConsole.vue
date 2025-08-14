@@ -2,15 +2,19 @@
 import { getAssumptions, getDisplayName, useKnowledgeBase } from '@/stores/knowledgeBase'
 import { computed, ref, watchEffect } from 'vue'
 import Multiselect from '@vueform/multiselect'
-import EvaluationText from './EvaluationText.vue'
-import {
-  getLiteralString,
-  parseLiteralString,
-  useEvaluationRequestPayload,
-} from '@/composables/useEvaluationRequestPayload'
+import ConclusionsText from './ConclusionsText.vue'
+import { getLiteralString, parseLiteralString } from '@/composables/useEvaluationRequestPayload'
 import type { Atom, Id } from '@/model/graphicalCausalKnowledgeBase'
-import { useEvaluationRequest } from '@/composables/useEvaluationRequest'
+import {
+  useConclusionEvaluationRequest,
+  useExplanationEvaluationRequest,
+} from '@/composables/useEvaluationRequest'
 import EvaluationErrorText from './EvaluationBlockerText.vue'
+import ExplanationText from './ExplanationText.vue'
+
+const emit = defineEmits<{
+  'update:atomIdsToHighlight': [atomIdsToHighlight: Id[]]
+}>()
 
 const knowledgeBase = useKnowledgeBase()
 
@@ -90,14 +94,6 @@ const obserervationAtoms = computed(() =>
   selectedObservations.value.map((observation) => parseLiteralString(observation)),
 )
 
-const evaluationRequestPayload = useEvaluationRequestPayload(
-  computed(() => new Set(knowledgeBase.atoms.keys())),
-  computed(() => new Set(knowledgeBase.operators.keys())),
-  computed(() => [...knowledgeBase.connections.values()]),
-  obserervationAtoms,
-  assumptions,
-)
-
 const nonSelected = Symbol('nonSelected')
 const selectedAtomToShowConclusionFor = ref<Id | typeof nonSelected>(nonSelected)
 
@@ -121,118 +117,278 @@ const atomsToShowConclusionFor = computed(() => {
   }
 })
 
+const selectedAtomToShowExplanationFor = ref<Id | null>(null)
+
+watchEffect(() => {
+  const atomsToShowConclusionForValue = atomsToShowConclusionFor.value
+  if (atomsToShowConclusionForValue.length === 1) {
+    selectedAtomToShowExplanationFor.value = atomsToShowConclusionForValue[0]
+  }
+
+  const selectedAtom = selectedAtomToShowExplanationFor.value
+  if (selectedAtom == null) {
+    return
+  }
+  if (knowledgeBase.atoms.has(selectedAtom)) {
+    return
+  }
+  selectedAtomToShowExplanationFor.value = null
+})
+
+function getAtomIdsToHighlight() {
+  if (selectedAtomToShowExplanationFor.value === null) {
+    return []
+  }
+  if (explanationEvaluationResult.value === null) {
+    return []
+  }
+  const significantAtoms =
+    explanationEvaluationResult.value.get(selectedAtomToShowExplanationFor.value) ?? []
+
+  if (
+    significantAtoms.length === 1 &&
+    significantAtoms[0] == selectedAtomToShowExplanationFor.value
+  ) {
+    return []
+  }
+
+  return significantAtoms
+}
+
+watchEffect(() => {
+  console.log('Emmiting', getAtomIdsToHighlight())
+  emit('update:atomIdsToHighlight', getAtomIdsToHighlight())
+})
+
 const {
-  evaluationBlocker,
-  evaluate,
-  abortEvaluation,
-  isEvaluating,
-  evaluationError,
-  evaluationResult,
-} = useEvaluationRequest(evaluationRequestPayload)
+  evaluationBlocker: conclusionsEvaluationBlocker,
+  evaluate: evaluateConclusions,
+  abortEvaluation: abortConclusionsEvaluation,
+  isEvaluating: isEvaluatingConclusions,
+  evaluationError: conclusionsEvaluationError,
+  evaluationResult: conclusionsEvaluationResult,
+} = useConclusionEvaluationRequest(
+  computed(() => new Set(knowledgeBase.atoms.keys())),
+  computed(() => new Set(knowledgeBase.operators.keys())),
+  computed(() => [...knowledgeBase.connections.values()]),
+  obserervationAtoms,
+  assumptions,
+)
+
+const {
+  evaluate: evaluateExplanations,
+  abortEvaluation: abortExplanationEvaluation,
+  isEvaluating: isEvaluatingExplanation,
+  evaluationError: explanationEvaluationError,
+  evaluationResult: explanationEvaluationResult,
+} = useExplanationEvaluationRequest(
+  computed(() => new Set(knowledgeBase.atoms.keys())),
+  computed(() => new Set(knowledgeBase.operators.keys())),
+  computed(() => [...knowledgeBase.connections.values()]),
+  obserervationAtoms,
+  assumptions,
+)
 </script>
 
 <template>
   <div class="evaluation-console p-5">
-    <form
-      @submit.prevent="
-        () => {
-          if (evaluate !== null) evaluate()
-        }
-      "
-    >
-      <div class="field">
-        <label class="label">Assumptions</label>
-        <div class="control">
-          <!-- Setting `:allow-absent="true"` is workaround for the fact that `sources` is only updated after `assumptions` is updated.
+    <div class="columns">
+      <div class="column is-full">
+        <form>
+          <div class="field">
+            <label class="label">Assumptions</label>
+            <div class="control">
+              <!-- Setting `:allow-absent="true"` is workaround for the fact that `sources` is only updated after `assumptions` is updated.
            This leads to some values from `assumptions` not beeing shown in the multiselect.
            See https://github.com/vueform/multiselect/issues/446 -->
-          <Multiselect
-            :options="assumptionOptions"
-            v-model="assumptionLiteralStrings"
-            mode="tags"
-            :searchable="true"
-            :close-on-select="false"
-            label="label"
-            track-by="label"
-            :allow-absent="true"
-            :disabled="true"
-          />
-        </div>
-      </div>
-      <div class="field">
-        <label class="label">Observations</label>
-        <div class="control">
-          <Multiselect
-            :value="selectedObservations"
-            :options="observationOptions"
-            mode="tags"
-            :searchable="true"
-            :close-on-select="false"
-            label="label"
-            track-by="label"
-            @input="setObservations($event)"
-          />
-        </div>
-      </div>
-      <div class="field is-grouped is-gapless">
-        <div class="field has-addons is-flex-grow-1">
-          <div class="control">
-            <button :disabled="evaluate === null" type="submit" class="button is-primary">
-              Evaluate
-            </button>
-          </div>
-          <div class="control is-flex-grow-1">
-            <div class="select is-fullwidth">
-              <select
-                class="is-fullwidt"
-                v-model="selectedAtomToShowConclusionFor"
-                :disabled="evaluate === null"
-              >
-                <option :value="nonSelected">all</option>
-                <hr />
-                <option v-for="atom in atoms" :key="atom.id" :value="atom.id">
-                  {{ getDisplayName(atom, false) }}
-                </option>
-              </select>
+              <Multiselect
+                :options="assumptionOptions"
+                v-model="assumptionLiteralStrings"
+                mode="tags"
+                :searchable="true"
+                :close-on-select="false"
+                label="label"
+                track-by="label"
+                :allow-absent="true"
+                :disabled="true"
+              />
             </div>
           </div>
-        </div>
-        <div class="control">
-          <button
-            v-if="abortEvaluation !== null"
-            type="button"
-            class="button"
-            @click="abortEvaluation()"
-          >
-            Abort
-          </button>
-        </div>
+          <div class="field">
+            <label class="label">Observations</label>
+            <div class="control">
+              <Multiselect
+                :value="selectedObservations"
+                :options="observationOptions"
+                mode="tags"
+                :searchable="true"
+                :close-on-select="false"
+                label="label"
+                track-by="label"
+                @input="setObservations($event)"
+              />
+            </div>
+          </div>
+        </form>
       </div>
-    </form>
+    </div>
     <hr />
-    <article v-if="isEvaluating" class="message">
-      <div class="message-body is-size-6">Evaluating...</div>
-    </article>
-    <article v-if="evaluationBlocker !== null" class="message is-warning">
-      <div class="message-body is-size-6">
-        <EvaluationErrorText :atoms="knowledgeBase.atoms" :blocker="evaluationBlocker" />
+    <div class="columns">
+      <div class="column is-full">
+        <form
+          @submit.prevent="
+            () => {
+              if (evaluateConclusions !== null) evaluateConclusions()
+            }
+          "
+        >
+          <div class="field is-grouped is-gapless">
+            <div class="field has-addons is-flex-grow-1">
+              <div class="control">
+                <button
+                  :disabled="evaluateConclusions === null"
+                  type="submit"
+                  class="button is-primary"
+                >
+                  Evaluate
+                </button>
+              </div>
+              <div class="control is-flex-grow-1">
+                <div class="select is-fullwidth">
+                  <select
+                    class="is-fullwidt"
+                    v-model="selectedAtomToShowConclusionFor"
+                    :disabled="evaluateConclusions === null"
+                  >
+                    <option :value="nonSelected">all</option>
+                    <hr />
+                    <option v-for="atom in atoms" :key="atom.id" :value="atom.id">
+                      {{ getDisplayName(atom, false) }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+              <div class="control">
+                <button
+                  v-if="abortConclusionsEvaluation !== null"
+                  type="button"
+                  class="button"
+                  @click="abortConclusionsEvaluation()"
+                >
+                  Abort
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
       </div>
-    </article>
-    <article v-if="evaluationError !== null" class="message is-danger">
-      <div class="message-body is-size-6">
-        {{ evaluationError }}
+    </div>
+    <div class="columns">
+      <div class="column is-full">
+        <article v-if="isEvaluatingConclusions" class="message">
+          <div class="message-body is-size-6">Evaluating...</div>
+        </article>
+        <article v-if="conclusionsEvaluationBlocker !== null" class="message is-warning">
+          <div class="message-body is-size-6">
+            <EvaluationErrorText
+              :atoms="knowledgeBase.atoms"
+              :blocker="conclusionsEvaluationBlocker"
+            />
+          </div>
+        </article>
+        <article v-if="conclusionsEvaluationError !== null" class="message is-danger">
+          <div class="message-body is-size-6">
+            {{ conclusionsEvaluationError }}
+          </div>
+        </article>
+        <article v-if="conclusionsEvaluationResult !== null" class="message is-primary">
+          <div class="message-body is-size-6">
+            <ConclusionsText
+              :atoms="knowledgeBase.atoms"
+              :observations="obserervationAtoms"
+              :conclusions="conclusionsEvaluationResult"
+              :requesed-atoms-for-conclusion="atomsToShowConclusionFor"
+            />
+          </div>
+        </article>
       </div>
-    </article>
-    <article v-if="evaluationResult !== null" class="message is-primary">
-      <div class="message-body is-size-6">
-        <EvaluationText
-          :atoms="knowledgeBase.atoms"
-          :observations="obserervationAtoms"
-          :conclusions="evaluationResult"
-          :requesed-atoms-for-conclusion="atomsToShowConclusionFor"
-        />
+    </div>
+    <div v-if="conclusionsEvaluationResult !== null">
+      <hr />
+      <div class="columns">
+        <div class="column is-full">
+          <form
+            @submit.prevent="
+              () => {
+                if (evaluateExplanations !== null) evaluateExplanations()
+              }
+            "
+          >
+            <div class="field is-grouped is-gapless">
+              <div class="field has-addons is-flex-grow-1">
+                <div class="control">
+                  <button
+                    :disabled="
+                      evaluateExplanations === null || selectedAtomToShowExplanationFor === null
+                    "
+                    type="submit"
+                    class="button is-primary"
+                  >
+                    Explain
+                  </button>
+                </div>
+                <div class="control is-flex-grow-1">
+                  <div class="select is-fullwidth">
+                    <select
+                      class="is-fullwidt"
+                      v-model="selectedAtomToShowExplanationFor"
+                      :disabled="
+                        evaluateExplanations === null || atomsToShowConclusionFor.length === 1
+                      "
+                    >
+                      <option v-for="atom in atoms" :key="atom.id" :value="atom.id">
+                        {{ getDisplayName(atom, false) }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+                <div class="control">
+                  <button
+                    v-if="abortExplanationEvaluation !== null"
+                    type="button"
+                    class="button"
+                    @click="abortExplanationEvaluation()"
+                  >
+                    Abort
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
-    </article>
+      <div class="columns" v-if="selectedAtomToShowExplanationFor !== null">
+        <div class="column is-full">
+          <article v-if="isEvaluatingExplanation" class="message">
+            <div class="message-body is-size-6">Computing explanation...</div>
+          </article>
+          <article v-if="explanationEvaluationError !== null" class="message is-danger">
+            <div class="message-body is-size-6">
+              {{ explanationEvaluationError }}
+            </div>
+          </article>
+          <article v-if="explanationEvaluationResult !== null" class="message is-primary">
+            <div class="message-body is-size-6">
+              <ExplanationText
+                :atoms="knowledgeBase.atoms"
+                :per-atom-id-significant-atom-ids="explanationEvaluationResult"
+                :requesed-atom-for-explanation="selectedAtomToShowExplanationFor"
+              />
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 <style src="@vueform/multiselect/themes/default.css"></style>

@@ -68,7 +68,7 @@
       }
     },
     {
-      "id": 8,
+      "id": 7,
       "name": "chills",
       "description": "",
       "position": {
@@ -79,7 +79,7 @@
   ],
   "operators": [
     {
-      "id": 9,
+      "id": 8,
       "type": "conjunction",
       "position": {
         "x": 297.07029724121094,
@@ -119,20 +119,20 @@
     {
       "id": {
         "sourceId": 6,
-        "targetId": 8
+        "targetId": 7
       },
       "negated": false
     },
     {
       "id": {
         "sourceId": 0,
-        "targetId": 9
+        "targetId": 8
       },
       "negated": false
     },
     {
       "id": {
-        "sourceId": 9,
+        "sourceId": 8,
         "targetId": 3
       },
       "negated": false
@@ -140,7 +140,7 @@
     {
       "id": {
         "sourceId": 4,
-        "targetId": 9
+        "targetId": 8
       },
       "negated": false
     }

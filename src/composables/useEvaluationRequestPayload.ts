@@ -1,6 +1,6 @@
 import { findCycle } from '@/model/cycles'
 import type { Connection, ConnectionId } from '@/model/graphicalCausalKnowledgeBase'
-import { computed, unref, type MaybeRef } from 'vue'
+import { computed, unref, type ComputedRef, type MaybeRef } from 'vue'
 
 export interface Atom {
   id: number
@@ -57,8 +57,10 @@ export class EmptyKnowlegeBaseError extends NonEvaluableKnowledgebaseError {
   }
 }
 
+type EvaluationRequestPayloadCmd = 'get_conclusions' | 'get_significant_atoms'
+
 export interface EvaluationRequestPayload {
-  cmd: string
+  cmd: EvaluationRequestPayloadCmd
   kb: string
   observations: string
   timeout: number
@@ -71,7 +73,8 @@ export function useEvaluationRequestPayload(
   connections: MaybeRef<Connection[]>,
   observations: MaybeRef<Literal[]>,
   assumptions: MaybeRef<Literal[]>,
-) {
+  cmd: EvaluationRequestPayloadCmd,
+): ComputedRef<NonEvaluableKnowledgebaseError | EvaluationRequestPayload> {
   return computed(() => {
     return constructEvaluationRequestPayload(
       unref(atoms),
@@ -79,6 +82,7 @@ export function useEvaluationRequestPayload(
       unref(connections),
       unref(observations),
       unref(assumptions),
+      unref(cmd),
     )
   })
 }
@@ -89,6 +93,7 @@ function constructEvaluationRequestPayload(
   connections: Connection[],
   observations: Literal[],
   assumptions: Literal[],
+  cmd: EvaluationRequestPayloadCmd,
 ): NonEvaluableKnowledgebaseError | EvaluationRequestPayload {
   const observationsPayload = observations.map(getLiteralString).join(', ')
   let equations
@@ -107,7 +112,7 @@ function constructEvaluationRequestPayload(
     .join(', ')
 
   return {
-    cmd: 'get_conclusions',
+    cmd: cmd,
     kb: [...equations, `{${assumptionsPayload}}`].join('\n'),
     observations: observationsPayload,
     timeout: 10,

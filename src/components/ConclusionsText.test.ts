@@ -1,7 +1,7 @@
 import { test, expect } from 'vitest'
 
 import { mount, VueWrapper } from '@vue/test-utils'
-import EvaluationText from './EvaluationText.vue'
+import ConclusionsText from './ConclusionsText.vue'
 import type { Atom, Id } from '@/model/graphicalCausalKnowledgeBase'
 import type { Literal } from '@/composables/useEvaluationRequestPayload'
 
@@ -34,7 +34,7 @@ test('renders no observations and no conclusion', () => {
   const conclusions: Literal[] = []
   const requesedAtomsForConclusion: Id[] = []
 
-  const wrapper = mount(EvaluationText, {
+  const wrapper = mount(ConclusionsText, {
     props: { atoms, observations, conclusions, requesedAtomsForConclusion },
   })
 
@@ -53,7 +53,7 @@ test('renders one observation', () => {
   const conclusions: Literal[] = []
   const requesedAtomsForConclusion: Id[] = []
 
-  const wrapper = mount(EvaluationText, {
+  const wrapper = mount(ConclusionsText, {
     props: { atoms, observations, conclusions, requesedAtomsForConclusion },
   })
 
@@ -73,7 +73,7 @@ test('renders negated observation', () => {
   const conclusions: Literal[] = []
   const requesedAtomsForConclusion: Id[] = []
 
-  const wrapper = mount(EvaluationText, {
+  const wrapper = mount(ConclusionsText, {
     props: { atoms, observations, conclusions, requesedAtomsForConclusion },
   })
 
@@ -101,7 +101,7 @@ test('renders multiple observation', () => {
   const conclusions: Literal[] = []
   const requesedAtomsForConclusion: Id[] = []
 
-  const wrapper = mount(EvaluationText, {
+  const wrapper = mount(ConclusionsText, {
     props: { atoms, observations, conclusions, requesedAtomsForConclusion },
   })
 
@@ -124,7 +124,7 @@ test('renders one conclusion', () => {
   ]
   const requesedAtomsForConclusion: Id[] = [1]
 
-  const wrapper = mount(EvaluationText, {
+  const wrapper = mount(ConclusionsText, {
     props: { atoms, observations, conclusions, requesedAtomsForConclusion },
   })
 
@@ -148,7 +148,7 @@ test('renders multiple conclusion', () => {
   ]
   const requesedAtomsForConclusion: Id[] = [1, 2]
 
-  const wrapper = mount(EvaluationText, {
+  const wrapper = mount(ConclusionsText, {
     props: { atoms, observations, conclusions, requesedAtomsForConclusion },
   })
 
@@ -173,7 +173,7 @@ test('renders message about no further conclusions', () => {
   ]
   const requesedAtomsForConclusion: Id[] = [1, 2]
 
-  const wrapper = mount(EvaluationText, {
+  const wrapper = mount(ConclusionsText, {
     props: { atoms, observations, conclusions, requesedAtomsForConclusion },
   })
 
@@ -187,7 +187,7 @@ test('renders message about missing one conclusion', () => {
   const conclusions: Literal[] = []
   const requesedAtomsForConclusion: Id[] = [1]
 
-  const wrapper = mount(EvaluationText, {
+  const wrapper = mount(ConclusionsText, {
     props: { atoms, observations, conclusions, requesedAtomsForConclusion },
   })
 

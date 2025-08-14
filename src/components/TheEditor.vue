@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Atom, ConnectionId } from '@/model/graphicalCausalKnowledgeBase'
+import type { Atom, ConnectionId, Id } from '@/model/graphicalCausalKnowledgeBase'
 import { getConnectionKey, useKnowledgeBase } from '@/stores/knowledgeBase'
 import { useNotifications } from '@/stores/notifications'
 import { useDebounceFn, useEventListener, useMutationObserver } from '@vueuse/core'
@@ -16,6 +16,7 @@ const uploadElementId = useId()
 const props = defineProps<{
   showTextEditor: boolean
   showEvaluationConsole: boolean
+  atomIdsToHighlight: Id[]
 }>()
 
 const emit = defineEmits<{
@@ -39,11 +40,14 @@ const loadingData = ref(false)
 
 const COLOR_HIGHLIGHT = 'LightBlue'
 
-const COLOR_BACKGROUND_ATOM = 'rgba(255, 239, 213, 1)' // PapayaWhip
-const COLOR_EXPLAINABLE_ATOM = 'rgba(255, 140, 0, 1)' // DarkOrange
+const COLOR_BACKGROUND_ATOM = 'hsl(37.14, 100%, 91.76%)' // PapayaWhip
+const COLOR_BACKGROUND_ATOM_GRAYED_OUT = 'hsl(37.14, 5%, 91.76%)'
+const COLOR_EXPLAINABLE_ATOM = 'hsl(32.94, 100%, 50%)' // DarkOrange
+const COLOR_EXPLAINABLE_ATOM_GRAYED_OUT = COLOR_BACKGROUND_ATOM_GRAYED_OUT
 const COLOR_BACKGROUND_ATOM_TRANSPARENT = 'rgba(255, 239, 213, 0.5)' // PapayaWhip
 const COLOR_EXPLAINABLE_ATOM_TRANSPARENT = 'rgba(255, 140, 0, 0.5)' // DarkOrange
 const COLOR_CONJUNCTION = 'LightGray'
+const COLOR_CONJUNCTION_GRAYED_OUT = COLOR_BACKGROUND_ATOM_GRAYED_OUT
 const LABEL_CONJUNCTION = '∧'
 const ATOM_WIDTH_IN_PX = 128
 const ATOM_HEIGHT_IN_PX = 32
@@ -53,8 +57,10 @@ const ATOM_HEIGHT_IN_PX = 32
 type NodeType = 'ATOM' | 'CONJUCTION'
 const selectedNodeType = ref<NodeType>('ATOM')
 
-const COLOR_REGULAR_LINKS = 'DarkBlue'
-const COLOR_NEGATED_LINKS = 'DarkRed'
+const COLOR_REGULAR_LINKS = 'HSL(240, 100%, 27%)' // DarkBlue
+const COLOR_REGULAR_LINKS_GRAYED_OUT = 'HSL(240, 25%, 27%)'
+const COLOR_NEGATED_LINKS = 'HSL(0, 100%, 27%)' // DarkRed
+const COLOR_NEGATED_LINKS_GRAYED_OUT = 'HSL(0, 25%, 27%)'
 
 type LinkType = 'REGULAR' | 'NEGATED'
 const selectedLinkType = ref<LinkType>('REGULAR')
@@ -107,17 +113,112 @@ watchEffect(() => {
   highlightSelectedNodes()
 })
 
+function isAtomGrayedOut(atomId: Id) {
+  if (props.atomIdsToHighlight.length === 0) {
+    return false
+  }
+  return !props.atomIdsToHighlight.includes(atomId)
+}
+
+function getBackgroundAtomColor(atomId: Id) {
+  if (isAtomGrayedOut(atomId)) {
+    return COLOR_BACKGROUND_ATOM_GRAYED_OUT
+  } else {
+    return COLOR_BACKGROUND_ATOM
+  }
+}
+
+function getExplainableAtomColor(atomId: Id) {
+  if (isAtomGrayedOut(atomId)) {
+    return COLOR_EXPLAINABLE_ATOM_GRAYED_OUT
+  } else {
+    return COLOR_EXPLAINABLE_ATOM
+  }
+}
+
+function isNodeDirectlyHighlighted(nodeId: number): boolean {
+  if (props.atomIdsToHighlight.length === 0) {
+    return true
+  }
+
+  return props.atomIdsToHighlight.includes(nodeId)
+}
+
+function isNodeHighlighted(nodeId: number) {
+  if (isNodeDirectlyHighlighted(nodeId)) {
+    return true
+  }
+
+  return someDescendentHighlighed(nodeId) && someAncestorHighlighted(nodeId)
+}
+
+function someAncestorHighlighted(nodeId: number): boolean {
+  const ancestors = [...knowledgeBase.connections.values()]
+    .filter((connection) => connection.id.targetId === nodeId)
+    .map((connection) => connection.id.sourceId)
+
+  return ancestors.some((ancestor) => {
+    if (knowledgeBase.atoms.has(ancestor)) {
+      return props.atomIdsToHighlight.includes(ancestor)
+    }
+    return someAncestorHighlighted(ancestor)
+  })
+}
+
+function someDescendentHighlighed(nodeId: number): boolean {
+  const descendents = [...knowledgeBase.connections.values()]
+    .filter((connection) => connection.id.sourceId === nodeId)
+    .map((connection) => connection.id.targetId)
+
+  return descendents.some((descendent) => {
+    if (knowledgeBase.atoms.has(descendent)) {
+      return props.atomIdsToHighlight.includes(descendent)
+    }
+    return someDescendentHighlighed(descendent)
+  })
+}
+
+function getConjunctionColor(nodeId: number) {
+  if (isNodeHighlighted(nodeId)) {
+    return COLOR_CONJUNCTION
+  } else {
+    return COLOR_CONJUNCTION_GRAYED_OUT
+  }
+}
+
 function updateAtomColor(atom: Atom) {
+  let color
   switch (atom.assumption) {
     case undefined:
-      graphInstanceRef.value.setColor(COLOR_EXPLAINABLE_ATOM, atom.id)
+      color = getExplainableAtomColor(atom.id)
       break
     default:
-      graphInstanceRef.value.setColor(COLOR_BACKGROUND_ATOM, atom.id)
-      break
+      color = getBackgroundAtomColor(atom.id)
   }
+  graphInstanceRef.value.setColor(color, atom.id)
   highlightSelectedNodes()
 }
+
+watchEffect(() => {
+  for (const atom of knowledgeBase.atoms.values()) {
+    updateAtomColor(atom)
+  }
+  for (const operator of knowledgeBase.operators.values()) {
+    const color = getConjunctionColor(operator.id)
+    graphInstanceRef.value.setColor(color, operator.id)
+  }
+
+  for (const connection of knowledgeBase.connections.values()) {
+    const color = getColorLink(connection.id, connection.negated)
+    graphInstanceRef.value.setColor(
+      color,
+      // Same as getConnectionKey, but only by chance.
+      // getConnectionKey might change in the future.
+      // But the ID of the link will only change if the graph library changes.
+      `${connection.id.sourceId.toString()}-${connection.id.targetId.toString()}`,
+    )
+  }
+})
 
 function highlightSelectedNodes() {
   const nodeIdsToHighlight = []
@@ -163,7 +264,7 @@ const { stop } = useMutationObserver(
       // Just choose left because, it looked ok.
       // There is not much consideration behind it.
       // Usually knowledge bases will not contain self-loops.
-      reflexiveEdgeStart: 'LEFT'
+      reflexiveEdgeStart: 'LEFT',
     })
     const graphHost = graphComponentElement.getElementsByClassName(
       'graph-controller__graph-host',
@@ -241,9 +342,10 @@ function onNodeCreated(event: Event) {
           y: createdNode.y,
         },
       })
+      const color = getConjunctionColor(createdNode.id)
       // When the event is handled, the HTML is not yet rendered.
       void nextTick(() => {
-        graphInstance.setColor(COLOR_CONJUNCTION, createdNode.id)
+        graphInstance.setColor(color, createdNode.id)
         setLabel(createdNode.id, LABEL_CONJUNCTION)
       })
       break
@@ -345,11 +447,32 @@ function onLinkCreated(event: Event) {
   // When the event is handled, the HTML is not yet rendered.
   void nextTick(() => {
     graphInstance.setLabelEditable(false, createdLink.id)
-    const color = negated ? COLOR_NEGATED_LINKS : COLOR_REGULAR_LINKS
+    const color = getColorLink(connectionId, negated)
     graphInstance.setColor(color, createdLink.id)
   })
 
   updatedExplainableAtoms()
+}
+
+function getColorLink(connectionId: ConnectionId, negated: boolean) {
+  const isHighlighted =
+    (isNodeHighlighted(connectionId.sourceId) || someAncestorHighlighted(connectionId.sourceId)) &&
+    (isNodeDirectlyHighlighted(connectionId.targetId) ||
+      someDescendentHighlighed(connectionId.targetId))
+
+  if (isHighlighted) {
+    if (negated) {
+      return COLOR_NEGATED_LINKS
+    } else {
+      return COLOR_REGULAR_LINKS
+    }
+  } else {
+    if (negated) {
+      return COLOR_NEGATED_LINKS_GRAYED_OUT
+    } else {
+      return COLOR_REGULAR_LINKS_GRAYED_OUT
+    }
+  }
 }
 
 function onLinkDeleted(event: Event) {
@@ -379,7 +502,7 @@ function updateLinkType(newValue: boolean) {
   const selectedConnection = selectedConnectionRef.value
   if (selectedConnection === undefined) return
   selectedConnection.negated = newValue
-  const color = newValue ? COLOR_NEGATED_LINKS : COLOR_REGULAR_LINKS
+  const color = getColorLink(selectedConnection.id, newValue)
   graphInstanceRef.value.setColor(
     color,
     // Same as getConnectionKey, but only by chance.
@@ -490,18 +613,21 @@ async function loadKnowledgeBase(
         label: atom.name,
         x: atom.position.x,
         y: atom.position.y,
-        color: atom.assumption === undefined ? COLOR_EXPLAINABLE_ATOM : COLOR_BACKGROUND_ATOM,
+        color:
+          atom.assumption === undefined
+            ? getExplainableAtomColor(atom.id)
+            : getBackgroundAtomColor(atom.id),
         labelEditable: false,
       }
     })
 
-    const nodesFromOperators = [...knowledgeBase.operators.values()].map((atom) => {
+    const nodesFromOperators = [...knowledgeBase.operators.values()].map((operator) => {
       return {
-        id: atom.id,
+        id: operator.id,
         label: LABEL_CONJUNCTION,
-        x: atom.position.x,
-        y: atom.position.y,
-        color: COLOR_CONJUNCTION,
+        x: operator.position.x,
+        y: operator.position.y,
+        color: getConjunctionColor(operator.id),
         labelEditable: false,
       }
     })
@@ -513,7 +639,7 @@ async function loadKnowledgeBase(
         sourceId: connection.id.sourceId,
         targetId: connection.id.targetId,
         labelEditable: false,
-        color: connection.negated ? COLOR_NEGATED_LINKS : COLOR_REGULAR_LINKS,
+        color: getColorLink(connection.id, connection.negated),
       }
     })
     const graphAsObject = { nodes, links }
