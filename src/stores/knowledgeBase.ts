@@ -7,7 +7,8 @@ import type {
   ConnectionId,
   GraphicalCausalKnowledgeBase,
 } from '@/model/graphicalCausalKnowledgeBase'
-import schema from '@/assets/graphical-causal-knowledge-base-v1.schema.json'
+import schema from '@/assets/graphical-causal-knowledge-base-v1.schema.json' assert { type: 'json' }
+
 import { ajv } from '@/ajvInstance'
 
 export abstract class ImportError {

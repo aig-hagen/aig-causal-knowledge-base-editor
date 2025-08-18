@@ -38,7 +38,7 @@ function constructPayload({
     connections ?? [],
     observations ?? [],
     assumptions ?? [],
-    'get_conclusions'
+    'get_conclusions',
   ).value
 }
 
