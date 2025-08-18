@@ -30,7 +30,7 @@ jobs:
         run: npm install-clean
 
       - name: Build
-        run: npm run build build
+        run: npm run build
 
       # The Docker setup follows
       # https://docs.github.com/en/actions/use-cases-and-examples/publishing-packages/publishing-docker-images#publishing-images-to-github-packages
