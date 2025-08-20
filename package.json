@@ -30,8 +30,8 @@
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
-    "@playwright/experimental-ct-vue": "1.54.2",
-    "@playwright/test": "1.54.2",
+    "@playwright/experimental-ct-vue": "1.55.0",
+    "@playwright/test": "1.55.0",
     "@tsconfig/node22": "22.0.2",
     "@types/file-saver": "2.0.7",
     "@types/jsdom": "21.1.7",
