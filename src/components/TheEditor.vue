@@ -2,7 +2,7 @@
 import type { Atom, ConnectionId, Id } from '@/model/graphicalCausalKnowledgeBase'
 import { getConnectionKey, useKnowledgeBase } from '@/stores/knowledgeBase'
 import { useNotifications } from '@/stores/notifications'
-import { useDebounceFn, useEventListener, useMutationObserver } from '@vueuse/core'
+import { useDebounceFn, useEventListener } from '@vueuse/core'
 import saveAs from 'file-saver'
 import { computed, nextTick, onMounted, ref, useTemplateRef, watchEffect } from 'vue'
 import exampleDrowning from '@/assets/examples/drowning.json'
@@ -246,38 +246,36 @@ function highlightSelectedNodes() {
 }
 
 onMounted(() => {
-    const graphComponentElement = graphComponentElementRef.value
-    if (graphComponentElement === null) {
-      throw new Error("Graph component element not available.")
-    }
+  const graphComponentElement = graphComponentElementRef.value
+  if (graphComponentElement === null) {
+    throw new Error('Graph component element not available.')
+  }
 
-    if (graphComponentElement.childNodes.length === 0) {
-      throw new Error("Graph component element empty.")
-    }
+  if (graphComponentElement.childNodes.length === 0) {
+    throw new Error('Graph component element empty.')
+  }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const graphInstance = (graphComponentElement as any)._instance.exposed
-    graphInstanceRef.value = graphInstance
-    graphInstance.toggleNodePhysics(false)
-    graphInstance.toggleZoom(true)
-    graphInstance.setNodeProps({
-      shape: 'rect',
-      width: ATOM_WIDTH_IN_PX,
-      height: ATOM_HEIGHT_IN_PX,
-      cornerRadius: 4,
-      // Just choose left because, it looked ok.
-      // There is not much consideration behind it.
-      // Usually knowledge bases will not contain self-loops.
-      reflexiveEdgeStart: 'LEFT',
-    })
-    const graphHost = graphComponentElement.getElementsByClassName(
-      'graph-controller__graph-host',
-    )[0]
-    graphHostRef.value = graphHost as HTMLElement
-    const nodeContainer = graphComponentElement.getElementsByClassName('nodes')[0]
-    nodeContainerRef.value = nodeContainer as SVGElement
-    const linkContainer = graphComponentElement.getElementsByClassName('links')[0]
-    linkContainerRef.value = linkContainer as SVGAElement
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const graphInstance = (graphComponentElement as any)._instance.exposed
+  graphInstanceRef.value = graphInstance
+  graphInstance.toggleNodePhysics(false)
+  graphInstance.toggleZoom(true)
+  graphInstance.setNodeProps({
+    shape: 'rect',
+    width: ATOM_WIDTH_IN_PX,
+    height: ATOM_HEIGHT_IN_PX,
+    cornerRadius: 4,
+    // Just choose left because, it looked ok.
+    // There is not much consideration behind it.
+    // Usually knowledge bases will not contain self-loops.
+    reflexiveEdgeStart: 'LEFT',
+  })
+  const graphHost = graphComponentElement.getElementsByClassName('graph-controller__graph-host')[0]
+  graphHostRef.value = graphHost as HTMLElement
+  const nodeContainer = graphComponentElement.getElementsByClassName('nodes')[0]
+  nodeContainerRef.value = nodeContainer as SVGElement
+  const linkContainer = graphComponentElement.getElementsByClassName('links')[0]
+  linkContainerRef.value = linkContainer as SVGAElement
 })
 
 function selectAtom(atomId: number | null) {
