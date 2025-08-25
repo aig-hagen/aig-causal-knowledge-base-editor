@@ -55,7 +55,7 @@ Evaluation is therefore not possible.
       <template v-if="cycle !== null">
         <template v-if="cycle.length == 2"
           >It exists a self-loop for
-          <span class="is-underlined">{{ getName(cycle[cycle.length - 0]!) }}</span
+          <span class="is-underlined">{{ getName(cycle[0]!) }}</span
           >.</template
         >
         <template v-else
