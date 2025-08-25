@@ -4,6 +4,21 @@ Graphical editor to create causal knowledge bases as described in [_Argumentatio
 
 Try out at: https://causal-knowledge-base-editor.aig.fernuni-hagen.de
 
+## Deployment
+
+The AIG Causal Knowledge Base Editor is published as a Docker image on GitHub Container Registry: ghcr.io/aig-hagen/aig-causal-knowledge-base-editor
+
+For example you can deploy it using Docker Compose. Below is a minimal example configuration:
+
+```yaml
+services:
+  aig-editor:
+    image: ghcr.io/aig-hagen/aig-causal-knowledge-base-editor:latest
+    ports:
+      - "8080:8080"           # Expose port 8080 on the host
+    restart: unless-stopped   # Automatically restart the container unless manually stopped
+```
+
 ## Recommended IDE Setup
 
 [VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
