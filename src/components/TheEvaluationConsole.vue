@@ -156,7 +156,6 @@ function getAtomIdsToHighlight() {
 }
 
 watchEffect(() => {
-  console.log('Emmiting', getAtomIdsToHighlight())
   emit('update:atomIdsToHighlight', getAtomIdsToHighlight())
 })
 

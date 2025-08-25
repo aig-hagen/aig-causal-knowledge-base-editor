@@ -4,7 +4,7 @@ import { getConnectionKey, useKnowledgeBase } from '@/stores/knowledgeBase'
 import { useNotifications } from '@/stores/notifications'
 import { useDebounceFn, useEventListener, useMutationObserver } from '@vueuse/core'
 import saveAs from 'file-saver'
-import { computed, nextTick, ref, useTemplateRef, watchEffect } from 'vue'
+import { computed, nextTick, onMounted, ref, useTemplateRef, watchEffect } from 'vue'
 import exampleDrowning from '@/assets/examples/drowning.json'
 import exampleDiagnosis from '@/assets/examples/diagnosis.json'
 
@@ -245,12 +245,15 @@ function highlightSelectedNodes() {
   }
 }
 
-const { stop } = useMutationObserver(
-  graphComponentElementRef,
-  () => {
+onMounted(() => {
     const graphComponentElement = graphComponentElementRef.value
-    if (graphComponentElement === null) return
-    if (graphComponentElement.childNodes.length === 0) return
+    if (graphComponentElement === null) {
+      throw new Error("Graph component element not available.")
+    }
+
+    if (graphComponentElement.childNodes.length === 0) {
+      throw new Error("Graph component element empty.")
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const graphInstance = (graphComponentElement as any)._instance.exposed
@@ -275,12 +278,7 @@ const { stop } = useMutationObserver(
     nodeContainerRef.value = nodeContainer as SVGElement
     const linkContainer = graphComponentElement.getElementsByClassName('links')[0]
     linkContainerRef.value = linkContainer as SVGAElement
-    stop()
-  },
-  {
-    childList: true,
-  },
-)
+})
 
 function selectAtom(atomId: number | null) {
   selectedAtomIdRef.value = atomId
