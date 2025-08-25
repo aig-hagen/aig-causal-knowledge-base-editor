@@ -32,6 +32,11 @@ jobs:
       - name: Build
         run: npm run build
 
+        # The URL is set to '' (empty string) because the frontend
+        # will be served by the backend server.
+      - name: Set backend URL
+        run: sed -i "s|\$TWEETY_API_URL||g" ./dist/index.html
+
       # The Docker setup follows
       # https://docs.github.com/en/actions/use-cases-and-examples/publishing-packages/publishing-docker-images#publishing-images-to-github-packages
       # Attestation is disabled because it is only available for public repositories.
