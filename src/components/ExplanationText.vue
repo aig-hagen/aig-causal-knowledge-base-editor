@@ -2,6 +2,7 @@
 import type { Atom, Id } from '@/model/graphicalCausalKnowledgeBase'
 import { getDisplayName } from '@/stores/knowledgeBase'
 import { computed } from 'vue'
+import { hasOneOrMoreEntries } from '@/util/types'
 
 const props = defineProps<{
   atoms: Map<number, Atom>
@@ -35,7 +36,7 @@ function getName(atomId: Id): string {
       <template v-if="significantAtomIds.length === 0">
         is independent of any other atoms.</template
       >
-      <template v-else-if="significantAtomIds.length === 1">
+      <template v-else-if="hasOneOrMoreEntries(significantAtomIds)">
         depends on <span class="is-underlined">{{ getName(significantAtomIds[0]) }}</span
         >.
       </template>
@@ -52,7 +53,7 @@ function getName(atomId: Id): string {
           <li>
             <span>
               <span class="is-underlined">{{
-                getName(significantAtomIds[significantAtomIds.length - 1])
+                getName(significantAtomIds[significantAtomIds.length - 1]!)
               }}</span
               >.</span
             >

@@ -122,7 +122,7 @@ const selectedAtomToShowExplanationFor = ref<Id | null>(null)
 watchEffect(() => {
   const atomsToShowConclusionForValue = atomsToShowConclusionFor.value
   if (atomsToShowConclusionForValue.length === 1) {
-    selectedAtomToShowExplanationFor.value = atomsToShowConclusionForValue[0]
+    selectedAtomToShowExplanationFor.value = atomsToShowConclusionForValue[0] ?? null
   }
 
   const selectedAtom = selectedAtomToShowExplanationFor.value

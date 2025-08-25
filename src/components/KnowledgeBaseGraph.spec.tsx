@@ -5,5 +5,5 @@ test('create node', async ({ mount, page }) => {
   const position = { x: 150, y: 150 }
   const component = await mount(<KnowledgeBaseGraph />)
   await component.dblclick({ position })
-  await expect(page).toHaveScreenshot();
+  await expect(page).toHaveScreenshot()
 })

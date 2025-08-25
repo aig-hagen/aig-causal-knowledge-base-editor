@@ -10,6 +10,7 @@ import type {
 import schema from '@/assets/graphical-causal-knowledge-base-v1.schema.json' assert { type: 'json' }
 
 import { ajv } from '@/ajvInstance'
+import { hasMoreThenOneEntry } from '@/util/types'
 
 export abstract class ImportError {
   abstract message: string
@@ -124,7 +125,7 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
     }
 
     for (const connections of byIdConnections.values()) {
-      if (connections.length > 1) {
+      if (hasMoreThenOneEntry(connections)) {
         const connectionId = connections[0].id
         const error = new InvalidDataError(
           `Multiple connections from the source ${atomIdToMessageString(connectionId.sourceId)} to the target ${atomIdToMessageString(connectionId.targetId)} exist.`,

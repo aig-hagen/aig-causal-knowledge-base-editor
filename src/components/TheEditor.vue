@@ -10,6 +10,7 @@ import exampleDiagnosis from '@/assets/examples/diagnosis.json'
 
 import { useId } from 'vue'
 import ControlsExplanation from './ControlsExplanation.vue'
+import { hasMoreThenOneEntry, hasOneValue } from '@/util/types'
 
 const uploadElementId = useId()
 
@@ -406,7 +407,7 @@ function nodeIdToMessageString(nodeId: number): string {
 
 function parseLinkIdToConnectionId(linkId: string): ConnectionId {
   const linkParts = linkId.split('-')
-  if (linkParts.length < 2) {
+  if (!hasMoreThenOneEntry(linkParts)) {
     throw new Error(`Link with ID \`${linkId}\` is not valid: Seperator \`-\` is not contained.`)
   }
   if (linkParts.length > 2) {
@@ -555,12 +556,12 @@ function loadTextData(file: File): Promise<string> {
 
 async function loadKnowledgeBaseFromFileInput(inputEvent: Event) {
   const input = inputEvent.target as HTMLInputElement
-  const files = input.files ?? []
+  const files = [...(input.files ?? [])]
   if (files.length === 0) return
+  if (!hasOneValue(files)) throw new Error('Only one file can be loaded at a time.')
+  const file = files[0]
 
   async function loadFileData() {
-    if (files.length !== 1) throw new Error('Only one file can be loaded at a time.')
-    const file = files[0]
     const text = await loadTextData(file)
     return { fileName: file.name, fileText: text }
   }
