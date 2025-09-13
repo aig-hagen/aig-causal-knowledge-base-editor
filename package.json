@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
-    "test:unit": "vitest",
+    "test:unit": "vitest --project unit",
+    "test:browser": "vitest --project browser",
     "test:e2e": "playwright test",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
@@ -15,8 +16,7 @@
     "lint:check": "eslint .",
     "lint:fix": "eslint . --fix",
     "format:check": "prettier --check src/",
-    "format:fix": "prettier --write src/",
-    "test:browser": "vitest --config=vitest.browser.config.ts"
+    "format:fix": "prettier --write src/"
   },
   "dependencies": {
     "@vueform/multiselect": "^2.6.11",
