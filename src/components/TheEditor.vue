@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Atom, ConnectionId, Id } from '@/model/graphicalCausalKnowledgeBase'
+import type { Atom, Conjunction, ConnectionId, Id } from '@/model/graphicalCausalKnowledgeBase'
 import { getConnectionKey, useKnowledgeBase } from '@/stores/knowledgeBase'
 import { useNotifications } from '@/stores/notifications'
 import { useDebounceFn, useEventListener } from '@vueuse/core'
@@ -641,11 +641,73 @@ async function loadKnowledgeBase(
     })
     const graphAsObject = { nodes, links }
     graphInstanceRef.value.setGraph(graphAsObject)
+
+    // HACK
+    // This is a solution to for having the IDs used by the graph component after importing.
+    // The proper solution would be to not directly importe to the `knowledgeBase` store,
+    // but to import to a temporary data structure,
+    // then create the nodes and links in the graph component,
+    // and after that add the data to the `knowledgeBase` store.
+    // In the long run the knowledgeBase store will be deprecated,
+    // and this will be revised then.
+    updateKnowledgebaseWithAssignedIds()
+
     addSuccessNotification('Knowledge base loaded successfully.')
   } catch (error) {
     addErrorNotification(String(error))
   } finally {
     loadingData.value = false
+  }
+
+  function updateKnowledgebaseWithAssignedIds() {
+    const originalAtoms = new Map(knowledgeBase.atoms)
+    knowledgeBase.atoms.clear()
+    knowledgeBase.operators.clear()
+    knowledgeBase.connections.clear()
+
+    const graph = graphInstanceRef.value.getGraph()
+
+    for (const link of graph.links) {
+      const connection = {
+        id: {
+          sourceId: link.sourceId,
+          targetId: link.targetId
+        },
+        negated: link.color === COLOR_NEGATED_LINKS || link.color == COLOR_NEGATED_LINKS_GRAYED_OUT
+      }
+      knowledgeBase.connections.set(getConnectionKey(connection.id), connection)
+    }
+
+    for (const node of graph.nodes) {
+      if (node.color === COLOR_CONJUNCTION || node.color === COLOR_CONJUNCTION_GRAYED_OUT) {
+        const operator: Conjunction = {
+          id: node.id,
+          type: 'conjunction',
+          position: {
+            x: node.x,
+            y: node.y
+          }
+        }
+        knowledgeBase.operators.set(operator.id, operator)
+      } else {
+        const idImported = node.idImported
+        const orignalAtom = originalAtoms.get(idImported)
+        if (orignalAtom === undefined) {
+          throw new Error(`Atom with ID ${String(idImported)} not found.`)
+        }
+        const atom: Atom = {
+          id: node.id,
+          name: orignalAtom.name,
+          description: orignalAtom.description,
+          assumption: orignalAtom.assumption,
+          position: {
+            x: orignalAtom.position.x,
+            y: orignalAtom.position.y
+          }
+        }
+        knowledgeBase.atoms.set(atom.id, atom)
+      }
+    }
   }
 }
 

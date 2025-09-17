@@ -7289,7 +7289,7 @@ class tl {
    * @returns The graph in JSON format*/
   toJSON(e = !0, n = !0, r = !0, i = !0, s = !0, o = !0, l = !0) {
     let u = this.nodes.map((a) => Object.fromEntries(
-      Object.entries(a).filter(([f]) => f === "id" || e && f === "label" || r && f === "color" || s && (f === "x" || f === "y") || o && [
+      Object.entries(a).filter(([f]) => f === "id" || f === "idImported" || e && f === "label" || r && f === "color" || s && (f === "x" || f === "y") || o && [
         "fixedPosition",
         "deletable",
         "labelEditable",
