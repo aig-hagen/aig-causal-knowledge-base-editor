@@ -96,7 +96,7 @@ it('should abort evaluation', async () => {
   await vi.waitUntil(() => !isEvaluating.value)
 
   expect(isEvaluating.value).toBeFalsy()
-  expect(evaluationError.value).toBe('Evaluation failed: The operation was aborted.')
+  expect(evaluationError.value).toBe('Evaluation failed: This operation was aborted')
   expect(evaluationResult.value).toBeNull()
   expect(abortEvaluation.value).toBeNull()
   expect(evaluate.value).not.toBeNull()
