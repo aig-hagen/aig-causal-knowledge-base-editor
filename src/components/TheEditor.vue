@@ -15,19 +15,13 @@ import { hasMoreThenOneEntry, hasOneValue } from '@/util/types'
 const uploadElementId = useId()
 
 const props = defineProps<{
-  showTextEditor: boolean
   showEvaluationConsole: boolean
   atomIdsToHighlight: Id[]
 }>()
 
 const emit = defineEmits<{
-  'update:showTextEditor': [showTextEditor: boolean]
   'update:showEvaluationConsole': [showEvaluationConsole: boolean]
 }>()
-
-function toogleTextEditor() {
-  emit('update:showTextEditor', !props.showTextEditor)
-}
 
 function toogleEvaluationConsole() {
   emit('update:showEvaluationConsole', !props.showEvaluationConsole)
@@ -817,9 +811,6 @@ useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
             @change="loadKnowledgeBaseFromFileInput($event)"
           />
           <label class="button" :for="uploadElementId">Load</label>
-          <button v-if="false" class="button" @click="toogleTextEditor">
-            {{ showTextEditor ? 'Hide' : 'Show' }} preview
-          </button>
         </div>
 
         <div class="buttons has-addons">
