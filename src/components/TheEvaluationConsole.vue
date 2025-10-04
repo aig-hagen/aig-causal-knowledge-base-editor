@@ -145,13 +145,6 @@ function getAtomIdsToHighlight() {
   const significantAtoms =
     explanationEvaluationResult.value.get(selectedAtomToShowExplanationFor.value) ?? []
 
-  if (
-    significantAtoms.length === 1 &&
-    significantAtoms[0] == selectedAtomToShowExplanationFor.value
-  ) {
-    return []
-  }
-
   return significantAtoms
 }
 
@@ -300,7 +293,7 @@ const {
             {{ conclusionsEvaluationError }}
           </div>
         </article>
-        <article v-if="conclusionsEvaluationResult !== null" class="message is-primary">
+        <article v-if="conclusionsEvaluationResult !== null" class="message is-dark">
           <div class="message-body is-size-6">
             <ConclusionsText
               :atoms="knowledgeBase.atoms"
@@ -376,7 +369,7 @@ const {
               {{ explanationEvaluationError }}
             </div>
           </article>
-          <article v-if="explanationEvaluationResult !== null" class="message is-primary">
+          <article v-if="explanationEvaluationResult !== null" class="message is-dark">
             <div class="message-body is-size-6">
               <ExplanationText
                 :atoms="knowledgeBase.atoms"
@@ -391,8 +384,4 @@ const {
   </div>
 </template>
 <style src="@vueform/multiselect/themes/default.css"></style>
-<style scoped>
-.evaluation-console {
-  border-left: 1px solid gray;
-}
-</style>
+<style scoped></style>

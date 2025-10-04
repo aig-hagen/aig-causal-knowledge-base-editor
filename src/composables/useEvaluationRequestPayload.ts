@@ -144,15 +144,17 @@ function constructEquations(
   if (cycle !== null) {
     throw new CycleError(cycle)
   }
-  function createrFormulaForSource(connection: Connection): string | null {
+  function createrFormulaForSource(connection: Connection): string[] {
     const sourceId = connection.id.sourceId
 
     if (atoms.has(sourceId)) {
       atomsUsedInRightSide.add(sourceId)
-      return getLiteralString({
-        atomId: sourceId,
-        negated: connection.negated,
-      })
+      return [
+        getLiteralString({
+          atomId: sourceId,
+          negated: connection.negated,
+        }),
+      ]
     }
 
     if (!conjunctions.has(sourceId)) {
@@ -160,16 +162,16 @@ function constructEquations(
     }
     const connectionsTargetingSource = perTargetIdConncections.get(sourceId)
     if (connectionsTargetingSource === undefined) {
-      throw new ConjunctionIsNotTargetedError(connection.id)
+      return []
     }
     const conjuncts = connectionsTargetingSource
       .map((connection) => createrFormulaForSource(connection))
       .join(' && ')
 
     if (connection.negated) {
-      return `!(${conjuncts})`
+      return [`!(${conjuncts})`]
     } else {
-      return `(${conjuncts})`
+      return [`(${conjuncts})`]
     }
   }
 
@@ -178,7 +180,13 @@ function constructEquations(
     if (!atoms.has(target)) {
       continue
     }
-    const disjuncts = connectionsToTarget.map((connection) => createrFormulaForSource(connection))
+    const disjuncts = connectionsToTarget.flatMap((connection) =>
+      createrFormulaForSource(connection),
+    )
+
+    if (disjuncts.length === 0) {
+      continue
+    }
 
     const lefthandSide = getLiteralString({
       atomId: target,

@@ -29,5 +29,6 @@ const notifications = useNotifications()
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  z-index: 1000;
 }
 </style>

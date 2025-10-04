@@ -3,7 +3,7 @@ import type { Atom, Id } from '@/model/graphicalCausalKnowledgeBase'
 import { type Literal } from '@/composables/useEvaluationRequestPayload'
 import { getDisplayName } from '@/stores/knowledgeBase'
 import { computed } from 'vue'
-import { hasOneValue } from '@/util/types'
+import { hasOneEntry } from '@/util/types'
 
 const props = defineProps<{
   atoms: Map<number, Atom>
@@ -42,7 +42,7 @@ function getName(atomId: Id, negated: boolean): string {
     <p>
       Given the assumptions and the causal model,
       <template v-if="observations.length === 0">from no observations </template>
-      <template v-else-if="hasOneValue(observations)"
+      <template v-else-if="hasOneEntry(observations)"
         >from the observation
         <span class="is-underlined">{{
           getName(observations[0].atomId, observations[0].negated)
@@ -72,14 +72,14 @@ function getName(atomId: Id, negated: boolean): string {
         ><span v-html="` `"></span>
       </template>
       <template v-if="conclusionsToShow.length === 0">
-        <template v-if="hasOneValue(requesedAtomsForConclusion)"
+        <template v-if="hasOneEntry(requesedAtomsForConclusion)"
           >follow no conclusions for
           <span class="is-underlined">{{ getName(requesedAtomsForConclusion[0], false) }}</span
           >.
         </template>
         <template v-else>follow no conclusions.</template>
       </template>
-      <template v-else-if="hasOneValue(conclusionsToShow)"
+      <template v-else-if="hasOneEntry(conclusionsToShow)"
         >follows
         <span class="is-underlined">{{
           getName(conclusionsToShow[0].atomId, conclusionsToShow[0].negated)

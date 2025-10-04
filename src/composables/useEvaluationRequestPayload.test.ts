@@ -158,7 +158,7 @@ test('constructs from chained conjunction', () => {
   expect(payload.kb).toEqual(expectedKb)
 })
 
-test('fail to construct when conjunction has no incoming nodes', () => {
+test('ignoring conjunction that have no incoming nodes', () => {
   const atoms = new Set([1])
   const conjunctions = new Set([2])
   const connections = [
@@ -171,9 +171,10 @@ test('fail to construct when conjunction has no incoming nodes', () => {
     },
   ]
 
-  const payload = constructPayload({ atoms, conjunctions, connections })
+  const payload = constructPayloadSuccessfully({ atoms, conjunctions, connections })
 
-  expect(payload).toEqual(new ConjunctionIsNotTargetedError({ sourceId: 2, targetId: 1 }))
+  const expectedKb = '{}'
+  expect(payload.kb).toEqual(expectedKb)
 })
 
 test('fail to construct when source ID does not exit', () => {

@@ -106,16 +106,18 @@ test('fail importing duplicate connections', () => {
     TEST_FILE_NAME,
     `{
       ${STATIC_SCHEMA_DATA}
-      "atoms": [],
-      "operators": [
+      "atoms": [
         {
           "id": 1,
-          "type": "conjunction",
+          "name": "",
+          "description": "",
           "position": {
             "x": 0,
             "y": 0
           }
-        },
+        }
+      ],
+      "operators": [
         {
           "id": 2,
           "type": "conjunction",
@@ -150,6 +152,102 @@ test('fail importing duplicate connections', () => {
     .soft(errors[0]?.message)
     .toBe(
       'The provided file `test.json` contains invalid data: Multiple connections from the source `1` to the target `2` exist.',
+    )
+})
+
+test('fail importing connection between two operators', () => {
+  const knowledgeBase = useKnowledgeBase()
+
+  const errors = knowledgeBase.importKnowledgeBase(
+    TEST_FILE_NAME,
+    `{
+      ${STATIC_SCHEMA_DATA}
+      "atoms": [],
+      "operators": [
+        {
+          "id": 1,
+          "type": "conjunction",
+          "position": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "id": 2,
+          "type": "conjunction",
+          "position": {
+            "x": 0,
+            "y": 0
+          }
+        }
+      ],
+      "connections": [
+        {
+          "id": {
+            "sourceId": 2,
+            "targetId": 1
+          },
+          "negated": false
+        }
+      ]
+    }`,
+  )
+
+  expect(errors).toHaveLength(1)
+  expect.soft(errors[0]).toBeInstanceOf(InvalidDataError)
+  expect
+    .soft(errors[0]?.message)
+    .toBe(
+      'The provided file `test.json` contains invalid data: Only connections between atoms and conjunctions are allowed, but the conjunction `2` connects to the conjunction `1`',
+    )
+})
+
+test('fail importing connection between two atoms', () => {
+  const knowledgeBase = useKnowledgeBase()
+
+  const errors = knowledgeBase.importKnowledgeBase(
+    TEST_FILE_NAME,
+    `{
+      ${STATIC_SCHEMA_DATA}
+      "atoms": [
+        {
+          "id": 1,
+          "name": "",
+          "description": "",
+          "position": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "id": 2,
+          "name": "",
+          "description": "",
+          "position": {
+            "x": 0,
+            "y": 0
+          }
+        }
+      ],
+      "operators": [],
+      "connections": [
+        {
+          "id": {
+            "sourceId": 2,
+            "targetId": 1
+          },
+          "negated": false
+        }
+      ]
+    }`,
+  )
+
+  expect(errors).toHaveLength(1)
+  expect.soft(errors[0]).toBeInstanceOf(InvalidDataError)
+  expect
+    .soft(errors[0]?.message)
+    .toBe(
+      'The provided file `test.json` contains invalid data: Only connections between atoms and conjunctions are allowed, but the atom `2` connects to the atom `1`',
     )
 })
 

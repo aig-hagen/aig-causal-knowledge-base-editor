@@ -136,19 +136,45 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
     }
 
     for (const connection of data.connections) {
-      if (!byIdAtoms.has(connection.id.sourceId) && !byIdOperators.has(connection.id.sourceId)) {
+      const sources = [
+        ...(byIdAtoms.get(connection.id.sourceId) ?? []),
+        ...(byIdOperators.get(connection.id.sourceId) ?? []),
+      ]
+      if (sources.length === 0) {
         const error = new InvalidDataError(
           `A connection's source ID ${atomIdToMessageString(connection.id.sourceId)} does not exist.`,
           fileName,
         )
         idErrors.push(error)
       }
-      if (!byIdAtoms.has(connection.id.targetId) && !byIdOperators.has(connection.id.targetId)) {
+      const targets = [
+        ...(byIdAtoms.get(connection.id.targetId) ?? []),
+        ...(byIdOperators.get(connection.id.targetId) ?? []),
+      ]
+      if (targets.length === 0) {
         const error = new InvalidDataError(
           `A connection's target ID ${atomIdToMessageString(connection.id.targetId)} does not exist.`,
           fileName,
         )
         idErrors.push(error)
+      }
+
+      for (const target of targets) {
+        for (const source of sources) {
+          if (isConjunction(source) && isConjunction(target)) {
+            const error = new InvalidDataError(
+              `Only connections between atoms and conjunctions are allowed, but the conjunction ${atomIdToMessageString(connection.id.sourceId)} connects to the conjunction ${atomIdToMessageString(connection.id.targetId)}`,
+              fileName,
+            )
+            idErrors.push(error)
+          } else if (!isConjunction(source) && !isConjunction(target)) {
+            const error = new InvalidDataError(
+              `Only connections between atoms and conjunctions are allowed, but the atom ${atomIdToMessageString(connection.id.sourceId)} connects to the atom ${atomIdToMessageString(connection.id.targetId)}`,
+              fileName,
+            )
+            idErrors.push(error)
+          }
+        }
       }
     }
 
@@ -194,6 +220,10 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
       connections.value.set(getConnectionKey(connection.id), connection)
     }
     return []
+  }
+
+  function isConjunction(atomOrConjunction: Atom | Conjunction): atomOrConjunction is Conjunction {
+    return 'type' in atomOrConjunction && atomOrConjunction.type === 'conjunction'
   }
 
   return {
