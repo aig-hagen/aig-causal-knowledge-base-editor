@@ -884,8 +884,8 @@ async function loadKnowledgeBase(
         allowOutgoingLinks: false,
         fixedPosition: {
           x: true,
-          y: true
-        }
+          y: true,
+        },
       }
     })
 
@@ -1163,8 +1163,8 @@ useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
       ></graph-component>
 
       <div class="menu menu-left">
-        <div class="node-selection p-0">
-          <div class="title is-5 p-2 m-0"><h1>Atoms</h1></div>
+        <div class="node-selection p-2">
+          <div class="title is-5 m-0"><h1>Atoms</h1></div>
           <div class="type p-2">
             <div
               class="atom-type-legend"
@@ -1181,7 +1181,7 @@ useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
             ></div>
             Explainable atom
           </div>
-          <div class="title is-5 p-2 m-0"><h1>Operators</h1></div>
+          <div class="title is-5 m-0"><h1>Operators</h1></div>
           <div class="type p-2">
             <!-- https://en.wikipedia.org/wiki/Wedge_(symbol) -->
             <div class="operator-type-legend" :style="{ backgroundColor: COLOR_CONJUNCTION }"></div>
@@ -1194,7 +1194,7 @@ useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
             </div>
             Conjunction
           </div>
-          <div class="title is-5 p-2 m-0"><h1>Connections</h1></div>
+          <div class="title is-5 m-0"><h1>Connections</h1></div>
           <div class="type p-2">
             <div class="link-type-legend" :style="{ color: COLOR_REGULAR_LINKS }">&#8594;</div>
             Regular connection
@@ -1203,7 +1203,7 @@ useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
             <div class="link-type-legend" :style="{ color: COLOR_NEGATED_LINKS }">&#8594;</div>
             Negated connection
           </div>
-          <div class="title is-5 p-2 m-0"><h1>Highlighting</h1></div>
+          <div class="title is-5 m-0"><h1>Highlighting</h1></div>
           <div class="type p-2">
             <div
               class="atom-type-legend"
@@ -1232,7 +1232,7 @@ useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
       </div>
       <div
         v-if="selectedAtomRef !== undefined"
-        class="menu menu-right box m-5"
+        class="menu menu-right p-2"
         @keydown.esc="selectAtom(null)"
       >
         <div class="title is-5"><h1>Atom properties</h1></div>
@@ -1366,10 +1366,10 @@ useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
       </div>
     </div>
     <div class="evaluation-console-wrapper">
-      <!-- <TheEvaluationConsole
+      <TheEvaluationConsole
         v-if="showEvaluationConsole"
         v-model:atomIdsToHighlight="atomIdsToHighlightIndependentOnOpenEvaluationConsole"
-      /> -->
+      />
     </div>
     <div
       class="overlay"
@@ -1422,7 +1422,7 @@ useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
   grid-column: 2;
   height: 100%;
   width: 100%;
-  border-left: 1px solid gray;
+  border-left: 2px solid black;
 }
 
 @media (max-width: 1279px) {
@@ -1465,8 +1465,9 @@ useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
 }
 
 .menu-left {
+  background-color: white;
   top: 128px;
-  position: fixed;
+  position: absolute;
 }
 
 .node-selection,
@@ -1480,10 +1481,15 @@ useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
 }
 
 .menu-right {
+  background-color: white;
   top: 128px;
   right: 0;
   position: absolute;
-  border: 1px solid gray;
+  border: 2px solid black;
+  border-right: none;
+  border-radius: 4px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 .menu-right datalist option:first-child {
