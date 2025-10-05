@@ -1342,7 +1342,7 @@ useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
       </div>
       <div
         v-if="selectedConnectionRef !== undefined"
-        class="menu menu-right box m-5"
+        class="menu menu-right p-2"
         @keydown.esc="selectConnection(null)"
       >
         <div class="title is-5"><h1>Connection properties</h1></div>
