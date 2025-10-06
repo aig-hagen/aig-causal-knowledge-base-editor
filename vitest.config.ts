@@ -1,7 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { mergeConfig, defineConfig, configDefaults } from 'vitest/config'
 import viteConfig from './vite.config'
-import { playwright } from '@vitest/browser/providers/playwright'
 
 export default mergeConfig(
   viteConfig,
@@ -18,24 +17,24 @@ export default mergeConfig(
             root: fileURLToPath(new URL('./', import.meta.url)),
           },
         },
-        {
-          extends: true,
-          test: {
-            name: 'browser',
-            include: ['**/*.browser.test.ts'],
-            exclude: [...configDefaults.exclude],
-            browser: {
-              enabled: true,
-              provider: playwright(),
-              // https://vitest.dev/guide/browser/playwright
-              instances: [
-              { browser: 'chromium' },
-              { browser: 'firefox' },
-              { browser: 'webkit' },
-              ],
-            },
-          },
-        }
+        // {
+        //   extends: true,
+        //   test: {
+        //     name: 'browser',
+        //     include: ['**/*.browser.test.ts'],
+        //     exclude: [...configDefaults.exclude],
+        //     browser: {
+        //       enabled: true,
+        //       provider: playwright(),
+        //       // https://vitest.dev/guide/browser/playwright
+        //       instances: [
+        //       { browser: 'chromium' },
+        //       { browser: 'firefox' },
+        //       { browser: 'webkit' },
+        //       ],
+        //     },
+        //   },
+        // }
       ],
     },
   }),

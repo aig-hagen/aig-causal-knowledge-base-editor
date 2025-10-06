@@ -36,6 +36,9 @@ jobs:
         # will be served by the backend server.
       - name: Set backend URL
         run: sed -i "s|\$TWEETY_API_URL||g" ./dist/index.html
+      
+      - name: Build docs
+        run: npm run docs:build
 
       # The Docker setup follows
       # https://docs.github.com/en/actions/use-cases-and-examples/publishing-packages/publishing-docker-images#publishing-images-to-github-packages

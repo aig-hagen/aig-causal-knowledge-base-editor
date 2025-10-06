@@ -51,7 +51,7 @@ const COLOR_EXPLAINABLE_ATOM = 'hsl(32.94, 100%, 50%)' // DarkOrange
 const COLOR_BACKGROUND_ATOM_TRANSPARENT = 'rgba(255, 239, 213, 0.5)' // PapayaWhip
 const COLOR_EXPLAINABLE_ATOM_TRANSPARENT = 'rgba(255, 140, 0, 0.5)' // DarkOrange
 const COLOR_CONJUNCTION = 'LightGray'
-const LABEL_CONJUNCTION = '∧'
+const LABEL_CONJUNCTION = '&'
 const ATOM_MIN_WIDTH_IN_PX = 128
 const ATOM_HEIGHT_IN_PX = 56
 const PORT_RADIUS_IN_PX = 16
@@ -1149,6 +1149,9 @@ useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
                 <a class="navbar-item" @click="isShowControlExplanationModal = true">
                   Show controls
                 </a>
+                <a class="navbar-item" target="_blank" rel="noopener" href="/docs/">
+                  Open user guide
+                </a>
               </div>
             </div>
           </div>
@@ -1181,27 +1184,26 @@ useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
             ></div>
             Explainable atom
           </div>
-          <div class="title is-5 m-0"><h1>Operators</h1></div>
+          <div class="title is-5 m-0"><h1>Causal relation</h1></div>
           <div class="type p-2">
             <!-- https://en.wikipedia.org/wiki/Wedge_(symbol) -->
             <div class="operator-type-legend" :style="{ backgroundColor: COLOR_CONJUNCTION }"></div>
-            No operator
+            Independent
           </div>
           <div class="type p-2">
             <!-- https://en.wikipedia.org/wiki/Wedge_(symbol) -->
             <div class="operator-type-legend" :style="{ backgroundColor: COLOR_CONJUNCTION }">
               {{ LABEL_CONJUNCTION }}
             </div>
-            Conjunction
+            Dependent
           </div>
-          <div class="title is-5 m-0"><h1>Connections</h1></div>
           <div class="type p-2">
             <div class="link-type-legend" :style="{ color: COLOR_REGULAR_LINKS }">&#8594;</div>
-            Regular connection
+            Regular
           </div>
           <div class="type p-2">
             <div class="link-type-legend" :style="{ color: COLOR_NEGATED_LINKS }">&#8594;</div>
-            Negated connection
+            Negated
           </div>
           <div class="title is-5 m-0"><h1>Highlighting</h1></div>
           <div class="type p-2">
@@ -1345,9 +1347,9 @@ useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
         class="menu menu-right p-2"
         @keydown.esc="selectConnection(null)"
       >
-        <div class="title is-5"><h1>Connection properties</h1></div>
+        <div class="title is-5"><h1>Relation properties</h1></div>
         <div class="field">
-          <label class="label">Connection type</label>
+          <label class="label">Relation type</label>
           <div class="control">
             <div class="checkboxes">
               <label class="checkbox">
@@ -1524,7 +1526,7 @@ useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
   border-radius: 100%;
   /* center text inside div */
   text-align: center;
-  line-height: 17px;
+  line-height: 19px;
 }
 
 .link-type-legend {
