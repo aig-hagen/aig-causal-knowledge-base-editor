@@ -16,8 +16,8 @@ In the end you will also find a section about [the theoretical background](#theo
 The first step is to put our knowledge in a so-called *causal model*.
 Such a model consists of:
 
-* background atoms
-* explainable atoms
+* background atoms (also called exogenous variables)
+* explainable atoms (also called endogenous variables)
 * causal dependencies between atoms
 
 ### Atoms
@@ -36,11 +36,11 @@ Let us, for example, take the following two relations:
 
 In our tool we can model the relation as follows:
 
-* **Double left-click** in the canvas to create an atom
+* **Double left-click** on the canvas to create an atom
     * Do this three times in different places to create three atoms.
-* **Left-click** to edit its name, description, and other properties.
+* **Left-click** on the created node to edit its name, description, and other properties.
     * Give each item an expressive name. Let's name them `influenza`, `flu` and `fever`.
-* **Right-click** on an atom **hold** and **drag** the arrow from one atom to the *port* (gray circle) to establish a causal dependency
+* **Right-click** on an atom **hold** and **drag** the arrow to the *port* (gray circle) of another atom to establish a causal dependency
     * Create a causal dependency from `influenza` to `flu`
     * Create a causal dependency from `flu` to `fever`
 
@@ -51,22 +51,22 @@ In our tool we can model the relation as follows:
 
 In our example, `influenza` is a background atom. An atom is a *background atom* if it is not the target of any causal dependency. They are not caused by anything inside our model.
 
-Compared to [explainable atoms](#explainable-atoms), you can specify so-called *assumptions* about them. They become relevant during [evaluation](#running-evalution).
+Compared to [explainable atoms](#explainable-atoms), you can specify so-called *assumptions* about them. They become relevant during the [evaluation](#running-evalution).
 
-To change the assumptions of a background atom, *right-click* on it and edit the checkboxes in the appearing dialog.
+To change the assumptions of a background atom, *left-click* on it and edit the checkboxes in the appearing dialog.
 
 ![Dialog for editing atom propereties](/images/step_2_edit_dialog.png)
 
 
-With assumptions, you can express the statement represented by the atom to be:
+With these assumptions, you can express the following states of knowledge regarding the atom:
 
-* factual (aka. true)
-* nonfactual (aka. false)
-* unknown (aka. possibly true and false)
+* we assume that the statement is likely to hold (only select `true`)
+* we assume that the statement is more likely to not hold (only select `false`)
+* we are uncertain or have no further information about the truth of the statement (select both `true` and `false`)
 
 ### Explainable Atoms
 
-`flu` and `fever` are explainable atoms. Explainable atoms are those that are a target of a causal relation. They are caused by other atoms inside our model.
+In our example, `flu` and `fever` are explainable atoms. Explainable atoms are atoms that are directly caused by other atoms within our model.
 
 Compared to [background atoms](#background-atoms), you do not specify assumptions about them. But during evaluation, you can specify their presumed factuality by providing *observations*.
 
@@ -74,40 +74,50 @@ Compared to [background atoms](#background-atoms), you do not specify assumption
 
 The factuality of a statement can depend on the factuality of other statements. We express this relation by drawing *causal relations* between atoms.
 
-The example in the [explanation of atoms](#atoms) has shown *regular* causal relations. In addition, causal relations can be:
+In our [example](#atoms), we have so far only considered *regular* causal relations. In general, we can model the following basic causal relations:
 
-* *negated*
-* *dependently* combined
-* *independently* combined
+* A *is caused by* B
+* A *is caused by the absence* B
+* A *is caused by* either B *or* C
+* A *is caused by* B *and* C together
 
-Take for negated relation the let us consider that absence of `rain` will cause a `drought`. After selecting a causal relation with a **left-click**, you can edit in a dialog whether it should be regular or negated.
+The first causal relation is the default case as shown in the example before.
+The second relation is a *negative* causal relation.
+For that, let us consider the statement: the absence of `rain` will cause a `drought`, which can be modelled as follows. After selecting a causal relation with a **left-click**, you can edit in a dialog whether it should be regular or negated.
 
-![Dialog for editing causal relation propereties](/images/step_3_edit_dialog_relation.png)
+![Dialog for editing causal relation properties](/images/step_3_edit_dialog_relation.png)
 
-Causal relations targeting one atom can be combined **dependently** or **independently**. How they are combined in the model depends on how they are connected to the targeted atom. Let us use the following example:
 
-* The `influenza` virus causes the `flu` disease.
-* The `flu` disease causes the `fever` symptom.
-* The `corona` virus causes the `covid` disease.
-* The `covid` disease causes the `fever` symptom.
-* The `covid` disease and being `at-risk` together cause being `short-of-breath`.
+An atom in a causal model can have multiple causes and these may be **dependent** or **independent** of each other. How they are combined in the model depends on how they are connected to the targeted atom. 
+Let us expand our example as follows:
 
-In the following image you can see how `covid` and `at-risk` are connected to the same port because only together they cause `short-of-breath`.
-Compare that to `flu` and `covid` being connected to different ports because they individually can cause `fever`.
+* The `flu` disease is caused by the `influenza` virus.
+* The `covid` disease is caused by the `corona` virus.
+* The `fever` symptom is caused by either `flu` or `covid`.
+* The `short-of-breath` symptom appears if the patient has the `covid` disease and is `at-risk` of developing respiratory diseases.
 
-![Causal model demonstrating dependently and independently combined relations](/images/step_4_combination_of_relations.png)
+In the following picture you can see how `covid` and `at-risk` are connected to the same port (denoted with `&`) of `short-of-breath`, representing that they only cause this atom jointly.
+In contrast to that, `flu` and `covid` are connected to different ports of `fever`, because they can cause `fever` independently of each other.
 
-## Running Evaluation
+![Causal model demonstrating dependent and independent causal relations](/images/step_4_combination_of_relations.png)
+
+## Evaluating the Causal Model
 
 On the right you have an evaluation console.
 
-At the top you will see the *assumptions* about your background atoms. It is only a read-only overview. To edit the assumptions edit them by clicking on the atom and edit the assumptions in the property dialog.
+At the top of the console you will see the *assumptions* about your background atoms. This is only a read-only overview. To edit the assumptions edit them by clicking on the atom in the model and edit the assumptions in the property dialog. Per default, all possible assumptions are included, representing the fact that we make no assumptions about the background atoms.
 
 Next, you can select observations about your explainable atoms. By setting observations, you presume some statements to be either true or false. By evaluating with different observations, you can use this tool to explore alternative results for hypothetical realities (aka. counterfactual reasoning or "what if" questions).
 
 Finally, you can instruct the reasoner to make conclusions about one specific atom (or all) by selecting an option in the dropdown next to the "Evaluate" button and then starting the evaluation by pressing the button.
+For instance, if we observe that the patient has `flu` but not `covid`, the evaluation will then come to the conclusions shown in the following picture.
 
-![Conclusions drawn by running evaluation](/images/step_5_evaluation_result.png)
+![Conclusions drawn by running the evaluation](/images/step_5_evaluation_result.png)
+
+::: info
+The tool currently only provided a qualitative evaluation of the causal model.
+A method for quantitative evaluation is still in development.
+:::
 
 ## Getting Explanations
 
@@ -132,7 +142,7 @@ To get an explanation:
 
 ## Theoretical Background
 
-The graphically modeled knowledge in this tool corresponds to _causal models_ as described by J. Pearl[^1][^2].
+The graphically modeled knowledge in this tool corresponds to a simplified version of _causal models_ as described by J. Pearl[^1][^2].
 Together with them, we use an approach based on _formal argumentation_ as defined by P. M. Dung[^3][^4] for argumentation-based causal and counterfactual reasoning[^5]. This approach appears promising, as it allows techniques from argumentation frameworks—such as sequence explanations[^6]—to be applied in explanation of reasoning with causal models.
 
 [^1]: [Jearl, J.: Causality: Models, Reasoning and Inference, vol. 29. Cambridge Univer-
