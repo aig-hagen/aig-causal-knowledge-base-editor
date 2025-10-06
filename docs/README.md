@@ -77,7 +77,7 @@ The factuality of a statement can depend on the factuality of other statements. 
 In our [example](#atoms), we have so far only considered *regular* causal relations. In general, we can model the following basic causal relations:
 
 * A *is caused by* B
-* A *is caused by the absence* B
+* A *is caused by the absence of* B
 * A *is caused by* either B *or* C
 * A *is caused by* B *and* C together
 
