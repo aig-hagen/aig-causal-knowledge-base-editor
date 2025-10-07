@@ -37,32 +37,32 @@ watchEffect(() => {
           </thead>
           <tbody>
             <tr>
-              <td>Create node</td>
-              <td>Double-click</td>
+              <td>Create atom</td>
+              <td><kbd>Left double-click</kbd> on canvas</td>
             </tr>
             <tr>
-              <td>Create link</td>
-              <td>Right-click on node + hold + drag towards target</td>
+              <td>Delete atom</td>
+              <td><kbd>Right-click</kbd> on atom and hold</td>
             </tr>
             <tr>
-              <td>Delete node/link</td>
-              <td>Right-click + hold</td>
+              <td>Move atom</td>
+              <td><kbd>Left-click</kbd> on atom, hold and drag</td>
             </tr>
             <tr>
-              <td>Move node</td>
-              <td>Left-click + hold on node + drag</td>
+              <td>Create relation</td>
+              <td><kbd>Right-click</kbd> on atom, hold and drag towards port</td>
             </tr>
             <tr>
-              <td>Create/Update label</td>
-              <td>Left-click on label</td>
+              <td>Delete relation</td>
+              <td><kbd>Right-click</kbd> on relation and hold</td>
             </tr>
             <tr>
               <td>Pan</td>
-              <td>Left-click on canvas + hold + drag</td>
+              <td><kbd>Left-click</kbd> on canvas, hold and drag</td>
             </tr>
             <tr>
-              <td>Zoom</td>
-              <td>Mouse wheel</td>
+              <td>Zoom in/out</td>
+              <td><kbd>Scroll wheel</kbd> on canvas</td>
             </tr>
           </tbody>
         </table>

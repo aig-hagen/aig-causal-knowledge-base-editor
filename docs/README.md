@@ -36,11 +36,11 @@ Let us, for example, take the following two relations:
 
 In our tool we can model the relation as follows:
 
-* **Double left-click** on the canvas to create an atom
+* <kbd>Left double-click</kbd> on the canvas to create an atom
     * Do this three times in different places to create three atoms.
-* **Left-click** on the created node to edit its name, description, and other properties.
+* <kbd>Left-click</kbd> on the created node to edit its name, description, and other properties.
     * Give each item an expressive name. Let's name them `influenza`, `flu` and `fever`.
-* **Right-click** on an atom **hold** and **drag** the arrow to the *port* (gray circle) of another atom to establish a causal dependency
+* <kbd>Right-click</kbd> on an atom, hold, and drag the arrow towards a *port* (gray circle) of another atom to establish a causal dependency
     * Create a causal dependency from `influenza` to `flu`
     * Create a causal dependency from `flu` to `fever`
 
@@ -53,7 +53,7 @@ In our example, `influenza` is a background atom. An atom is a *background atom*
 
 Compared to [explainable atoms](#explainable-atoms), you can specify so-called *assumptions* about them. They become relevant during the [evaluation](#running-evalution).
 
-To change the assumptions of a background atom, *left-click* on it and edit the checkboxes in the appearing dialog.
+To change the assumptions of a background atom, <kbd>left-click</kbd> on it and edit the checkboxes in the appearing dialog.
 
 ![Dialog for editing atom propereties](/images/step_2_edit_dialog.png)
 
@@ -83,7 +83,7 @@ In our [example](#atoms), we have so far only considered *regular* causal relati
 
 The first causal relation is the default case as shown in the example before.
 The second relation is a *negative* causal relation.
-For that, let us consider the statement: the absence of `rain` will cause a `drought`, which can be modelled as follows. After selecting a causal relation with a **left-click**, you can edit in a dialog whether it should be regular or negated.
+For that, let us consider the statement: the absence of `rain` will cause a `drought`, which can be modeled as follows. After selecting a causal relation with a <kbd>left-click</kbd>, you can edit in a dialog whether it should be regular or negated.
 
 ![Dialog for editing causal relation properties](/images/step_3_edit_dialog_relation.png)
 
