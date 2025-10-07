@@ -18,7 +18,7 @@ Such a model consists of:
 
 * background atoms (also called exogenous variables)
 * explainable atoms (also called endogenous variables)
-* causal dependencies between atoms
+* causal relations between atoms
 
 ### Atoms
 
@@ -38,11 +38,11 @@ In our tool we can model the relation as follows:
 
 * <kbd>Left double-click</kbd> on the canvas to create an atom
     * Do this three times in different places to create three atoms.
-* <kbd>Left-click</kbd> on the created node to edit its name, description, and other properties.
+* <kbd>Left-click</kbd> on the created atom to edit its name, description, and other properties.
     * Give each item an expressive name. Let's name them `influenza`, `flu` and `fever`.
 * <kbd>Right-click</kbd> on an atom, hold, and drag the arrow towards a *port* (gray circle) of another atom to establish a causal dependency
-    * Create a causal dependency from `influenza` to `flu`
-    * Create a causal dependency from `flu` to `fever`
+    * Create a causal relation from `influenza` to `flu`
+    * Create a causal relation from `flu` to `fever`
 
 ![Causal model for the given example](/images/step_1_create_atoms.png)
 
