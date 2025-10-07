@@ -5,13 +5,32 @@ import { markdownHintPlugin } from '@vuepress/plugin-markdown-hint'
 import { markdownImagePlugin } from '@vuepress/plugin-markdown-image'
 import { markdownExtPlugin } from '@vuepress/plugin-markdown-ext'
 
+const base = '/docs/'
+
 export default defineUserConfig({
   lang: 'en-US',
   title: 'Causal Knowledge Base Editor',
-  base: '/docs/',
+  base: base,
   dest: 'dist/docs',
   bundler: viteBundler(),
-  theme: defaultTheme(), // Maybe add navbar entries and logo later,
+  theme: defaultTheme({
+    logo: `/images/logoaig2025_transparent.png`,
+    navbar: [
+      {
+        text: 'Editor',
+        link: 'https://causal-knowledge-base-editor.aig.fernuni-hagen.de/',
+      },
+      {
+        text: 'Artificial Intelligence Group',
+        link: 'https://www.fernuni-hagen.de/aig/en/',
+      }
+    ]
+  }),
+  head: [
+    ['link', { rel: 'icon', type: 'image/png', sizes:"32x32", href: `${base}/images/favicon-32x32.png` }],
+    ['link', { rel: 'icon', type: 'image/png', sizes:"16x16", href: `${base}/images/favicon-16x16.png` }],
+    ['link', { rel: 'icon', type: 'image/png', sizes:"192x192", href: `${base}/images/favicon-192x192.png` }],
+  ],
   plugins: [
     markdownHintPlugin({
       // Enable hint container, true by default

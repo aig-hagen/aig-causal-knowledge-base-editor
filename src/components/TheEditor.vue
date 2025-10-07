@@ -1095,6 +1095,14 @@ useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
     <div class="navbar-container">
       <nav class="navbar" role="navigation" aria-label="main navigation">
         <div class="navbar-brand">
+          <div
+            class="navbar-item"
+          >
+            <img
+              src="@/assets/logoaig2025_transparent.png"
+              alt="Artificial Intelligence Group of the Faculty of Mathematics and Computer Science"
+            />
+        </div>
           <div class="navbar-item pt-0">
             <span class="title is-3 has-text-weight-bold">Causal Knowledge Base Editor</span>
           </div>
@@ -1143,14 +1151,14 @@ useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
               </div>
             </div>
             <div class="navbar-item has-dropdown is-hoverable">
-              <a class="navbar-link"> Help </a>
+              <a class="navbar-link">Docs</a>
 
               <div class="navbar-dropdown">
                 <a class="navbar-item" @click="isShowControlExplanationModal = true">
-                  Show controls
+                  Controls
                 </a>
                 <a class="navbar-item" target="_blank" rel="noopener" href="/docs/">
-                  Open user guide
+                  User guide
                 </a>
               </div>
             </div>
