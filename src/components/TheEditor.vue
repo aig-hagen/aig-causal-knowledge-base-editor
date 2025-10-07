@@ -1160,7 +1160,7 @@ useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
 
               <div class="navbar-dropdown">
                 <a class="navbar-item" @click="isShowControlExplanationModal = true"> Controls </a>
-                <a class="navbar-item" target="_blank" rel="noopener" href="/docs/">
+                <a class="navbar-item" target="_blank" rel="noopener" href="/docs/user-guide.html">
                   User guide &#8599;</a
                 >
                 <hr
