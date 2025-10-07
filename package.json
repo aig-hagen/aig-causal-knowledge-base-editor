@@ -44,7 +44,7 @@
     "@vue/eslint-config-typescript": "14.6.0",
     "@vue/test-utils": "2.4.6",
     "@vue/tsconfig": "0.8.1",
-    "@vuepress/bundler-vite": "2.0.0-rc.24",
+    "@vuepress/bundler-vite": "2.0.0-rc.25",
     "@vuepress/plugin-markdown-ext": "2.0.0-rc.112",
     "@vuepress/plugin-markdown-hint": "2.0.0-rc.112",
     "@vuepress/plugin-markdown-image": "2.0.0-rc.112",
