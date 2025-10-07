@@ -12,6 +12,9 @@ import TheEvaluationConsole from '@/components/TheEvaluationConsole.vue'
 import ControlsExplanation from './ControlsExplanation.vue'
 import { hasMoreThenOneEntry, hasOneEntry } from '@/util/types'
 
+const editorCommit = import.meta.env.VITE_EDITOR_COMMIT?.slice(0, 7)
+const editorVersion = import.meta.env.VITE_EDITOR_VERSION
+
 const showEvaluationConsole = ref<boolean>(true)
 const atomIdsToHighlightIndependentOnOpenEvaluationConsole = ref<Id[]>([])
 
@@ -1095,14 +1098,12 @@ useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
     <div class="navbar-container">
       <nav class="navbar" role="navigation" aria-label="main navigation">
         <div class="navbar-brand">
-          <div
-            class="navbar-item"
-          >
+          <div class="navbar-item">
             <img
               src="@/assets/logoaig2025_transparent.png"
               alt="Artificial Intelligence Group of the Faculty of Mathematics and Computer Science"
             />
-        </div>
+          </div>
           <div class="navbar-item pt-0">
             <span class="title is-3 has-text-weight-bold">Causal Knowledge Base Editor</span>
           </div>
@@ -1137,8 +1138,12 @@ useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
                   accept="application/json"
                   @change="loadKnowledgeBaseFromFileInput($event)"
                 />
-                <a class="navbar-item" @click="loadExampleDiagnosis">Load example "Diagnosis"</a>
-                <a class="navbar-item" @click="loadExampleDrowning">Load example "Drowning"</a>
+                <a class="navbar-item" @click="loadExampleDiagnosis"
+                  ><span>Load example <em>Diagnosis</em></span></a
+                >
+                <a class="navbar-item" @click="loadExampleDrowning"
+                  ><span>Load example <em>Drowning</em></span></a
+                >
               </div>
             </div>
             <div class="navbar-item has-dropdown is-hoverable">
@@ -1154,12 +1159,32 @@ useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
               <a class="navbar-link">Docs</a>
 
               <div class="navbar-dropdown">
-                <a class="navbar-item" @click="isShowControlExplanationModal = true">
-                  Controls
-                </a>
+                <a class="navbar-item" @click="isShowControlExplanationModal = true"> Controls </a>
                 <a class="navbar-item" target="_blank" rel="noopener" href="/docs/">
-                  User guide
-                </a>
+                  User guide &#8599;</a
+                >
+                <hr
+                  v-if="editorVersion !== undefined || editorCommit !== undefined"
+                  class="navbar-divider"
+                />
+                <a
+                  v-if="editorVersion !== undefined"
+                  class="navbar-item"
+                  target="_blank"
+                  rel="noopener"
+                  :href="`https://github.com/aig-hagen/aig-causal-knowledge-base-editor/releases/tag/${editorVersion}`"
+                >
+                  Version {{ editorVersion }} &#8599;</a
+                >
+                <a
+                  v-if="editorCommit !== undefined"
+                  class="navbar-item"
+                  target="_blank"
+                  rel="noopener"
+                  :href="`https://github.com/aig-hagen/aig-causal-knowledge-base-editor/commit/${editorCommit}`"
+                >
+                  Commit {{ editorCommit }} &#8599;</a
+                >
               </div>
             </div>
           </div>

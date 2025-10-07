@@ -7,6 +7,8 @@ interface ViteTypeOptions {
 
 interface ImportMetaEnv {
   readonly VITE_TWEETY_API_URL: string
+  readonly VITE_EDITOR_VERSION: string | undefined
+  readonly VITE_EDITOR_COMMIT: string | undefined
 }
 
 interface ImportMeta {
