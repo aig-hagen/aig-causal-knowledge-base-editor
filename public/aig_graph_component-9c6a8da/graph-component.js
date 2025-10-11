@@ -7256,8 +7256,8 @@ function Wi(t, e, n) {
 function rr(t, e, n, r, i, s) {
   t.append("defs").append("marker").attr("id", n).attr("viewBox", e.markerPath).attr("refX", e.markerRef).attr("refY", e.markerRef).attr("markerWidth", e.markerBoxSize).attr("markerHeight", e.markerBoxSize).attr("orient", i ? "auto-start-reverse" : "auto").classed(r, !0).append("path").attr("d", `${b0()(e.arrowPoints)}`).style("fill", s || "");
 }
-function q0(t) {
-  return t.append("path").classed("graph-controller__link draggable hidden", !0).attr("d", "M0,0L0,0");
+function q0(t, e) {
+  return e.append("path").classed("graph-controller__link draggable hidden", !0).attr("d", "M0,0L0,0").style("marker-end", `url(#${t}-draggable-link-arrow)`);
 }
 class sl {
   constructor() {
@@ -11619,7 +11619,7 @@ For rectangular nodes: {shape: 'rect', width: number, height: number, cornerRadi
             de(d, v.node())[1]
           );
         }
-      ), H0(v, r.value, a, u.value.getNonDefaultLinkColors()), L = q0(v), p = D0(v), k = V0(v), f = om(u.value, a, h, g, () => W()), x = F0(f, h, g, a), et();
+      ), H0(v, r.value, a, u.value.getNonDefaultLinkColors()), L = q0(r.value, v), p = D0(v), k = V0(v), f = om(u.value, a, h, g, () => W()), x = F0(f, h, g, a), et();
     }
     function q(d, b = !0) {
       b && (V = d.transform.x, U = d.transform.y, Q = d.transform.k, v.attr("transform", `translate(${V},${U})scale(${Q})`));
@@ -11722,7 +11722,9 @@ For rectangular nodes: {shape: 'rect', width: number, height: number, cornerRadi
           let M = `url(#${r.value}-link-arrow`;
           return m.color && (M += "-" + gr(m.color)), M += ")", M;
         }
-      }), p.selectChild("text").attr("class", (m) => {
+      }).style("display", "none").each(function() {
+        this.getBBox();
+      }).style("display", null), p.selectChild("text").attr("class", (m) => {
         var T;
         return `graph-controller__${(T = m.pathType) == null ? void 0 : T.toLowerCase()}-path-text`;
       }).attr("dy", (m) => {
@@ -11851,7 +11853,7 @@ For rectangular nodes: {shape: 'rect', width: number, height: number, cornerRadi
       }
     }
     function he(d) {
-      B = [d.x, d.y], w = d, L.attr("marker-end", `url(#${r.value}-draggable-link-arrow)`).classed("hidden", !1).attr("d", ir(d, { x: B[0], y: B[1] }, a));
+      B = [d.x, d.y], w = d, L.classed("hidden", !1).attr("d", ir(d, { x: B[0], y: B[1] }, a));
     }
     function jn(d, b = void 0) {
       se(d), clearTimeout(Z), b && Bn(b), d.pointerType === "mouse" || (d.pointerType === "touch" || d.pointerType === "pen") && !z0(
@@ -11969,7 +11971,7 @@ For rectangular nodes: {shape: 'rect', width: number, height: number, cornerRadi
       return [T, M];
     }
     function xr() {
-      L == null || L.classed("hidden", !0).attr("marker-end", "null"), w = void 0, C = void 0, B = void 0;
+      L == null || L.classed("hidden", !0), w = void 0, C = void 0, B = void 0;
     }
     function wa(d) {
       let b, m;
