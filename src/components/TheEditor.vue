@@ -528,7 +528,7 @@ onMounted(() => {
   graphInstance.toggleZoom(true)
   graphInstance.setNodePropsDefault(createAtomProps())
   graphInstance.setNodeGroupsFn(nodeGroupsFn)
-  // graphInstance.setDefaults({ nodePhysicsEnabled: false })
+  graphInstance.setDefaults({ nodeAutoResizeToLabelSize: false })
   const graphHost = graphComponentElement.getElementsByClassName('graph-controller__graph-host')[0]
   graphHostRef.value = graphHost as HTMLElement
   const nodeContainer = graphComponentElement.getElementsByClassName('nodes')[0]
