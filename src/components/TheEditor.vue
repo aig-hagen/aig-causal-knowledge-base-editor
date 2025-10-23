@@ -564,24 +564,28 @@ function selectAtom(atomId: number | null) {
   selectedAtomIdRef.value = atomId
   if (atomId !== null) {
     selectedConnectionIdRef.value = null
-    void nextTick(() => {
-      if (selectedAtomIdRef.value !== null) {
-        nameInput.value?.focus()
-      }
-    })
   }
+  nextTick(() => {
+    requestAnimationFrame(() => {
+      // focusVisible is a non-standard option used for improved accessibility in some browsers.
+      // @ts-expect-error Ignore TypeScript error about unknown property in FocusOptions.
+      nameInput.value?.focus({ focusVisible: true })
+    })
+  })
 }
 
 function selectConnection(connectionId: ConnectionId | null) {
   selectedConnectionIdRef.value = connectionId
   if (connectionId !== null) {
     selectedAtomIdRef.value = null
-    void nextTick(() => {
-      if (selectedConnectionIdRef.value !== null) {
-        negatedInput.value?.focus()
-      }
-    })
   }
+  void nextTick(() => {
+    requestAnimationFrame(() => {
+      // focusVisible is a non-standard option used for improved accessibility in some browsers.
+      // @ts-expect-error Ignore TypeScript error about unknown property in FocusOptions.
+      negatedInput.value?.focus({ focusVisible: true })
+    })
+  })
 }
 
 function onNodeCreated(event: Event) {
