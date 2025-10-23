@@ -1,7 +1,6 @@
 import { viteBundler } from '@vuepress/bundler-vite'
 import { defaultTheme } from '@vuepress/theme-default'
 import { defineUserConfig } from 'vuepress'
-import { markdownHintPlugin } from '@vuepress/plugin-markdown-hint'
 import { markdownImagePlugin } from '@vuepress/plugin-markdown-image'
 import { markdownExtPlugin } from '@vuepress/plugin-markdown-ext'
 
@@ -32,10 +31,6 @@ export default defineUserConfig({
     ['link', { rel: 'icon', type: 'image/png', sizes:"192x192", href: `${base}/images/favicon-192x192.png` }],
   ],
   plugins: [
-    markdownHintPlugin({
-      // Enable hint container, true by default
-      hint: true,
-    }),
     markdownImagePlugin({
       // Enable figure
       figure: true,
