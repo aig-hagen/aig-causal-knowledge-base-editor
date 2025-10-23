@@ -44,6 +44,11 @@
   font-weight: normal;
 }
 
+html {
+  /* Do not show scrollbar in Chrome if not needed */
+  overflow: auto;
+}
+
 body {
   min-height: min-width;
   color: var(--color-text);
