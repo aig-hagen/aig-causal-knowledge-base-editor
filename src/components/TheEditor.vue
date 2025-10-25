@@ -9,6 +9,13 @@ import exampleDrowning from '@/assets/examples/drowning.json'
 import exampleDiagnosis from '@/assets/examples/diagnosis.json'
 import TheEvaluationConsole from '@/components/TheEvaluationConsole.vue'
 
+import {
+  NodeShape,
+  type GraphComponent,
+  type NodeCircle,
+  type NodeSizeRect,
+} from '@/util/graphComponentTypes'
+
 import ControlsExplanation from './ControlsExplanation.vue'
 import { hasMoreThenOneEntry, hasOneEntry } from '@/util/types'
 
@@ -73,7 +80,7 @@ const DEFAULT_ASSUMPTION_VALUE = 3
 
 function createAtomProps() {
   return {
-    shape: 'rect',
+    shape: NodeShape.RECTANGLE,
     width: ATOM_MIN_WIDTH_IN_PX,
     height: ATOM_HEIGHT_IN_PX,
     cornerRadius: 4,
@@ -84,9 +91,9 @@ function createAtomProps() {
   }
 }
 
-function createOperatorProps() {
+function createOperatorProps(): NodeCircle {
   return {
-    shape: 'circle',
+    shape: NodeShape.CIRCLE,
     radius: PORT_RADIUS_IN_PX,
   }
 }
@@ -244,19 +251,14 @@ function getAtomColor(atom: Atom) {
   }
 }
 
-interface GraphNode {
-  id: number
-  x: number
-  y: number
+let nodeGrouping = new Map<number, Set<number>>()
+
+const emptySet = new Set<number>()
+function nodeGroupsFn(id: number): Set<number> {
+  return nodeGrouping.get(id) ?? emptySet
 }
 
-let nodeGrouping = new Map<number, GraphNode[]>()
-
-function nodeGroupsFn(node: GraphNode): unknown[] {
-  return nodeGrouping.get(node.id) ?? []
-}
-
-function updateConjuctionsForAllAtoms(graph: unknown) {
+function updateConjuctionsForAllAtoms(graphInstance: GraphComponent) {
   const connectionsWithoutSource = [...knowledgeBase.connections.values()].filter(
     (connection) =>
       !knowledgeBase.atoms.has(connection.id.sourceId) &&
@@ -265,18 +267,7 @@ function updateConjuctionsForAllAtoms(graph: unknown) {
 
   for (const connectionWithoutSource of connectionsWithoutSource) {
     knowledgeBase.connections.delete(getConnectionKey(connectionWithoutSource.id))
-    // @ts-expect-error No typing from graph component
-    const link = graph.links.find((graphLink) => {
-      const [sourceId, targetId] = graphLink.id.split('-')
-      return (
-        parseInt(sourceId) === connectionWithoutSource.id.sourceId &&
-        parseInt(targetId) === connectionWithoutSource.id.targetId
-      )
-    })
-    if (link !== undefined) {
-      // @ts-expect-error No typing from graph component
-      graph.removeLink(link)
-    }
+    graphInstance.deleteElement(getLinkId(connectionWithoutSource.id))
   }
 
   const connectionsWithoutTarget = [...knowledgeBase.connections.values()].filter(
@@ -292,52 +283,27 @@ function updateConjuctionsForAllAtoms(graph: unknown) {
     if (!removed) {
       throw new Error(`Source of ${JSON.stringify(connection)} is not an operator.`)
     }
-    // @ts-expect-error No typing from graph component
-    const graphNode = graph.nodes.find((graphNode) => graphNode.id === connection.id.sourceId)
-    if (graphNode !== undefined) {
-      // @ts-expect-error No typing from graph component
-      graph.removeNode(graphNode)
-      const connectionsIncommingToRemovedNode = [...knowledgeBase.connections.values()].filter(
-        (maybeConnectionsIncommingToRemovedNode) =>
-          maybeConnectionsIncommingToRemovedNode.id.targetId === graphNode.id,
-      )
-      for (const connectionIncommingToRemovedNode of connectionsIncommingToRemovedNode) {
-        knowledgeBase.connections.delete(getConnectionKey(connectionIncommingToRemovedNode.id))
-        // @ts-expect-error No typing from graph component
-        const link = graph.links.find((graphLink) => {
-          const [sourceId, targetId] = graphLink.id.split('-')
-          return (
-            parseInt(sourceId) === connectionIncommingToRemovedNode.id.sourceId &&
-            parseInt(targetId) === connectionIncommingToRemovedNode.id.targetId
-          )
-        })
-        if (link !== undefined) {
-          // @ts-expect-error No typing from graph component
-          graph.removeLink(link)
-        }
-      }
+
+    graphInstance.deleteElement(connection.id.sourceId)
+    const connectionsIncommingToRemovedNode = [...knowledgeBase.connections.values()].filter(
+      (maybeConnectionsIncommingToRemovedNode) =>
+        maybeConnectionsIncommingToRemovedNode.id.targetId === connection.id.sourceId,
+    )
+    for (const connectionIncommingToRemovedNode of connectionsIncommingToRemovedNode) {
+      knowledgeBase.connections.delete(getConnectionKey(connectionIncommingToRemovedNode.id))
+      // graphInstance.deleteElement does not need to be called here,
+      // because the link was already removed when the node was removed.
     }
-    // @ts-expect-error No typing from graph component
-    const link = graph.links.find((graphLink) => {
-      const [sourceId, targetId] = graphLink.id.split('-')
-      return (
-        parseInt(sourceId) === connection.id.sourceId &&
-        parseInt(targetId) === connection.id.targetId
-      )
-    })
-    if (link !== undefined) {
-      // @ts-expect-error No typing from graph component
-      graph.removeLink(link)
-    }
+    graphInstance.deleteElement(getLinkId(connection.id))
   }
 
   nodeGrouping = new Map()
   for (const atom of knowledgeBase.atoms.values()) {
-    updateConjuctions(graph, atom)
+    updateConjuctions(graphInstance, atom)
   }
 }
 
-function updateConjuctions(graph: unknown, atom: Atom) {
+function updateConjuctions(graphInstance: GraphComponent, atom: Atom) {
   const currnetConjunctions = [...knowledgeBase.operators.values()].filter((conjunction) => {
     const connectionId = { sourceId: conjunction.id, targetId: atom.id }
     const connectionIdKey = getConnectionKey(connectionId)
@@ -366,20 +332,13 @@ function updateConjuctions(graph: unknown, atom: Atom) {
       const connectionIdKey = getConnectionKey(connectionId)
       knowledgeBase.connections.delete(connectionIdKey)
       knowledgeBase.operators.delete(conjunction.id)
-      // @ts-expect-error No typing from graph component
-      const graphNodeForConjunction = graph.nodes.find(
-        // @ts-expect-error No typing from graph component
-        (graphNode) => graphNode.id === conjunction.id,
-      )
-      // @ts-expect-error No typing from graph component
-      graph.removeNode(graphNodeForConjunction)
+      graphInstance.deleteElement(conjunction.id)
     }
   }
 
   const lastConjunction = remainingConjunctions[remainingConjunctions.length - 1]
   if (lastConjunction === undefined || hasIncomingConnections(lastConjunction)) {
-    // @ts-expect-error No typing from graph component
-    const graphNode = graph.createNode(
+    const graphNodeId = graphInstance.createNode(
       createOperatorProps(),
       100,
       100,
@@ -394,7 +353,7 @@ function updateConjuctions(graph: unknown, atom: Atom) {
     )
 
     const newConjunction: Conjunction = {
-      id: graphNode.id,
+      id: graphNodeId,
       type: 'conjunction',
       position: {
         x: 0,
@@ -402,41 +361,49 @@ function updateConjuctions(graph: unknown, atom: Atom) {
       },
     }
     remainingConjunctions.push(newConjunction)
-    knowledgeBase.operators.set(graphNode.id, newConjunction)
+    knowledgeBase.operators.set(graphNodeId, newConjunction)
 
     const connection = {
-      id: { sourceId: graphNode.id, targetId: atom.id },
+      id: { sourceId: graphNodeId, targetId: atom.id },
       negated: false,
     }
     knowledgeBase.connections.set(getConnectionKey(connection.id), connection)
     // When the event is handled, the HTML is not yet rendered.
   }
 
-  // @ts-expect-error No typing from graph component
-  const graphNodeForAtom = graph.nodes.find((graphNode) => graphNode.id === atom.id)
-  const conjunctionGraphNodes: GraphNode[] = []
+  const graphNodeForAtomSizeOld = graphInstance.getNodeSize(atom.id) as NodeSizeRect
+  const graphNodeForAtomPositionOld = graphInstance.getNodeFixedPosition(atom.id)
+  const conjunctionGraphNodesIds = new Set<number>()
 
   // Calculate minimum width for atom based on remaining conjunctions
   // diameter for each port + diamter between each port + two times have the diameter for padding
   const minAtomWidthBecauseOfPorts = PORT_RADIUS_IN_PX * 2 * 2 * remainingConjunctions.length
   const atomWidthNew = Math.max(ATOM_MIN_WIDTH_IN_PX, minAtomWidthBecauseOfPorts)
-  const atomWidthOld = graphNodeForAtom.props.width
-  graphNodeForAtom.props.width = atomWidthNew
-  graphNodeForAtom.x = graphNodeForAtom.x + (atomWidthNew - atomWidthOld) / 2
+  const graphNodeForAtomSizeNew = {
+    width: Math.max(ATOM_MIN_WIDTH_IN_PX, minAtomWidthBecauseOfPorts),
+    height: graphNodeForAtomSizeOld.height,
+  }
+  graphInstance.setNodeSize(graphNodeForAtomSizeNew, atom.id)
+  const graphNodeForAtomPositionNew = {
+    x: graphNodeForAtomPositionOld.x + (atomWidthNew - graphNodeForAtomSizeOld.width) / 2,
+    y: graphNodeForAtomPositionOld.y,
+  }
+  graphInstance.setNodePosition(graphNodeForAtomPositionNew, atom.id)
   const portOffset = (atomWidthNew - minAtomWidthBecauseOfPorts) / 2
 
   remainingConjunctions.forEach((conjunction, i) => {
-    // @ts-expect-error No typing from graph component
-    const graphNodeForConjunction = graph.nodes.find((graphNode) => graphNode.id === conjunction.id)
-    conjunctionGraphNodes.push(graphNodeForConjunction as GraphNode)
-    graphNodeForConjunction.fx =
-      portOffset +
-      (graphNodeForAtom.x - graphNodeForAtom.props.width / 2) +
-      PORT_RADIUS_IN_PX * 2 * (2 * i + 1)
-    graphNodeForConjunction.fy = graphNodeForAtom.y - ATOM_HEIGHT_IN_PX / 2
-    graphNodeForConjunction.label = getOperatorLabel(conjunction)
+    conjunctionGraphNodesIds.add(conjunction.id)
+    const graphNodeForConjunctioPositionNew = {
+      x:
+        portOffset +
+        (graphNodeForAtomPositionNew.x - graphNodeForAtomSizeNew.width / 2) +
+        PORT_RADIUS_IN_PX * 2 * (2 * i + 1),
+      y: graphNodeForAtomPositionNew.y - ATOM_HEIGHT_IN_PX / 2,
+    }
+    graphInstance.setNodeFixedPosition(graphNodeForConjunctioPositionNew, conjunction.id)
+    graphInstance.setLabel(getOperatorLabel(conjunction), conjunction.id)
   })
-  nodeGrouping.set(atom.id, conjunctionGraphNodes)
+  nodeGrouping.set(atom.id, conjunctionGraphNodesIds)
 }
 
 function getOperatorLabel(conjunction: Conjunction) {
@@ -526,9 +493,8 @@ onMounted(() => {
   graphInstanceRef.value = graphInstance
   graphInstance.toggleNodePhysics(false)
   graphInstance.toggleZoom(true)
-  graphInstance.setNodePropsDefault(createAtomProps())
   graphInstance.setNodeGroupsFn(nodeGroupsFn)
-  graphInstance.setDefaults({ nodeAutoResizeToLabelSize: false })
+  graphInstance.setDefaults({ nodeAutoGrowToLabelSize: false, nodeProps: createAtomProps() })
   const graphHost = graphComponentElement.getElementsByClassName('graph-controller__graph-host')[0]
   graphHostRef.value = graphHost as HTMLElement
   const nodeContainer = graphComponentElement.getElementsByClassName('nodes')[0]
@@ -565,7 +531,7 @@ function selectAtom(atomId: number | null) {
   if (atomId !== null) {
     selectedConnectionIdRef.value = null
   }
-  nextTick(() => {
+  void nextTick(() => {
     requestAnimationFrame(() => {
       // focusVisible is a non-standard option used for improved accessibility in some browsers.
       // @ts-expect-error Ignore TypeScript error about unknown property in FocusOptions.
@@ -589,6 +555,7 @@ function selectConnection(connectionId: ConnectionId | null) {
 }
 
 function onNodeCreated(event: Event) {
+  if (hasProgrammaticCause(event)) return
   if (loadingData.value) return
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const createdNode = (event as any).detail.node
@@ -608,24 +575,22 @@ function onNodeCreated(event: Event) {
   selectAtom(atom.id)
   // When the event is handled, the HTML is not yet rendered.
   void nextTick(() => {
-    graphInstance.modifyGraph((graph: unknown) => {
-      updateConjuctionsForAllAtoms(graph)
-      updateAtomColor(atom)
-      graphInstance.setLabelEditable(false, createdNode.id)
-      graphInstance.setNodesLinkPermission(false, true, createdNode.id)
-    })
+    updateConjuctionsForAllAtoms(graphInstance)
+    updateAtomColor(atom)
+    graphInstance.setLabelEditable(false, createdNode.id)
+    graphInstance.setNodesLinkPermission(false, true, createdNode.id)
   })
 }
 
 function onNodeDeleted(event: Event) {
+  if (hasProgrammaticCause(event)) return
   if (loadingData.value) return
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const deletedNode = (event as any).detail.node
   knowledgeBase.operators.delete(deletedNode.id)
   knowledgeBase.atoms.delete(deletedNode.id)
-  graphInstanceRef.value.modifyGraph((graph: unknown) => {
-    updateConjuctionsForAllAtoms(graph)
-  })
+  const graphInstance = graphInstanceRef.value
+  updateConjuctionsForAllAtoms(graphInstance)
 }
 
 function updatedExplainableAtoms() {
@@ -707,13 +672,11 @@ function onLinkCreated(event: Event) {
 
   // When the event is handled, the HTML is not yet rendered.
   void nextTick(() => {
-    graphInstance.modifyGraph((graph: unknown) => {
-      updateConjuctionsForAllAtoms(graph)
-      graphInstance.setLabelEditable(false, createdLink.id)
-      const color = getColorLink(negated)
-      graphInstance.setColor(color, createdLink.id)
-      // updateAtomColor(atom)
-    })
+    updateConjuctionsForAllAtoms(graphInstance)
+    graphInstance.setLabelEditable(false, createdLink.id)
+    const color = getColorLink(negated)
+    graphInstance.setColor(color, createdLink.id)
+    // updateAtomColor(atom)
   })
 
   updatedExplainableAtoms()
@@ -727,16 +690,21 @@ function getColorLink(negated: boolean) {
   }
 }
 
+function hasProgrammaticCause(event: Event): boolean {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (event as any).detail.cause === EVENT_CAUSE.PROGRAMMATIC_ACTION
+}
+
 function onLinkDeleted(event: Event) {
+  if (hasProgrammaticCause(event)) return
   if (loadingData.value) return
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const deletedLink = (event as any).detail.link
   const connectionId = parseLinkIdToConnectionId(deletedLink.id)
   knowledgeBase.connections.delete(getConnectionKey(connectionId))
   updatedExplainableAtoms()
-  graphInstanceRef.value.modifyGraph((graph: unknown) => {
-    updateConjuctionsForAllAtoms(graph)
-  })
+  const graphInstance = graphInstanceRef.value
+  updateConjuctionsForAllAtoms(graphInstance)
 }
 
 function changeAtomToBackgroundAtom(atom: Atom) {
@@ -931,26 +899,16 @@ async function loadKnowledgeBase(
     // HACK
     // Fix with https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/317
     // Do not render actual links for connections between atoms and components
-    // @ts-expect-error No typing from graph component
-    graphInstanceRef.value.modifyGraph((graph) => {
-      const connectionsWithUnwantedLinks = [...knowledgeBase.connections.values()].filter(
-        (connection) => knowledgeBase.atoms.has(connection.id.targetId),
-      )
+    const graphInstance = graphInstanceRef.value
+    const connectionsWithUnwantedLinks = [...knowledgeBase.connections.values()].filter(
+      (connection) => knowledgeBase.atoms.has(connection.id.targetId),
+    )
 
-      for (const connection of connectionsWithUnwantedLinks) {
-        // @ts-expect-error No typing from graph component
-        const link = graph.links.find((graphLink) => {
-          const [sourceId, targetId] = graphLink.id.split('-')
-          return (
-            parseInt(sourceId) === connection.id.sourceId &&
-            parseInt(targetId) === connection.id.targetId
-          )
-        })
-        graph.removeLink(link)
-      }
+    for (const connection of connectionsWithUnwantedLinks) {
+      graphInstance.deleteElement(getLinkId(connection.id))
+    }
 
-      updateConjuctionsForAllAtoms(graph)
-    })
+    updateConjuctionsForAllAtoms(graphInstance)
 
     addSuccessNotification('Knowledge base loaded successfully.')
   } catch (error) {
@@ -1087,6 +1045,11 @@ function toogleAsumption(toogledValue: boolean) {
       selectedAtom.assumption = 3
     }
   }
+}
+
+const enum EVENT_CAUSE {
+  USER_ACTION = 'user-action',
+  PROGRAMMATIC_ACTION = 'programmatic-action',
 }
 
 useEventListener(graphHostRef, 'nodecreated', onNodeCreated)
