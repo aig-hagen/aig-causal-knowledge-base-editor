@@ -42,6 +42,7 @@ function getName(atomId: Id): string {
       </template>
       <template v-else-if="significantAtomIds.length > 1">
         depends on:
+        <!--  XXX <ul> is not valid in p -->
         <ul>
           <template v-for="atomId in significantAtomIds.slice(0, -1)" :key="`${atomId}`">
             <li>

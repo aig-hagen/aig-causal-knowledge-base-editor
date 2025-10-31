@@ -8,6 +8,13 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
+      props: { previewFeatures: false },
+    },
+    {
+      path: '/preview',
+      name: 'preview',
+      component: HomeView,
+      props: { previewFeatures: true },
     },
   ],
 })

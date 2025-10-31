@@ -4,7 +4,7 @@ import {
   NonEvaluableKnowledgebaseError,
   useEvaluationRequestPayload,
 } from '@/composables/useEvaluationRequestPayload'
-import type { Connection } from '@/model/graphicalCausalKnowledgeBase'
+import type { Connection, Id } from '@/model/graphicalCausalKnowledgeBase'
 import { useFetch } from '@vueuse/core'
 import { computed, type MaybeRef, ref, type Ref, unref, watchEffect } from 'vue'
 import { ajv } from '@/ajvInstance'
@@ -21,6 +21,7 @@ export function useConclusionEvaluationRequest(
   connections: MaybeRef<Connection[]>,
   observations: MaybeRef<Literal[]>,
   assumptions: MaybeRef<Literal[]>,
+  conclusionsFilter: MaybeRef<Id[] | null>,
 ) {
   const payload = useEvaluationRequestPayload(
     atoms,
@@ -28,6 +29,7 @@ export function useConclusionEvaluationRequest(
     connections,
     observations,
     assumptions,
+    conclusionsFilter,
     'get_conclusions',
   )
 
@@ -39,7 +41,7 @@ export function handleConclusionsReply(reply: string) {
     console.error(`Could not parse reply ${reply}.`)
     return {
       result: null,
-      error: 'Unexpected evaluation result.',
+      error: 'Unexpected evaluation reply.',
     }
   }
 
@@ -75,6 +77,7 @@ export function useExplanationEvaluationRequest(
   connections: MaybeRef<Connection[]>,
   observations: MaybeRef<Literal[]>,
   assumptions: MaybeRef<Literal[]>,
+  conclusionsFilter: MaybeRef<Id[] | null>,
 ) {
   const payload = useEvaluationRequestPayload(
     atoms,
@@ -82,9 +85,30 @@ export function useExplanationEvaluationRequest(
     connections,
     observations,
     assumptions,
+    conclusionsFilter,
     'get_significant_atoms',
   )
   return useEvaluationRequest(payload, handleExplanationReply)
+}
+
+export function useSequenceExplanationEvaluationRequest(
+  atoms: MaybeRef<Set<number>>,
+  conjunctions: MaybeRef<Set<number>>,
+  connections: MaybeRef<Connection[]>,
+  observations: MaybeRef<Literal[]>,
+  assumptions: MaybeRef<Literal[]>,
+  conclusionsFilter: MaybeRef<Id[] | null>,
+) {
+  const payload = useEvaluationRequestPayload(
+    atoms,
+    conjunctions,
+    connections,
+    observations,
+    assumptions,
+    conclusionsFilter,
+    'get_sequence_explanations',
+  )
+  return useEvaluationRequest(payload, handleSequenceExplanationReply)
 }
 
 const explanationReplySchema = {
@@ -108,7 +132,7 @@ function handleExplanationReply(reply: string) {
     console.error(`Unexpected explantion reply`, reply, error)
     return {
       result: null,
-      error: 'Unexpected evaluation result.',
+      error: 'Unexpected explantion reply.',
     }
   }
 
@@ -138,17 +162,126 @@ function handleExplanationReply(reply: string) {
     console.error(`Unexpected explantion reply`, replyObject, validateExplanationReply.errors)
     return {
       result: null,
-      error: 'Unexpected evaluation result.',
+      error: 'Unexpected explantion reply.',
     }
   }
 }
 
+const sequenceExplanationReplySchema = {
+  definitions: {
+    Argument: {
+      type: 'string',
+    },
+    AttackDTO: {
+      type: 'object',
+      properties: {
+        attacker: { $ref: '#/definitions/Argument' },
+        attacked: { $ref: '#/definitions/Argument' },
+      },
+      required: ['attacker', 'attacked'],
+      additionalProperties: false,
+    },
+    DialectialSequenceExplanationDTO: {
+      type: 'object',
+      properties: {
+        argument: { $ref: '#/definitions/Argument' },
+        supporters: {
+          type: 'array',
+          items: {
+            type: 'array',
+            items: { $ref: '#/definitions/Argument' },
+          },
+        },
+        defeated: {
+          type: 'array',
+          items: {
+            type: 'array',
+            items: { $ref: '#/definitions/Argument' },
+          },
+        },
+      },
+      required: ['argument', 'supporters', 'defeated'],
+      additionalProperties: false,
+    },
+  },
+  type: 'object',
+  properties: {
+    attacks: {
+      type: 'array',
+      items: { $ref: '#/definitions/AttackDTO' },
+    },
+    perAtomSequenceExplanations: {
+      type: 'object',
+      additionalProperties: {
+        type: 'array',
+        items: { $ref: '#/definitions/DialectialSequenceExplanationDTO' },
+      },
+    },
+  },
+  required: ['attacks', 'perAtomSequenceExplanations'],
+  additionalProperties: false,
+}
+
+const validateSequenceExplanationReply = ajv.compile(sequenceExplanationReplySchema)
+
+export type Argument = string
+
+export interface SequenceExplanationReply {
+  attacks: AttackDTO[]
+  perAtomSequenceExplanations: Record<string, DialectialSequenceExplanationDTO[]>
+}
+
+export interface AttackDTO {
+  attacker: Argument
+  attacked: Argument
+}
+
+export interface DialectialSequenceExplanationDTO {
+  argument: Argument
+  supporters: Argument[][]
+  defeated: Argument[][]
+}
+
+function handleSequenceExplanationReply(reply: string): ResultOrError<SequenceExplanationReply> {
+  let replyObject
+  try {
+    replyObject = JSON.parse(reply)
+  } catch (error) {
+    console.error(`Unexpected sequence explantion reply`, reply, error)
+    return {
+      result: null,
+      error: 'Unexpected sequence explantion reply.',
+    }
+  }
+
+  const valid = validateSequenceExplanationReply(replyObject)
+
+  if (!valid) {
+    console.error(
+      `Unexpected sequence explantion reply`,
+      replyObject,
+      validateSequenceExplanationReply.errors,
+    )
+    return {
+      result: null,
+      error: 'Unexpected evaluation reply.',
+    }
+  }
+
+  return {
+    result: replyObject as SequenceExplanationReply,
+    error: null,
+  }
+}
+
+interface ResultOrError<ResultT> {
+  result: ResultT | null
+  error: string | null
+}
+
 export function useEvaluationRequest<ResultT>(
   payload: MaybeRef<EvaluationRequestPayload | NonEvaluableKnowledgebaseError>,
-  handleReply: (reply: string) => {
-    result: ResultT | null
-    error: string | null
-  },
+  handleReply: (reply: string) => ResultOrError<ResultT>,
 ) {
   const url = window.TWEETY_API_URL + '/causal'
 

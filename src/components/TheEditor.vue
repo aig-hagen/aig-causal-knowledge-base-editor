@@ -22,6 +22,10 @@ import { hasMoreThenOneEntry, hasOneEntry } from '@/util/types'
 const editorCommit = import.meta.env.VITE_EDITOR_COMMIT?.slice(0, 7)
 const editorVersion = import.meta.env.VITE_EDITOR_VERSION
 
+const { previewFeatures } = defineProps<{
+  previewFeatures: boolean
+}>()
+
 const showEvaluationConsole = ref<boolean>(true)
 const atomIdsToHighlightIndependentOnOpenEvaluationConsole = ref<Id[]>([])
 
@@ -1370,6 +1374,7 @@ useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
     <div class="evaluation-console-wrapper">
       <TheEvaluationConsole
         v-if="showEvaluationConsole"
+        :preview-features="previewFeatures"
         v-model:atomIdsToHighlight="atomIdsToHighlightIndependentOnOpenEvaluationConsole"
       />
     </div>

@@ -53,7 +53,74 @@ export interface NodePosition {
   y: number
 }
 
+export interface NodeGUIEditability {
+  fixedPosition?: FixedAxis
+  deletable?: boolean
+  labelEditable?: boolean
+  allowIncomingLinks?: boolean
+  allowOutgoingLinks?: boolean
+}
+
+export interface FixedAxis {
+  x: boolean
+  y: boolean
+}
+
+export interface LinkGUIEditability {
+  deletable?: boolean
+  labelEditable?: boolean
+}
+
+export interface GraphConfiguration {
+  // nodes
+  nodeProps: NodeProps //also individual element option
+  nodeGUIEditability: NodeGUIEditability //also individual element option
+  nodeAutoGrowToLabelSize: boolean
+  showNodeLabels: boolean
+  nodePhysicsEnabled: boolean
+
+  // links
+  linkGUIEditability: LinkGUIEditability //also individual element option
+  showLinkLabels: boolean
+  fixedLinkDistanceEnabled: boolean
+
+  // graph component
+  allowNodeCreationViaGUI: boolean
+  zoomEnabled: boolean
+
+  // marker
+  markerBoxSize: number
+  markerPadding: number
+  markerRef: number
+  arrowPoints: [number, number][]
+  markerPath: string
+
+  //canvas
+  readonly isCanvasBoundToView: boolean
+
+  nodeGroupsFn: (id: number) => Set<number>
+}
+
+type GraphConfigurationInput = Partial<
+  Pick<
+    GraphConfiguration,
+    | 'zoomEnabled'
+    | 'nodePhysicsEnabled'
+    | 'fixedLinkDistanceEnabled'
+    | 'showNodeLabels'
+    | 'showLinkLabels'
+    | 'allowNodeCreationViaGUI'
+    | 'nodeAutoGrowToLabelSize'
+    | 'nodeProps'
+    | 'nodeGUIEditability'
+    | 'linkGUIEditability'
+  >
+>
+
 export interface GraphComponent {
+  toggleNodePhysics(isEnabled: boolean): void
+  toggleZoom(isEnabled: boolean): void
+  setDefaults(configInput: GraphConfigurationInput): void
   deleteElement(ids: string[] | number[] | string | number | undefined): void
   createNode(
     props: NodeProps,
@@ -77,4 +144,8 @@ export interface GraphComponent {
   getNodeFixedPosition(id: number): NodePosition
   setNodeFixedPosition(position: NodePosition, id: number): void
   setNodePosition(position: NodePosition, id: number): void
+  setEditability(
+    editability: NodeGUIEditability | LinkGUIEditability,
+    ids: string[] | number[] | string | number | undefined,
+  ): void
 }

@@ -8,9 +8,15 @@ import type { Atom, Id } from '@/model/graphicalCausalKnowledgeBase'
 import {
   useConclusionEvaluationRequest,
   useExplanationEvaluationRequest,
+  useSequenceExplanationEvaluationRequest,
 } from '@/composables/useEvaluationRequest'
 import EvaluationErrorText from './EvaluationBlockerText.vue'
 import ExplanationText from './ExplanationText.vue'
+import SequenceExplanationText from './SequenceExplanationText.vue'
+
+const { previewFeatures } = defineProps<{
+  previewFeatures: boolean
+}>()
 
 const emit = defineEmits<{
   'update:atomIdsToHighlight': [atomIdsToHighlight: Id[]]
@@ -152,6 +158,13 @@ watchEffect(() => {
   emit('update:atomIdsToHighlight', getAtomIdsToHighlight())
 })
 
+const conclusionFilterEvaluation = computed(() => {
+  const selectedAtomToShowConclusionForValue = selectedAtomToShowConclusionFor.value
+  return selectedAtomToShowConclusionForValue === nonSelected
+    ? null
+    : [selectedAtomToShowConclusionForValue]
+})
+
 const {
   evaluationBlocker: conclusionsEvaluationBlocker,
   evaluate: evaluateConclusions,
@@ -165,7 +178,15 @@ const {
   computed(() => [...knowledgeBase.connections.values()]),
   obserervationAtoms,
   assumptions,
+  conclusionFilterEvaluation,
 )
+
+const conclusionFilterExplanation = computed(() => {
+  const selectedAtomToShowExplanationForValue = selectedAtomToShowExplanationFor.value
+  return selectedAtomToShowExplanationForValue === null
+    ? null
+    : [selectedAtomToShowExplanationForValue]
+})
 
 const {
   evaluate: evaluateExplanations,
@@ -179,6 +200,22 @@ const {
   computed(() => [...knowledgeBase.connections.values()]),
   obserervationAtoms,
   assumptions,
+  conclusionFilterExplanation,
+)
+
+const {
+  evaluate: evaluateSequenceExplanations,
+  abortEvaluation: abortSequenceExplanationEvaluation,
+  isEvaluating: isEvaluatingSequenceExplanations,
+  evaluationError: sequenceExplanationEvaluationError,
+  evaluationResult: sequenceExplanationEvaluationResult,
+} = useSequenceExplanationEvaluationRequest(
+  computed(() => new Set(knowledgeBase.atoms.keys())),
+  computed(() => new Set(knowledgeBase.operators.keys())),
+  computed(() => [...knowledgeBase.connections.values()]),
+  obserervationAtoms,
+  assumptions,
+  conclusionFilterExplanation,
 )
 </script>
 
@@ -374,6 +411,81 @@ const {
               <ExplanationText
                 :atoms="knowledgeBase.atoms"
                 :per-atom-id-significant-atom-ids="explanationEvaluationResult"
+                :requesed-atom-for-explanation="selectedAtomToShowExplanationFor"
+              />
+            </div>
+          </article>
+        </div>
+      </div>
+      <div v-if="previewFeatures" class="columns">
+        <div class="column is-full">
+          <form
+            @submit.prevent="
+              () => {
+                if (evaluateSequenceExplanations !== null) evaluateSequenceExplanations()
+              }
+            "
+          >
+            <div class="field is-grouped is-gapless">
+              <div class="field has-addons is-flex-grow-1">
+                <div class="control">
+                  <button
+                    :disabled="
+                      evaluateSequenceExplanations === null ||
+                      selectedAtomToShowExplanationFor === null
+                    "
+                    type="submit"
+                    class="button is-primary"
+                  >
+                    Explain (Sequence)
+                  </button>
+                </div>
+                <div class="control is-flex-grow-1">
+                  <div class="select is-fullwidth">
+                    <select
+                      class="is-fullwidt"
+                      v-model="selectedAtomToShowExplanationFor"
+                      :disabled="
+                        evaluateSequenceExplanations === null ||
+                        atomsToShowConclusionFor.length === 1
+                      "
+                    >
+                      <option v-for="atom in atoms" :key="atom.id" :value="atom.id">
+                        {{ getDisplayName(atom, false) }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+                <div class="control">
+                  <button
+                    v-if="abortSequenceExplanationEvaluation !== null"
+                    type="button"
+                    class="button"
+                    @click="abortSequenceExplanationEvaluation()"
+                  >
+                    Abort
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="columns" v-if="selectedAtomToShowExplanationFor !== null">
+        <div class="column is-full">
+          <article v-if="isEvaluatingSequenceExplanations" class="message">
+            <div class="message-body is-size-6">Computing explanation...</div>
+          </article>
+          <article v-if="sequenceExplanationEvaluationError !== null" class="message is-danger">
+            <div class="message-body is-size-6">
+              {{ sequenceExplanationEvaluationError }}
+            </div>
+          </article>
+          <article v-if="sequenceExplanationEvaluationResult !== null" class="message is-dark">
+            <div class="message-body is-size-6">
+              <SequenceExplanationText
+                :atoms="knowledgeBase.atoms"
+                :sequence-explanation-reply="sequenceExplanationEvaluationResult"
                 :requesed-atom-for-explanation="selectedAtomToShowExplanationFor"
               />
             </div>

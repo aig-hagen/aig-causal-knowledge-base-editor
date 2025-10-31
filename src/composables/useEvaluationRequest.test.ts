@@ -202,7 +202,7 @@ it('should report unexpected literal as an error', async () => {
 
   const { result, error } = await useOkResponse(response)
 
-  expect(error).toBe(`Unexpected evaluation result.`)
+  expect(error).toBe(`Unexpected evaluation reply.`)
   expect(result).toBeNull()
 })
 

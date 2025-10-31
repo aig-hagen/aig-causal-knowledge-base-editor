@@ -1,5 +1,5 @@
 import { findCycle } from '@/model/cycles'
-import type { Connection, ConnectionId } from '@/model/graphicalCausalKnowledgeBase'
+import type { Connection, ConnectionId, Id } from '@/model/graphicalCausalKnowledgeBase'
 import { computed, unref, type ComputedRef, type MaybeRef } from 'vue'
 
 export interface Atom {
@@ -57,12 +57,16 @@ export class EmptyKnowlegeBaseError extends NonEvaluableKnowledgebaseError {
   }
 }
 
-type EvaluationRequestPayloadCmd = 'get_conclusions' | 'get_significant_atoms'
+type EvaluationRequestPayloadCmd =
+  | 'get_conclusions'
+  | 'get_significant_atoms'
+  | 'get_sequence_explanations'
 
 export interface EvaluationRequestPayload {
   cmd: EvaluationRequestPayloadCmd
   kb: string
   observations: string
+  conclusions_filter?: string
   timeout: number
   unit_timeout: string
 }
@@ -73,6 +77,7 @@ export function useEvaluationRequestPayload(
   connections: MaybeRef<Connection[]>,
   observations: MaybeRef<Literal[]>,
   assumptions: MaybeRef<Literal[]>,
+  conclusionsFilter: MaybeRef<Id[] | null>,
   cmd: EvaluationRequestPayloadCmd,
 ): ComputedRef<NonEvaluableKnowledgebaseError | EvaluationRequestPayload> {
   return computed(() => {
@@ -82,6 +87,7 @@ export function useEvaluationRequestPayload(
       unref(connections),
       unref(observations),
       unref(assumptions),
+      unref(conclusionsFilter),
       unref(cmd),
     )
   })
@@ -93,6 +99,7 @@ function constructEvaluationRequestPayload(
   connections: Connection[],
   observations: Literal[],
   assumptions: Literal[],
+  conclusionsFilter: number[] | null,
   cmd: EvaluationRequestPayloadCmd,
 ): NonEvaluableKnowledgebaseError | EvaluationRequestPayload {
   const observationsPayload = observations.map(getLiteralString).join(', ')
@@ -111,11 +118,15 @@ function constructEvaluationRequestPayload(
     .map(getLiteralString)
     .join(', ')
 
+  const conclusionsFilterPayload =
+    conclusionsFilter === null ? undefined : conclusionsFilter.join(', ')
+
   return {
     cmd: cmd,
     kb: [...equations, `{${assumptionsPayload}}`].join('\n'),
     observations: observationsPayload,
-    timeout: 10,
+    conclusions_filter: conclusionsFilterPayload,
+    timeout: 300,
     unit_timeout: 's',
   }
 }
