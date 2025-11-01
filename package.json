@@ -59,7 +59,7 @@
     "npm-run-all2": "8.0.4",
     "playwright": "1.56.1",
     "prettier": "3.6.2",
-    "sass-embedded": "1.93.2",
+    "sass-embedded": "1.93.3",
     "typescript": "5.9.3",
     "vite": "7.1.12",
     "vite-plugin-static-copy": "3.1.4",
