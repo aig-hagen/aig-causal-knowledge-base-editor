@@ -3,11 +3,7 @@ import type { Atom, Conjunction, ConnectionId, Id } from '@/model/graphicalCausa
 import { getConnectionKey, useKnowledgeBase } from '@/stores/knowledgeBase'
 import { useNotifications } from '@/stores/notifications'
 import { useDebounceFn, useEventListener } from '@vueuse/core'
-import saveAs from 'file-saver'
 import { computed, nextTick, onMounted, ref, useTemplateRef, watchEffect } from 'vue'
-import exampleDrowning from '@/assets/examples/drowning.json'
-import exampleDiagnosis from '@/assets/examples/diagnosis.json'
-import TheEvaluationConsole from '@/components/TheEvaluationConsole.vue'
 
 import {
   NodeShape,
@@ -16,36 +12,16 @@ import {
   type NodeSizeRect,
 } from '@/util/graphComponentTypes'
 
-import ControlsExplanation from './ControlsExplanation.vue'
-import { hasMoreThenOneEntry, hasOneEntry } from '@/util/types'
+import { hasMoreThenOneEntry } from '@/util/types'
 
-const editorCommit = import.meta.env.VITE_EDITOR_COMMIT?.slice(0, 7)
-const editorVersion = import.meta.env.VITE_EDITOR_VERSION
-
-const { previewFeatures } = defineProps<{
-  previewFeatures: boolean
-}>()
-
-const showEvaluationConsole = ref<boolean>(true)
-const atomIdsToHighlightIndependentOnOpenEvaluationConsole = ref<Id[]>([])
-
-const atomIdsToHighlight = computed(() => {
-  if (!showEvaluationConsole.value) {
-    return []
-  }
-  return atomIdsToHighlightIndependentOnOpenEvaluationConsole.value
+defineExpose({
+  getExportedData,
+  loadKnowledgeBase,
 })
 
-function toogleEvaluationConsole() {
-  showEvaluationConsole.value = !showEvaluationConsole.value
-}
-
-const isNavbarBurgerActive = ref<boolean>(false)
-function toogleNavbarBurgerActive() {
-  isNavbarBurgerActive.value = !isNavbarBurgerActive.value
-}
-
-const isShowControlExplanationModal = ref(false)
+const { atomIdsToHighlight } = defineProps<{
+  atomIdsToHighlight: Id[]
+}>()
 
 const { addSuccessNotification, addErrorNotification, clearNotifications } = useNotifications()
 
@@ -136,12 +112,6 @@ computed(() => {
 const nameInput = useTemplateRef<HTMLInputElement>('name-input')
 const negatedInput = useTemplateRef<HTMLInputElement>('negated-input')
 
-const fileInput = useTemplateRef<HTMLInputElement>('file-input')
-
-function triggerFileUpload() {
-  fileInput.value?.click()
-}
-
 watchEffect(() => {
   const nodeElements = document.getElementsByClassName(
     'graph-controller__node',
@@ -168,7 +138,7 @@ function updateOperatorHighlightingForExplanation(operatorId: number) {
   if (nodeElement !== null) {
     // TODO Simplify logic
     // Fix with https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/317
-    if (atomIdsToHighlight.value.length !== 0 && isNodeHighlighted(operatorId)) {
+    if (atomIdsToHighlight.length !== 0 && isNodeHighlighted(operatorId)) {
       nodeElement.style.filter = `url(#${ID_DEF_COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION})`
     } else {
       nodeElement.style.filter = ''
@@ -182,7 +152,7 @@ function updateConnectionHighlightingForExplanation(connectionId: ConnectionId) 
     // TODO Simplify logic
     // Fix with https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/317
     const isHighlighted =
-      atomIdsToHighlight.value.length !== 0 &&
+      atomIdsToHighlight.length !== 0 &&
       (isNodeHighlighted(connectionId.sourceId) ||
         someAncestorHighlighted(connectionId.sourceId)) &&
       (isNodeDirectlyHighlighted(connectionId.targetId) ||
@@ -196,15 +166,15 @@ function updateConnectionHighlightingForExplanation(connectionId: ConnectionId) 
 }
 
 function isNodeHighlightedForExplanation(atomId: number) {
-  return atomIdsToHighlight.value.includes(atomId)
+  return atomIdsToHighlight.includes(atomId)
 }
 
 function isNodeDirectlyHighlighted(nodeId: number): boolean {
-  if (atomIdsToHighlight.value.length === 0) {
+  if (atomIdsToHighlight.length === 0) {
     return true
   }
 
-  return atomIdsToHighlight.value.includes(nodeId)
+  return atomIdsToHighlight.includes(nodeId)
 }
 
 function isNodeHighlighted(nodeId: number) {
@@ -222,7 +192,7 @@ function someAncestorHighlighted(nodeId: number): boolean {
 
   return ancestors.some((ancestor) => {
     if (knowledgeBase.atoms.has(ancestor)) {
-      return atomIdsToHighlight.value.includes(ancestor)
+      return atomIdsToHighlight.includes(ancestor)
     }
     return someAncestorHighlighted(ancestor)
   })
@@ -235,7 +205,7 @@ function someDescendentHighlighed(nodeId: number): boolean {
 
   return descendents.some((descendent) => {
     if (knowledgeBase.atoms.has(descendent)) {
-      return atomIdsToHighlight.value.includes(descendent)
+      return atomIdsToHighlight.includes(descendent)
     }
     return someDescendentHighlighed(descendent)
   })
@@ -749,69 +719,13 @@ function setLabel(nodeId: number, newName: string) {
   graphInstance.setLabel(newName, nodeId)
 }
 
-function saveKnowledgeBase() {
-  function pad(value: number, maxLenght: number): string {
-    return value.toString().padStart(maxLenght, '0')
-  }
-
+function getExportedData() {
   knowledgeBase.updatePositionData(graphInstanceRef.value.getGraph())
   const knowledgeBaseData = knowledgeBase.knowledgeBaseExport
-  const json = JSON.stringify(knowledgeBaseData, null, 2)
-  const blob = new Blob([json], { type: 'application/json;charset=utf-8' })
-  const now = new Date()
-  const fileName = `${pad(now.getFullYear(), 4)}-${pad(now.getMonth() + 1, 2)}-${pad(now.getDate(), 2)}.knowledgeBase.json`
-  saveAs(blob, fileName)
-}
-
-function loadTextData(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.addEventListener('load', () => {
-      resolve(reader.result as string)
-    })
-    reader.addEventListener('error', () => {
-      const error = reader.error
-      if (error === null) {
-        throw new Error('Error callback called but reader provided no error.')
-      }
-      reject(error)
-    })
-    reader.readAsText(file)
-  })
-}
-
-async function loadKnowledgeBaseFromFileInput(inputEvent: Event) {
-  const input = inputEvent.target as HTMLInputElement
-  const files = [...(input.files ?? [])]
-  if (files.length === 0) return
-  if (!hasOneEntry(files)) throw new Error('Only one file can be loaded at a time.')
-  const file = files[0]
-
-  async function loadFileData() {
-    const text = await loadTextData(file)
-    return { fileName: file.name, fileText: text }
+  return {
+    data: knowledgeBaseData,
+    fileNamePart: 'knowledgeBase',
   }
-
-  await loadKnowledgeBase(loadFileData)
-}
-
-async function loadExampleDrowning() {
-  function loadFileData() {
-    return Promise.resolve({ fileName: 'drowning.json', fileText: JSON.stringify(exampleDrowning) })
-  }
-
-  await loadKnowledgeBase(loadFileData)
-}
-
-async function loadExampleDiagnosis() {
-  function loadFileData() {
-    return Promise.resolve({
-      fileName: 'diagnosis.json',
-      fileText: JSON.stringify(exampleDiagnosis),
-    })
-  }
-
-  await loadKnowledgeBase(loadFileData)
 }
 
 async function loadKnowledgeBase(
@@ -1065,239 +979,138 @@ useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
 </script>
 
 <template>
-  <div class="editor-component-wrapper" :class="{ 'evaluation-active': showEvaluationConsole }">
-    <div class="navbar-container">
-      <nav class="navbar" role="navigation" aria-label="main navigation">
-        <div class="navbar-brand">
-          <div class="navbar-item">
-            <img
-              src="@/assets/logoaig2025_transparent.png"
-              alt="Artificial Intelligence Group of the Faculty of Mathematics and Computer Science"
-            />
-          </div>
-          <div class="navbar-item pt-0">
-            <span class="title is-3 has-text-weight-bold">Causal Knowledge Base Editor</span>
-          </div>
+  <graph-component
+    @click="updateSelection($event.target)"
+    @nodedeleted="onNodeDeleted"
+    ref="graph-component-element"
+  ></graph-component>
 
-          <a
-            role="button"
-            class="navbar-burger"
-            :class="{ 'is-active': isNavbarBurgerActive }"
-            aria-label="menu"
-            aria-expanded="false"
-            data-target="navbarEditor"
-            @click="toogleNavbarBurgerActive"
-          >
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-          </a>
-        </div>
-
-        <div id="navbarEditor" class="navbar-menu" :class="{ 'is-active': isNavbarBurgerActive }">
-          <div class="navbar-start">
-            <div class="navbar-item has-dropdown is-hoverable">
-              <a class="navbar-link">Data</a>
-              <div class="navbar-dropdown">
-                <a class="navbar-item" @click="saveKnowledgeBase()">Save to disk</a>
-                <a class="navbar-item" @click="triggerFileUpload()">Load from disk</a>
-                <input
-                  ref="file-input"
-                  type="file"
-                  v-show="false"
-                  accept="application/json"
-                  @change="loadKnowledgeBaseFromFileInput($event)"
-                />
-                <a class="navbar-item" @click="loadExampleDiagnosis"
-                  ><span>Load example <em>Diagnosis</em></span></a
-                >
-                <a class="navbar-item" @click="loadExampleDrowning"
-                  ><span>Load example <em>Drowning</em></span></a
-                >
-              </div>
-            </div>
-            <div class="navbar-item has-dropdown is-hoverable">
-              <a class="navbar-link">View</a>
-
-              <div class="navbar-dropdown">
-                <a class="navbar-item" @click="toogleEvaluationConsole">
-                  {{ showEvaluationConsole ? 'Hide' : 'Show' }} evaluation console
-                </a>
-              </div>
-            </div>
-            <div class="navbar-item has-dropdown is-hoverable">
-              <a class="navbar-link">Docs</a>
-
-              <div class="navbar-dropdown">
-                <a class="navbar-item" @click="isShowControlExplanationModal = true"> Controls </a>
-                <a class="navbar-item" target="_blank" rel="noopener" href="/docs/user-guide.html">
-                  User guide &#8599;</a
-                >
-                <hr
-                  v-if="editorVersion !== undefined || editorCommit !== undefined"
-                  class="navbar-divider"
-                />
-                <a
-                  v-if="editorVersion !== undefined"
-                  class="navbar-item"
-                  target="_blank"
-                  rel="noopener"
-                  :href="`https://github.com/aig-hagen/aig-causal-knowledge-base-editor/releases/tag/${editorVersion}`"
-                >
-                  Version {{ editorVersion }} &#8599;</a
-                >
-                <a
-                  v-if="editorCommit !== undefined"
-                  class="navbar-item"
-                  target="_blank"
-                  rel="noopener"
-                  :href="`https://github.com/aig-hagen/aig-causal-knowledge-base-editor/commit/${editorCommit}`"
-                >
-                  Commit {{ editorCommit }} &#8599;</a
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-    </div>
-    <div class="editor">
-      <graph-component
-        @click="updateSelection($event.target)"
-        @nodedeleted="onNodeDeleted"
-        ref="graph-component-element"
-      ></graph-component>
-
-      <div class="menu menu-left">
-        <div class="node-selection p-2">
-          <div class="title is-5 m-0"><h1>Atoms</h1></div>
-          <div class="type p-2">
-            <div
-              class="atom-type-legend"
-              :style="{
-                background: COLOR_BACKGROUND_ATOM,
-              }"
-            ></div>
-            Background atom
-          </div>
-          <div class="type p-2">
-            <div
-              class="atom-type-legend"
-              :style="{ backgroundColor: COLOR_EXPLAINABLE_ATOM }"
-            ></div>
-            Explainable atom
-          </div>
-          <div class="title is-5 m-0"><h1>Causal relation</h1></div>
-          <div class="type p-2">
-            <!-- https://en.wikipedia.org/wiki/Wedge_(symbol) -->
-            <div class="operator-type-legend" :style="{ backgroundColor: COLOR_CONJUNCTION }"></div>
-            Independent
-          </div>
-          <div class="type p-2">
-            <!-- https://en.wikipedia.org/wiki/Wedge_(symbol) -->
-            <div class="operator-type-legend" :style="{ backgroundColor: COLOR_CONJUNCTION }">
-              {{ LABEL_CONJUNCTION }}
-            </div>
-            Dependent
-          </div>
-          <div class="type p-2">
-            <div class="link-type-legend" :style="{ color: COLOR_REGULAR_LINKS }">&#8594;</div>
-            Regular
-          </div>
-          <div class="type p-2">
-            <div class="link-type-legend" :style="{ color: COLOR_NEGATED_LINKS }">&#8594;</div>
-            Negated
-          </div>
-          <div class="title is-5 m-0"><h1>Highlighting</h1></div>
-          <div class="type p-2">
-            <div
-              class="atom-type-legend"
-              :style="{
-                background: 'white',
-                // Generated with https://css-tricks.com/more-control-over-css-borders-with-background-image/
-                backgroundImage: `repeating-linear-gradient(0deg, ${COLOR_HIGHLIGHT_SELECTED}, ${COLOR_HIGHLIGHT_SELECTED} 5px, transparent 5px, transparent 8px, ${COLOR_HIGHLIGHT_SELECTED} 8px), repeating-linear-gradient(90deg, ${COLOR_HIGHLIGHT_SELECTED}, ${COLOR_HIGHLIGHT_SELECTED} 5px, transparent 5px, transparent 8px, ${COLOR_HIGHLIGHT_SELECTED} 8px), repeating-linear-gradient(180deg, ${COLOR_HIGHLIGHT_SELECTED}, ${COLOR_HIGHLIGHT_SELECTED} 5px, transparent 5px, transparent 8px, ${COLOR_HIGHLIGHT_SELECTED} 8px), repeating-linear-gradient(270deg, ${COLOR_HIGHLIGHT_SELECTED}, ${COLOR_HIGHLIGHT_SELECTED} 5px, transparent 5px, transparent 8px, ${COLOR_HIGHLIGHT_SELECTED} 8px)`,
-                backgroundSize: `3px 100%, 100% 3px, 3px 100% , 100% 3px`,
-                backgroundPosition: '0 0, 0 0, 100% 0, 0 100%',
-                backgroundRepeat: 'no-repeat',
-              }"
-            ></div>
-            Selected for editing
-          </div>
-          <div class="type p-2">
-            <div
-              class="atom-type-legend"
-              :style="{
-                backgroundColor: 'white',
-                boxShadow: `0px 0px 6px 2px ${COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION}`,
-              }"
-            ></div>
-            Used in explanation
-          </div>
-        </div>
+  <div class="menu menu-left">
+    <div class="node-selection p-2">
+      <div class="title is-5 m-0"><h1>Atoms</h1></div>
+      <div class="type p-2">
+        <div
+          class="atom-type-legend"
+          :style="{
+            background: COLOR_BACKGROUND_ATOM,
+          }"
+        ></div>
+        Background atom
       </div>
-      <div
-        v-if="selectedAtomRef !== undefined"
-        class="menu menu-right p-2"
-        @keydown.esc="selectAtom(null)"
-      >
-        <div class="title is-5"><h1>Atom properties</h1></div>
-
-        <div class="field">
-          <label class="label">Name</label>
-          <div class="control">
-            <input
-              ref="name-input"
-              :value="selectedAtomRef.name"
-              @input="
-                (event) => {
-                  const target = (event as InputEvent).target as HTMLInputElement
-                  processNameInput(target.value)
-                }
-              "
-              class="input"
-              type="text"
-              placeholder="Name"
-            />
-          </div>
+      <div class="type p-2">
+        <div class="atom-type-legend" :style="{ backgroundColor: COLOR_EXPLAINABLE_ATOM }"></div>
+        Explainable atom
+      </div>
+      <div class="title is-5 m-0"><h1>Causal relation</h1></div>
+      <div class="type p-2">
+        <!-- https://en.wikipedia.org/wiki/Wedge_(symbol) -->
+        <div class="operator-type-legend" :style="{ backgroundColor: COLOR_CONJUNCTION }"></div>
+        Independent
+      </div>
+      <div class="type p-2">
+        <!-- https://en.wikipedia.org/wiki/Wedge_(symbol) -->
+        <div class="operator-type-legend" :style="{ backgroundColor: COLOR_CONJUNCTION }">
+          {{ LABEL_CONJUNCTION }}
         </div>
+        Dependent
+      </div>
+      <div class="type p-2">
+        <div class="link-type-legend" :style="{ color: COLOR_REGULAR_LINKS }">&#8594;</div>
+        Regular
+      </div>
+      <div class="type p-2">
+        <div class="link-type-legend" :style="{ color: COLOR_NEGATED_LINKS }">&#8594;</div>
+        Negated
+      </div>
+      <div class="title is-5 m-0"><h1>Highlighting</h1></div>
+      <div class="type p-2">
+        <div
+          class="atom-type-legend"
+          :style="{
+            background: 'white',
+            // Generated with https://css-tricks.com/more-control-over-css-borders-with-background-image/
+            backgroundImage: `repeating-linear-gradient(0deg, ${COLOR_HIGHLIGHT_SELECTED}, ${COLOR_HIGHLIGHT_SELECTED} 5px, transparent 5px, transparent 8px, ${COLOR_HIGHLIGHT_SELECTED} 8px), repeating-linear-gradient(90deg, ${COLOR_HIGHLIGHT_SELECTED}, ${COLOR_HIGHLIGHT_SELECTED} 5px, transparent 5px, transparent 8px, ${COLOR_HIGHLIGHT_SELECTED} 8px), repeating-linear-gradient(180deg, ${COLOR_HIGHLIGHT_SELECTED}, ${COLOR_HIGHLIGHT_SELECTED} 5px, transparent 5px, transparent 8px, ${COLOR_HIGHLIGHT_SELECTED} 8px), repeating-linear-gradient(270deg, ${COLOR_HIGHLIGHT_SELECTED}, ${COLOR_HIGHLIGHT_SELECTED} 5px, transparent 5px, transparent 8px, ${COLOR_HIGHLIGHT_SELECTED} 8px)`,
+            backgroundSize: `3px 100%, 100% 3px, 3px 100% , 100% 3px`,
+            backgroundPosition: '0 0, 0 0, 100% 0, 0 100%',
+            backgroundRepeat: 'no-repeat',
+          }"
+        ></div>
+        Selected for editing
+      </div>
+      <div class="type p-2">
+        <div
+          class="atom-type-legend"
+          :style="{
+            backgroundColor: 'white',
+            boxShadow: `0px 0px 6px 2px ${COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION}`,
+          }"
+        ></div>
+        Used in explanation
+      </div>
+    </div>
+  </div>
+  <div
+    v-if="selectedAtomRef !== undefined"
+    class="menu menu-right p-2"
+    @keydown.esc="selectAtom(null)"
+  >
+    <div class="title is-5"><h1>Atom properties</h1></div>
 
-        <div class="field">
-          <label class="label">Description</label>
-          <div class="control">
-            <textarea
-              v-model="selectedAtomRef.description"
-              class="textarea"
-              placeholder="Description"
-            ></textarea>
-          </div>
-        </div>
+    <div class="field">
+      <label class="label">Name</label>
+      <div class="control">
+        <input
+          ref="name-input"
+          :value="selectedAtomRef.name"
+          @input="
+            (event) => {
+              const target = (event as InputEvent).target as HTMLInputElement
+              processNameInput(target.value)
+            }
+          "
+          class="input"
+          type="text"
+          placeholder="Name"
+        />
+      </div>
+    </div>
 
-        <div class="field">
-          <label class="label">Atom type</label>
-          <div class="control">
-            <label class="radio is-block">
-              <input
-                type="radio"
-                name="question"
-                :checked="selectedAtomRef.assumption !== undefined"
-                disabled
-              />
-              Background atom
-            </label>
-            <label class="radio is-block">
-              <input
-                type="radio"
-                name="question"
-                :checked="selectedAtomRef.assumption === undefined"
-                disabled
-              />
-              Explainable atom
-            </label>
-          </div>
-        </div>
-        <!-- UI for sliders, when we enable selecting between five values again. -->
-        <!-- <div class="field" v-if="selectedAtomRef.assumption !== undefined">
+    <div class="field">
+      <label class="label">Description</label>
+      <div class="control">
+        <textarea
+          v-model="selectedAtomRef.description"
+          class="textarea"
+          placeholder="Description"
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="label">Atom type</label>
+      <div class="control">
+        <label class="radio is-block">
+          <input
+            type="radio"
+            name="question"
+            :checked="selectedAtomRef.assumption !== undefined"
+            disabled
+          />
+          Background atom
+        </label>
+        <label class="radio is-block">
+          <input
+            type="radio"
+            name="question"
+            :checked="selectedAtomRef.assumption === undefined"
+            disabled
+          />
+          Explainable atom
+        </label>
+      </div>
+    </div>
+    <!-- UI for sliders, when we enable selecting between five values again. -->
+    <!-- <div class="field" v-if="selectedAtomRef.assumption !== undefined">
         <label class="label">Assumption</label>
         <div class="control is-flex is-flex-direction-column" style="width: fit-content">
           <input
@@ -1322,138 +1135,68 @@ useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
         </div>
       </div> -->
 
-        <div class="field" v-if="selectedAtomRef.assumption !== undefined">
-          <label class="label">Assumptions</label>
-          <div class="control">
-            <div class="checkboxes">
-              <label class="checkbox">
-                <input
-                  type="checkbox"
-                  :checked="[3, 4, 5].includes(selectedAtomRef.assumption)"
-                  @change="toogleAsumption(true)"
-                />
-                true
-              </label>
-              <label class="checkbox">
-                <input
-                  type="checkbox"
-                  :checked="[1, 2, 3].includes(selectedAtomRef.assumption)"
-                  @change="toogleAsumption(false)"
-                />
-                false
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div
-        v-if="selectedConnectionRef !== undefined"
-        class="menu menu-right p-2"
-        @keydown.esc="selectConnection(null)"
-      >
-        <div class="title is-5"><h1>Relation properties</h1></div>
-        <div class="field">
-          <label class="label">Relation type</label>
-          <div class="control">
-            <div class="checkboxes">
-              <label class="checkbox">
-                <input
-                  ref="negated-input"
-                  type="checkbox"
-                  name="negated"
-                  :checked="selectedConnectionRef.negated"
-                  @change="updateLinkType(!selectedConnectionRef.negated)"
-                />
-                Negated
-              </label>
-            </div>
-          </div>
+    <div class="field" v-if="selectedAtomRef.assumption !== undefined">
+      <label class="label">Assumptions</label>
+      <div class="control">
+        <div class="checkboxes">
+          <label class="checkbox">
+            <input
+              type="checkbox"
+              :checked="[3, 4, 5].includes(selectedAtomRef.assumption)"
+              @change="toogleAsumption(true)"
+            />
+            true
+          </label>
+          <label class="checkbox">
+            <input
+              type="checkbox"
+              :checked="[1, 2, 3].includes(selectedAtomRef.assumption)"
+              @change="toogleAsumption(false)"
+            />
+            false
+          </label>
         </div>
       </div>
     </div>
-    <div class="evaluation-console-wrapper">
-      <TheEvaluationConsole
-        v-if="showEvaluationConsole"
-        :preview-features="previewFeatures"
-        v-model:atomIdsToHighlight="atomIdsToHighlightIndependentOnOpenEvaluationConsole"
-      />
-    </div>
-    <div
-      class="overlay"
-      v-if="loadingData"
-      :style="{
-        background: `linear-gradient(120deg, ${COLOR_BACKGROUND_ATOM_TRANSPARENT} 0%, ${COLOR_EXPLAINABLE_ATOM_TRANSPARENT} 100%)`,
-      }"
-    >
-      <div class="overlay-content">
-        <progress class="progress is-small is-primary" max="100">15%</progress>
+  </div>
+  <div
+    v-if="selectedConnectionRef !== undefined"
+    class="menu menu-right p-2"
+    @keydown.esc="selectConnection(null)"
+  >
+    <div class="title is-5"><h1>Relation properties</h1></div>
+    <div class="field">
+      <label class="label">Relation type</label>
+      <div class="control">
+        <div class="checkboxes">
+          <label class="checkbox">
+            <input
+              ref="negated-input"
+              type="checkbox"
+              name="negated"
+              :checked="selectedConnectionRef.negated"
+              @change="updateLinkType(!selectedConnectionRef.negated)"
+            />
+            Negated
+          </label>
+        </div>
       </div>
     </div>
-    <ControlsExplanation v-model:show="isShowControlExplanationModal" />
+  </div>
+  <div
+    class="overlay"
+    v-if="loadingData"
+    :style="{
+      background: `linear-gradient(120deg, ${COLOR_BACKGROUND_ATOM_TRANSPARENT} 0%, ${COLOR_EXPLAINABLE_ATOM_TRANSPARENT} 100%)`,
+    }"
+  >
+    <div class="overlay-content">
+      <progress class="progress is-small is-primary" max="100">15%</progress>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.navbar-container {
-  grid-row: 1;
-  grid-column: 1 / span 2;
-  width: max-content;
-}
-
-.navbar-container > .navbar {
-  border-bottom-right-radius: 4px;
-  border-bottom: 2px solid black;
-  border-right: 2px solid black;
-}
-
-.editor-component-wrapper {
-  display: grid;
-  grid-template-rows: max-content 1fr;
-  grid-template-columns: 1fr 512px;
-  grid-auto-flow: column;
-  height: 100vh;
-}
-
-.editor {
-  grid-row: 2;
-  grid-column: 1 / span 2;
-}
-
-.editor-component-wrapper.evaluation-active > .editor {
-  grid-row: 2;
-  grid-column: 1;
-}
-
-.editor-component-wrapper.evaluation-active > .evaluation-console-wrapper {
-  grid-row: 1 / span 2;
-  grid-column: 2;
-  height: 100%;
-  width: 100%;
-  border-left: 2px solid black;
-}
-
-@media (max-width: 1279px) {
-  .navbar-container {
-    position: static;
-    grid-column: 1 / span 2;
-    width: unset;
-  }
-
-  .navbar-container > .navbar {
-    border-bottom-right-radius: 0;
-    border-right: none;
-  }
-
-  .editor-component-wrapper.evaluation-active > .evaluation-console-wrapper {
-    grid-row: 2;
-  }
-}
-
-.editor {
-  position: relative;
-  height: 100%;
-}
-
 .overlay {
   position: fixed;
   top: 0;

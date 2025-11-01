@@ -2,6 +2,11 @@
 import { nextTick, useTemplateRef, watchEffect } from 'vue'
 
 const show = defineModel<boolean>('show', { required: true })
+const { sourceName, targetName, linkName } = defineProps<{
+  sourceName: string
+  targetName: string
+  linkName: string
+}>()
 
 function hideControlExplanationModal() {
   show.value = false
@@ -37,24 +42,26 @@ watchEffect(() => {
           </thead>
           <tbody>
             <tr>
-              <td>Create atom</td>
+              <td>Create {{ sourceName }}</td>
               <td><kbd>Left double-click</kbd> on canvas</td>
             </tr>
             <tr>
-              <td>Delete atom</td>
-              <td><kbd>Right-click</kbd> on atom and hold</td>
+              <td>Delete {{ sourceName }}</td>
+              <td><kbd>Right-click</kbd> on {{ sourceName }} and hold</td>
             </tr>
             <tr>
-              <td>Move atom</td>
-              <td><kbd>Left-click</kbd> on atom, hold and drag</td>
+              <td>Move {{ sourceName }}</td>
+              <td><kbd>Left-click</kbd> on {{ sourceName }}, hold and drag</td>
             </tr>
             <tr>
-              <td>Create relation</td>
-              <td><kbd>Right-click</kbd> on atom, hold and drag towards port</td>
+              <td>Create {{ linkName }}</td>
+              <td>
+                <kbd>Right-click</kbd> on {{ sourceName }}, hold and drag towards {{ targetName }}
+              </td>
             </tr>
             <tr>
-              <td>Delete relation</td>
-              <td><kbd>Right-click</kbd> on relation and hold</td>
+              <td>Delete {{ linkName }}</td>
+              <td><kbd>Right-click</kbd> on {{ linkName }} and hold</td>
             </tr>
             <tr>
               <td>Pan</td>
