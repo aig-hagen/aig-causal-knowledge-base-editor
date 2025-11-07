@@ -5,6 +5,7 @@ import { hasOneEntry } from '@/util/types'
 import saveAs from 'file-saver'
 
 const {
+  title,
   getExportedData,
   loadFromFileData,
   datasets,
@@ -12,8 +13,9 @@ const {
   sidebarRightName,
   controlElementNames,
 } = defineProps<{
-  getExportedData(): { data: unknown; fileNamePart: string }
-  loadFromFileData(loadFileData: () => Promise<{ fileName: string; fileText: string }>): void
+  title: string
+  getExportedData?(): { data: unknown; fileNamePart: string }
+  loadFromFileData?(loadFileData: () => Promise<{ fileName: string; fileText: string }>): void
   datasets: { name: string; load(): void }[]
   showSidebarRight: boolean
   sidebarRightName?: string
@@ -54,6 +56,10 @@ function loadFromFileInput(inputEvent: Event) {
     return { fileName: file.name, fileText: text }
   }
 
+  if (loadFromFileData === undefined) {
+    throw Error('Illegal state: Trying to load data without specified load function.')
+  }
+
   loadFromFileData(loadFileData)
 }
 
@@ -85,6 +91,10 @@ function saveToFile() {
     return value.toString().padStart(maxLenght, '0')
   }
 
+  if (getExportedData === undefined) {
+    throw Error('Illegal state: Trying to export data without specified export function.')
+  }
+
   const { data, fileNamePart } = getExportedData()
   const json = JSON.stringify(data, null, 2)
   const blob = new Blob([json], { type: 'application/json;charset=utf-8' })
@@ -104,7 +114,7 @@ function saveToFile() {
         />
       </div>
       <div class="navbar-item pt-0">
-        <span class="title is-3 has-text-weight-bold">Causal Knowledge Base Editor</span>
+        <span class="title is-3 has-text-weight-bold"> {{ title }}</span>
       </div>
 
       <a
@@ -125,11 +135,18 @@ function saveToFile() {
 
     <div id="navbarEditor" class="navbar-menu" :class="{ 'is-active': isNavbarBurgerActive }">
       <div class="navbar-start">
-        <div class="navbar-item has-dropdown is-hoverable">
+        <div
+          class="navbar-item has-dropdown is-hoverable"
+          v-if="
+            getExportedData !== undefined || loadFromFileData !== undefined || datasets.length > 0
+          "
+        >
           <a class="navbar-link">Data</a>
           <div class="navbar-dropdown">
-            <a class="navbar-item" @click="saveToFile()">Save to disk</a>
-            <a class="navbar-item" @click="triggerFileUpload()">Load from disk</a>
+            <a v-if="getExportedData" class="navbar-item" @click="saveToFile()">Save to disk</a>
+            <a v-if="loadFromFileData" class="navbar-item" @click="triggerFileUpload()"
+              >Load from disk</a
+            >
             <input
               ref="file-input"
               type="file"

@@ -38,8 +38,7 @@ function loadExampleDrowning() {
     return Promise.resolve({ fileName: 'drowning.json', fileText: JSON.stringify(exampleDrowning) })
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  void editorRef.value!.loadKnowledgeBase(loadFileData)
+  loadKnowledgeBase(loadFileData)
 }
 
 function loadExampleDiagnosis() {
@@ -78,6 +77,7 @@ const atomIdsToHighlight = computed(() => {
   <EditorLayout :show-sidebar-right="showEvaluationConsole">
     <template v-slot:navbar>
       <EditorNavbar
+        title="Causal Knowledge Base Editor"
         :get-exported-data="getExportedData"
         :load-from-file-data="loadKnowledgeBase"
         :datasets="sampleDatasets"
@@ -103,4 +103,4 @@ const atomIdsToHighlight = computed(() => {
   <TheNotifications />
 </template>
 
-<style></style>
+<style scoped></style>
