@@ -2,7 +2,6 @@
 import type { Atom, Id } from '@/model/graphicalCausalKnowledgeBase'
 import { getDisplayName } from '@/stores/knowledgeBase'
 import { computed, ref, type Ref } from 'vue'
-import { hasOneEntry } from '@/util/types'
 import type {
   DialectialSequenceExplanationDTO,
   SequenceExplanationReply,

@@ -50,8 +50,7 @@ function getArgumentColor(isSupport: boolean) {
   }
 }
 
-const graphComponentElementRef = useTemplateRef<HTMLElement>('graph-component-element')
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const graphComponentElementRef = useTemplateRef<HTMLElement>('graph-component')
 const graphInstanceRef = ref<GraphComponent | null>(null)
 
 onMounted(() => {
@@ -141,7 +140,7 @@ function drawExplanation(graphInstance: any) {
 
 <template>
   <div class="sequence-explantion">
-    <graph-component ref="graph-component-element"></graph-component>
+    <graph-component ref="graph-component"></graph-component>
   </div>
 </template>
 

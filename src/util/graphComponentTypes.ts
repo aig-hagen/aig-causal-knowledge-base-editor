@@ -1,4 +1,8 @@
+import { hasMoreThenOneEntry } from './types'
+
 export type NodeProps = NodeCircle | NodeRect
+
+export type NodeId = number
 
 export const enum NodeShape {
   CIRCLE = 'circle',
@@ -148,4 +152,78 @@ export interface GraphComponent {
     editability: NodeGUIEditability | LinkGUIEditability,
     ids: string[] | number[] | string | number | undefined,
   ): void
+  getGraph(
+    format: 'json' | 'tgf',
+    includeNodePosition?: boolean,
+    includeNodeProps?: boolean,
+    includeColor?: boolean,
+    includeEditability?: boolean,
+    includeIdImported?: boolean,
+  ): { nodes: { id: number }[]; links: { sourceId: number; targetId: number }[] }
+}
+
+const enum EVENT_CAUSE {
+  USER_ACTION = 'user-action',
+  PROGRAMMATIC_ACTION = 'programmatic-action',
+}
+
+export interface NodeCreatedDetail {
+  node: { id: number; label: string | undefined; x: number | undefined; y: number | undefined }
+  cause: EVENT_CAUSE
+}
+
+export interface NodeDeletedDetail {
+  node: { id: number; label: string | undefined; x: number | undefined; y: number | undefined }
+  cause: EVENT_CAUSE
+}
+
+export interface LinkCreatedDetail {
+  link: { id: string; label: string | undefined }
+  cause: EVENT_CAUSE
+}
+
+export interface LinkDeletedDetail {
+  link: { id: string; label: string | undefined }
+  cause: EVENT_CAUSE
+}
+
+declare global {
+  interface GlobalEventHandlersEventMap {
+    nodecreated: CustomEvent<NodeCreatedDetail>
+    nodedeleted: CustomEvent<NodeDeletedDetail>
+    linkcreated: CustomEvent<LinkCreatedDetail>
+    linkdeleted: CustomEvent<LinkDeletedDetail>
+  }
+}
+
+export function hasProgrammaticCause(event: CustomEvent<{ cause: EVENT_CAUSE }>): boolean {
+  return event.detail.cause === EVENT_CAUSE.PROGRAMMATIC_ACTION
+}
+
+export function parseLinkId(linkId: string) {
+  const linkParts = linkId.split('-')
+  if (!hasMoreThenOneEntry(linkParts)) {
+    throw new Error(`Link with ID \`${linkId}\` is not valid: Seperator \`-\` is not contained.`)
+  }
+  if (linkParts.length > 2) {
+    throw new Error(
+      `Link with ID \`${linkId}\` is not valid: Seperator \`-\` is contained more then once.`,
+    )
+  }
+  const sourceId = parseInt(linkParts[0])
+  const tragetId = parseInt(linkParts[1])
+  if (!Number.isSafeInteger(sourceId))
+    throw new Error(
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      `Link with ID \`${linkId}\` is not valid: Invalid source node ID ${sourceId}.`,
+    )
+  if (!Number.isSafeInteger(tragetId))
+    throw new Error(
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      `Link with ID \`${linkId}\` is not valid: Invalid target node ID ${tragetId}.`,
+    )
+  return {
+    sourceId: sourceId,
+    targetId: tragetId,
+  }
 }

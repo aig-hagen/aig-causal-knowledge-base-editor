@@ -1,9 +1,13 @@
 <script setup lang="ts">
+import { createArgumentationFramework } from '@/argumentation/argumentationFramework'
+import ArgumentationFrameworkEditor from '@/argumentation/ArgumentationFrameworkEditor.vue'
 import EditorLayout from '@/components/EditorLayout.vue'
 import EditorNavbar from '@/components/EditorNavbar.vue'
 import TheNotifications from '@/components/TheNotifications.vue'
+import { ref } from 'vue'
 
 const sampleDatasets: { name: string; load(): void }[] = []
+const argumentationFramework = ref(createArgumentationFramework())
 </script>
 
 <template>
@@ -21,7 +25,9 @@ const sampleDatasets: { name: string; load(): void }[] = []
       />
     </template>
     <template v-slot:editor>
-      <ArgumentationFrameworkEditorView></ArgumentationFrameworkEditorView>
+      <ArgumentationFrameworkEditor
+        :argumentationFramework="argumentationFramework"
+      ></ArgumentationFrameworkEditor>
     </template>
   </EditorLayout>
   <TheNotifications />

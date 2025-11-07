@@ -2,17 +2,21 @@
 import type { Atom, Conjunction, ConnectionId, Id } from '@/model/graphicalCausalKnowledgeBase'
 import { getConnectionKey, useKnowledgeBase } from '@/stores/knowledgeBase'
 import { useNotifications } from '@/stores/notifications'
-import { useDebounceFn, useEventListener } from '@vueuse/core'
+import { useDebounceFn } from '@vueuse/core'
 import { computed, nextTick, onMounted, ref, useTemplateRef, watchEffect } from 'vue'
 
 import {
+  hasProgrammaticCause,
   NodeShape,
+  parseLinkId,
   type GraphComponent,
+  type LinkCreatedDetail,
+  type LinkDeletedDetail,
   type NodeCircle,
+  type NodeCreatedDetail,
+  type NodeDeletedDetail,
   type NodeSizeRect,
 } from '@/util/graphComponentTypes'
-
-import { hasMoreThenOneEntry } from '@/util/types'
 
 defineExpose({
   getExportedData,
@@ -96,13 +100,9 @@ const selectedConnectionRef = computed(() => {
   return knowledgeBase.connections.get(getConnectionKey(selectedConnectionId))
 })
 
-const graphComponentElementRef = useTemplateRef<HTMLElement>('graph-component-element')
+const graphComponentElementRef = useTemplateRef<HTMLElement>('graph-component')
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const graphInstanceRef = ref<any>(null)
-const graphHostRef = ref<HTMLElement | null>(null)
-
-const nodeContainerRef = ref<SVGElement | null>(null)
-const linkContainerRef = ref<SVGElement | null>(null)
 
 computed(() => {
   const nodes = graphComponentElementRef.value?.getElementsByClassName('.nodes')
@@ -469,12 +469,15 @@ onMounted(() => {
   graphInstance.toggleZoom(true)
   graphInstance.setNodeGroupsFn(nodeGroupsFn)
   graphInstance.setDefaults({ nodeAutoGrowToLabelSize: false, nodeProps: createAtomProps() })
-  const graphHost = graphComponentElement.getElementsByClassName('graph-controller__graph-host')[0]
-  graphHostRef.value = graphHost as HTMLElement
-  const nodeContainer = graphComponentElement.getElementsByClassName('nodes')[0]
-  nodeContainerRef.value = nodeContainer as SVGElement
-  const linkContainer = graphComponentElement.getElementsByClassName('links')[0]
-  linkContainerRef.value = linkContainer as SVGAElement
+  const graphHost = graphComponentElement.getElementsByClassName(
+    'graph-controller__graph-host',
+  )[0] as HTMLElement
+  graphHost.addEventListener('nodecreated', onNodeCreated)
+  graphHost.addEventListener('nodedeleted', onNodeDeleted)
+  graphHost.addEventListener('linkcreated', onLinkCreated)
+  graphHost.addEventListener('linkdeleted', onLinkDeleted)
+  graphHost.addEventListener('nodeclicked', onNodeClicked)
+  graphHost.addEventListener('linkclicked', onLinkClicked)
   addHighlightShadowDefinition(graphComponentElement)
 })
 
@@ -528,13 +531,23 @@ function selectConnection(connectionId: ConnectionId | null) {
   })
 }
 
-function onNodeCreated(event: Event) {
+function onNodeCreated(event: CustomEvent<NodeCreatedDetail>) {
   if (hasProgrammaticCause(event)) return
   if (loadingData.value) return
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const createdNode = (event as any).detail.node
+  const createdNode = event.detail.node
   const graphInstance = graphInstanceRef.value
-  // When the event is handled, the HTML is not yet rendered.
+
+  if (createdNode.label !== undefined) {
+    throw Error('Created node has a set label.')
+  }
+  if (createdNode.x === undefined) {
+    throw Error('X position is not defined.')
+  }
+
+  if (createdNode.y === undefined) {
+    throw Error('Y position is not defined.')
+  }
+
   const atom: Atom = {
     id: createdNode.id,
     name: '',
@@ -556,11 +569,10 @@ function onNodeCreated(event: Event) {
   })
 }
 
-function onNodeDeleted(event: Event) {
+function onNodeDeleted(event: CustomEvent<NodeDeletedDetail>) {
   if (hasProgrammaticCause(event)) return
   if (loadingData.value) return
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const deletedNode = (event as any).detail.node
+  const deletedNode = event.detail.node
   knowledgeBase.operators.delete(deletedNode.id)
   knowledgeBase.atoms.delete(deletedNode.id)
   const graphInstance = graphInstanceRef.value
@@ -600,40 +612,18 @@ const processNameInput = computed(() => {
   }, 100)
 })
 
-function nodeIdToMessageString(nodeId: number): string {
-  return `\`${nodeId.toString()}\``
-}
-
 function parseLinkIdToConnectionId(linkId: string): ConnectionId {
-  const linkParts = linkId.split('-')
-  if (!hasMoreThenOneEntry(linkParts)) {
-    throw new Error(`Link with ID \`${linkId}\` is not valid: Seperator \`-\` is not contained.`)
-  }
-  if (linkParts.length > 2) {
-    throw new Error(
-      `Link with ID \`${linkId}\` is not valid: Seperator \`-\` is contained more then once.`,
-    )
-  }
-  const sourceId = parseInt(linkParts[0])
-  const tragetId = parseInt(linkParts[1])
-  if (!Number.isSafeInteger(sourceId) || sourceId < 0)
-    throw new Error(
-      `Link with ID \`${linkId}\` is not valid: Invalid source node ID ${nodeIdToMessageString(sourceId)}.`,
-    )
-  if (!Number.isSafeInteger(tragetId) || tragetId < 0)
-    throw new Error(
-      `Link with ID \`${linkId}\` is not valid: Invalid target node ID ${nodeIdToMessageString(tragetId)}.`,
-    )
+  const { sourceId, targetId } = parseLinkId(linkId)
   return {
     sourceId: sourceId,
-    targetId: tragetId,
+    targetId: targetId,
   }
 }
 
-function onLinkCreated(event: Event) {
+function onLinkCreated(event: CustomEvent<LinkCreatedDetail>) {
   if (loadingData.value) return
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const createdLink = (event as any).detail.link
+  if (hasProgrammaticCause(event)) return
+  const createdLink = event.detail.link
   const graphInstance = graphInstanceRef.value
   const negated = selectedLinkType.value === 'NEGATED'
   const connectionId = parseLinkIdToConnectionId(createdLink.id)
@@ -664,16 +654,10 @@ function getColorLink(negated: boolean) {
   }
 }
 
-function hasProgrammaticCause(event: Event): boolean {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (event as any).detail.cause === EVENT_CAUSE.PROGRAMMATIC_ACTION
-}
-
-function onLinkDeleted(event: Event) {
+function onLinkDeleted(event: CustomEvent<LinkDeletedDetail>) {
   if (hasProgrammaticCause(event)) return
   if (loadingData.value) return
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const deletedLink = (event as any).detail.link
+  const deletedLink = event.detail.link
   const connectionId = parseLinkIdToConnectionId(deletedLink.id)
   knowledgeBase.connections.delete(getConnectionKey(connectionId))
   updatedExplainableAtoms()
@@ -964,26 +948,10 @@ function toogleAsumption(toogledValue: boolean) {
     }
   }
 }
-
-const enum EVENT_CAUSE {
-  USER_ACTION = 'user-action',
-  PROGRAMMATIC_ACTION = 'programmatic-action',
-}
-
-useEventListener(graphHostRef, 'nodecreated', onNodeCreated)
-useEventListener(graphHostRef, 'nodedeleted', onNodeDeleted)
-useEventListener(graphHostRef, 'linkcreated', onLinkCreated)
-useEventListener(graphHostRef, 'linkdeleted', onLinkDeleted)
-useEventListener(graphHostRef, 'nodeclicked', onNodeClicked)
-useEventListener(graphHostRef, 'linkclicked', onLinkClicked)
 </script>
 
 <template>
-  <graph-component
-    @click="updateSelection($event.target)"
-    @nodedeleted="onNodeDeleted"
-    ref="graph-component-element"
-  ></graph-component>
+  <graph-component @click="updateSelection($event.target)" ref="graph-component"></graph-component>
 
   <div class="menu menu-left">
     <div class="node-selection p-2">

@@ -223,6 +223,7 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
   }
 
   function isConjunction(atomOrConjunction: Atom | Conjunction): atomOrConjunction is Conjunction {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     return 'type' in atomOrConjunction && atomOrConjunction.type === 'conjunction'
   }
 

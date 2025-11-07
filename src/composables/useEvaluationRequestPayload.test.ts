@@ -1,6 +1,5 @@
 import { expect, test } from 'vitest'
 import {
-  ConjunctionIsNotTargetedError,
   CycleError,
   EmptyKnowlegeBaseError,
   NonEvaluableKnowledgebaseError,
