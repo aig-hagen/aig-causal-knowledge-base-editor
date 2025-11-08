@@ -2,6 +2,9 @@
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
   extends: [
     "config:best-practices",
+    // Causes dependencies to be pinned pin packagej.json
+    // For rational see https://docs.renovatebot.com/dependency-pinning/#should-you-pin-your-javascript-dependencies
+    "config:js-app",
     ":automergeStableNonMajor",
     // Allow automatic merging without tests.
     // Renovate would trigger many test runs.
