@@ -2,7 +2,7 @@
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
   extends: [
     "config:best-practices",
-    // Causes dependencies to be pinned pin packagej.json
+    // Causes dependencies to be pinned in package.json
     // For rational see https://docs.renovatebot.com/dependency-pinning/#should-you-pin-your-javascript-dependencies
     "config:js-app",
     ":automergeStableNonMajor",
