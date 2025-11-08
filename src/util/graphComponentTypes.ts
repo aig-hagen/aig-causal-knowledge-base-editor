@@ -187,12 +187,24 @@ export interface LinkDeletedDetail {
   cause: EVENT_CAUSE
 }
 
+export interface NodeClickedDetail {
+  node: { id: number; label: string | undefined; x: number | undefined; y: number | undefined }
+  button: number
+}
+
+export interface LinkClickedDetail {
+  link: { id: string; label: string | undefined }
+  button: number
+}
+
 declare global {
   interface GlobalEventHandlersEventMap {
     nodecreated: CustomEvent<NodeCreatedDetail>
     nodedeleted: CustomEvent<NodeDeletedDetail>
     linkcreated: CustomEvent<LinkCreatedDetail>
     linkdeleted: CustomEvent<LinkDeletedDetail>
+    nodeclicked: CustomEvent<NodeClickedDetail>
+    linkclicked: CustomEvent<LinkClickedDetail>
   }
 }
 

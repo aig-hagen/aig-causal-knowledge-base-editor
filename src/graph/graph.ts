@@ -98,6 +98,13 @@ export function removeEdge<VertexT, VertexIdT>(
   graph.perIdSourceIds.get(targetId)!.delete(sourceId)
 }
 
+export function getNode<VertexT, VertexIdT>(
+  graph: DirectedGraph<VertexT, VertexIdT>,
+  vertexId: VertexIdT,
+) {
+  return graph.perIdNodes.get(vertexId)
+}
+
 export function getNodes<VertexT, VertexIdT>(graph: DirectedGraph<VertexT, VertexIdT>) {
   return graph.perIdNodes.values()
 }

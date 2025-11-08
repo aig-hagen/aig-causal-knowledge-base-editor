@@ -10,9 +10,11 @@ import {
   NodeShape,
   parseLinkId,
   type GraphComponent,
+  type LinkClickedDetail,
   type LinkCreatedDetail,
   type LinkDeletedDetail,
   type NodeCircle,
+  type NodeClickedDetail,
   type NodeCreatedDetail,
   type NodeDeletedDetail,
   type NodeSizeRect,
@@ -873,22 +875,16 @@ async function loadKnowledgeBase(
 
 const LEFT_MOUSE_BUTTON = 0
 
-function onNodeClicked(event: Event) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const detail = (event as any).detail
-  if (detail.button !== LEFT_MOUSE_BUTTON) {
-    return
-  }
+function onNodeClicked(event: CustomEvent<NodeClickedDetail>) {
+  const detail = event.detail
+  if (detail.button !== LEFT_MOUSE_BUTTON) return
   const atomId = detail.node.id
   selectAtom(atomId)
 }
 
-function onLinkClicked(event: Event) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const detail = (event as any).detail
-  if (detail.button !== LEFT_MOUSE_BUTTON) {
-    return
-  }
+function onLinkClicked(event: CustomEvent<LinkClickedDetail>) {
+  const detail = event.detail
+  if (detail.button !== LEFT_MOUSE_BUTTON) return
   const linkId = detail.link.id
   const connectionId = parseLinkIdToConnectionId(linkId)
   selectConnection(connectionId)
@@ -1188,8 +1184,7 @@ function toogleAsumption(toogledValue: boolean) {
   position: absolute;
 }
 
-.node-selection,
-.link-selection {
+.node-selection {
   border: 2px solid black;
   border-radius: 4px;
   border-top-left-radius: 0;
