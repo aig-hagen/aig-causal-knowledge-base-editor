@@ -25,7 +25,7 @@ import {
   type ArgumentId,
 } from '@/argumentation/argumentationFramework'
 import { computed, onMounted, ref, useTemplateRef, watchEffect } from 'vue'
-import { useDebounceFn } from '@vueuse/core'
+import { useDebounceFn, useMutationObserver } from '@vueuse/core'
 import * as Colors from '@/common/colors'
 import { vFocus } from '@/common/vFocus'
 import { LEFT_MOUSE_BUTTON } from '@/common/button'
@@ -109,30 +109,55 @@ onMounted(() => {
     throw new Error('Graph component element empty.')
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const graphInstance: GraphComponent = (graphComponentElement as any)._instance.exposed
-  graphInstanceRef.value = graphInstance
-  graphInstance.toggleNodePhysics(false)
-  graphInstance.toggleZoom(true)
-  graphInstance.setDefaults({
-    nodeAutoGrowToLabelSize: false,
-    nodeProps: createArgumentProps(),
-    nodeGUIEditability: {
-      labelEditable: false,
-    },
-    linkGUIEditability: {
-      labelEditable: false,
-    },
-  })
   const graphHost = graphComponentElement.getElementsByClassName(
     'graph-controller__graph-host',
   )[0] as HTMLElement
-  graphHost.addEventListener('nodecreated', onNodeCreated)
-  graphHost.addEventListener('nodedeleted', onNodeDeleted)
-  graphHost.addEventListener('linkcreated', onLinkCreated)
-  graphHost.addEventListener('linkdeleted', onLinkDeleted)
-  graphHost.addEventListener('nodeclicked', onNodeClicked)
-  // graphHost.addEventListener('linkclicked', onLinkClicked)
+
+  function isInitialised() {
+    return !graphHost.classList.contains('uninitialised')
+  }
+
+  function initGraphInstance(graphComponentElement: HTMLElement) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const graphInstance: GraphComponent = (graphComponentElement as any)._instance.exposed
+    graphInstanceRef.value = graphInstance
+    graphInstance.toggleNodePhysics(false)
+    graphInstance.toggleZoom(true)
+    graphInstance.setDefaults({
+      nodeAutoGrowToLabelSize: false,
+      nodeProps: createArgumentProps(),
+      nodeGUIEditability: {
+        labelEditable: false,
+      },
+      linkGUIEditability: {
+        labelEditable: false,
+      },
+    })
+    graphHost.addEventListener('nodecreated', onNodeCreated)
+    graphHost.addEventListener('nodedeleted', onNodeDeleted)
+    graphHost.addEventListener('linkcreated', onLinkCreated)
+    graphHost.addEventListener('linkdeleted', onLinkDeleted)
+    graphHost.addEventListener('nodeclicked', onNodeClicked)
+  }
+
+  if (isInitialised()) {
+    initGraphInstance(graphComponentElement)
+  }
+
+  const stopObserver = useMutationObserver(
+    graphHost,
+    (mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.attributeName === 'class') {
+          if (isInitialised()) {
+            initGraphInstance(graphComponentElement)
+            stopObserver.stop()
+          }
+        }
+      }
+    },
+    { attributes: true, attributeFilter: ['class'] },
+  )
 })
 
 function onNodeCreated(event: CustomEvent<NodeCreatedDetail>) {
@@ -160,7 +185,7 @@ function onNodeCreated(event: CustomEvent<NodeCreatedDetail>) {
     },
   }
   addArgumentAndUpdateMappedIds(createdNode.id, argument)
-  selectArgument(createdNode.id)
+  selectArgument(argument.id)
   updateGraphComponent()
 }
 
@@ -220,7 +245,8 @@ function onNodeClicked(event: CustomEvent<NodeClickedDetail>) {
   const detail = event.detail
   if (detail.button !== LEFT_MOUSE_BUTTON) return
   const internalId = detail.node.id
-  selectArgument(internalId)
+  const publicId = getPublicId(internalId)
+  selectArgument(publicId)
 }
 
 function getNodeIds(graphInstance: GraphComponent) {
@@ -248,24 +274,26 @@ function updateGraphComponent() {
   }
 }
 
-const selectedNodeIdRef = ref<NodeId | null>(null)
-// TODO ArgumentationFrameworkEditor there should be a better solution
-// selectedAtomId might be an outdated ID, if the atom was deleted while beeing selected
-const selectedArgumentRef = computed(() => {
-  if (selectedNodeIdRef.value === null) return undefined
-  const publicId = getPublicIdMaybe(selectedNodeIdRef.value)
-  if (publicId === undefined) return undefined
-  return getArgument(argumentationFramework, publicId)
-})
+const selectedArgumentRef = ref<Argument | null>(null)
 
-function selectArgument(nodeId: NodeId | null) {
-  selectedNodeIdRef.value = nodeId
+function selectArgument(argumentId: ArgumentId | null) {
+  if (argumentId === null) {
+    selectedArgumentRef.value = null
+    return
+  }
+  const argument = getArgument(argumentationFramework, argumentId) ?? null
+  selectedArgumentRef.value = argument
 }
+
+watchEffect(() => {
+  // Deselects argument, if it is removed from argumentationFramework.
+  selectArgument(selectedArgumentRef.value?.id ?? null)
+})
 
 const processNameInput = computed(() => {
   const selectedArgument = selectedArgumentRef.value
   return useDebounceFn((name) => {
-    if (selectedArgument === undefined) return
+    if (selectedArgument === null) return
     setName(selectedArgument, name)
   }, 100)
 })
@@ -281,10 +309,21 @@ watchEffect(() => {
   highlightSelectedNodes()
 })
 
+function updateSelection(clickTarget: HTMLElement) {
+  // Calling `event.detail.stopPropagation()` in `onNodeClicked` does not work,
+  // because "nodeclicked" is actually triggered by "pointerdown".
+  const nodeContainer = clickTarget.closest('.graph-controller__node-container')
+  if (nodeContainer === null) {
+    // If clicked outside a node, deselect argument.
+    selectArgument(null)
+  }
+}
+
 function highlightSelectedNodes() {
   for (const argument of getArguments(argumentationFramework)) {
-    const internalId = getInternalId(argument)
-    const stroke = internalId === selectedNodeIdRef.value ? COLOR_HIGHLIGHT_SELECTED : ''
+    const stroke = argument.id === selectedArgumentRef.value?.id ? COLOR_HIGHLIGHT_SELECTED : ''
+    const internalId = getInternalIdMaybe(argument)
+    if (internalId === undefined) return
     const nodeElement = document.getElementById(`gc-node-${internalId.toString()}`)
     if (nodeElement !== null) {
       nodeElement.style.stroke = stroke
@@ -296,7 +335,7 @@ function highlightSelectedNodes() {
 </script>
 
 <template>
-  <graph-component ref="graph-component"></graph-component>
+  <graph-component @click="updateSelection($event.target)" ref="graph-component"></graph-component>
   <div class="menu menu-left">
     <div class="node-selection p-2">
       <div class="type p-2">
@@ -324,7 +363,7 @@ function highlightSelectedNodes() {
     </div>
   </div>
   <div
-    v-if="selectedArgumentRef !== undefined"
+    v-if="selectedArgumentRef !== null"
     class="menu menu-right p-2"
     @keydown.esc="selectArgument(null)"
   >
