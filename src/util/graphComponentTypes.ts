@@ -190,11 +190,13 @@ export interface LinkDeletedDetail {
 export interface NodeClickedDetail {
   node: { id: number; label: string | undefined; x: number | undefined; y: number | undefined }
   button: number
+  originalEvent: Event
 }
 
 export interface LinkClickedDetail {
   link: { id: string; label: string | undefined }
   button: number
+  originalEvent: Event
 }
 
 declare global {

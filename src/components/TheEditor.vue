@@ -2,7 +2,7 @@
 import type { Atom, Conjunction, ConnectionId, Id } from '@/model/graphicalCausalKnowledgeBase'
 import { getConnectionKey, useKnowledgeBase } from '@/stores/knowledgeBase'
 import { useNotifications } from '@/stores/notifications'
-import { useDebounceFn } from '@vueuse/core'
+import { useDebounceFn, useMutationObserver } from '@vueuse/core'
 import { computed, nextTick, onMounted, ref, useTemplateRef, watchEffect } from 'vue'
 import * as Colors from '@/common/colors'
 import { vFocus } from '@/common/vFocus'
@@ -454,23 +454,49 @@ onMounted(() => {
     throw new Error('Graph component element empty.')
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const graphInstance = (graphComponentElement as any)._instance.exposed
-  graphInstanceRef.value = graphInstance
-  graphInstance.toggleNodePhysics(false)
-  graphInstance.toggleZoom(true)
-  graphInstance.setNodeGroupsFn(nodeGroupsFn)
-  graphInstance.setDefaults({ nodeAutoGrowToLabelSize: false, nodeProps: createAtomProps() })
   const graphHost = graphComponentElement.getElementsByClassName(
     'graph-controller__graph-host',
   )[0] as HTMLElement
-  graphHost.addEventListener('nodecreated', onNodeCreated)
-  graphHost.addEventListener('nodedeleted', onNodeDeleted)
-  graphHost.addEventListener('linkcreated', onLinkCreated)
-  graphHost.addEventListener('linkdeleted', onLinkDeleted)
-  graphHost.addEventListener('nodeclicked', onNodeClicked)
-  graphHost.addEventListener('linkclicked', onLinkClicked)
-  addHighlightShadowDefinition(graphComponentElement)
+
+  function isInitialised() {
+    return !graphHost.classList.contains('uninitialised')
+  }
+
+  function initGraphInstance(graphComponentElement: HTMLElement) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const graphInstance = (graphComponentElement as any)._instance.exposed
+    graphInstanceRef.value = graphInstance
+    graphInstance.toggleNodePhysics(false)
+    graphInstance.toggleZoom(true)
+    graphInstance.setNodeGroupsFn(nodeGroupsFn)
+    graphInstance.setDefaults({ nodeAutoGrowToLabelSize: false, nodeProps: createAtomProps() })
+    graphHost.addEventListener('nodecreated', onNodeCreated)
+    graphHost.addEventListener('nodedeleted', onNodeDeleted)
+    graphHost.addEventListener('linkcreated', onLinkCreated)
+    graphHost.addEventListener('linkdeleted', onLinkDeleted)
+    graphHost.addEventListener('nodeclicked', onNodeClicked)
+    graphHost.addEventListener('linkclicked', onLinkClicked)
+    addHighlightShadowDefinition(graphComponentElement)
+  }
+
+  if (isInitialised()) {
+    initGraphInstance(graphComponentElement)
+  }
+
+  const stopObserver = useMutationObserver(
+    graphHost,
+    (mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.attributeName === 'class') {
+          if (isInitialised()) {
+            initGraphInstance(graphComponentElement)
+            stopObserver.stop()
+          }
+        }
+      }
+    },
+    { attributes: true, attributeFilter: ['class'] },
+  )
 })
 
 function addHighlightShadowDefinition(graphComponentElement: HTMLElement) {
@@ -858,6 +884,9 @@ function onNodeClicked(event: CustomEvent<NodeClickedDetail>) {
 function onLinkClicked(event: CustomEvent<LinkClickedDetail>) {
   const detail = event.detail
   if (detail.button !== LEFT_MOUSE_BUTTON) return
+  // Prevent that something else is focused by the origina event,
+  // because selecting a connection will focus an input programmatically.
+  detail.originalEvent.preventDefault()
   const linkId = detail.link.id
   const connectionId = parseLinkIdToConnectionId(linkId)
   selectConnection(connectionId)
