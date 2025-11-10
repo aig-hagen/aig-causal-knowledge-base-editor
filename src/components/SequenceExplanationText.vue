@@ -41,7 +41,7 @@ const selectedExplanation: Ref<DialectialSequenceExplanationDTO | null> = ref(nu
         >
       </li>
     </ul>
-    <!-- TODO https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/399
+    <!-- TODO(https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/399) Improve modals:
      - extract modal into component
      - deduplicate generic modal functionality with the controls modal
      - ensure ESC key works on modals -->

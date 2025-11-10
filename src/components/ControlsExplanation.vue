@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, useTemplateRef, watchEffect } from 'vue'
+import { vFocus } from '@/common/vFocus'
 
 const show = defineModel<boolean>('show', { required: true })
 const { sourceName, targetName, linkName } = defineProps<{
@@ -11,24 +11,15 @@ const { sourceName, targetName, linkName } = defineProps<{
 function hideControlExplanationModal() {
   show.value = false
 }
-
-const controlExplanationModal = useTemplateRef('control-explanation-modal')
-watchEffect(() => {
-  if (show.value) {
-    void nextTick(() => {
-      controlExplanationModal.value?.focus()
-    })
-  }
-})
 </script>
 
 <template>
   <div
-    ref="control-explanation-modal"
-    :class="{ 'is-active': show }"
+    v-focus
+    v-if="show"
     tabindex="0"
     @keydown.esc="hideControlExplanationModal"
-    class="modal control-explanation-modal"
+    class="modal control-explanation-modal is-active"
   >
     <div class="modal-background" @click="hideControlExplanationModal"></div>
     <div class="modal-content">

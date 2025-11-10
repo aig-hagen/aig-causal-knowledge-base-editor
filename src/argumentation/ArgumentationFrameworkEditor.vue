@@ -24,8 +24,11 @@ import {
   type ArgumentationFramework,
   type ArgumentId,
 } from '@/argumentation/argumentationFramework'
-import { computed, nextTick, onMounted, ref, useTemplateRef, watchEffect } from 'vue'
+import { computed, onMounted, ref, useTemplateRef, watchEffect } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
+import * as Colors from '@/common/colors'
+import { vFocus } from '@/common/vFocus'
+import { LEFT_MOUSE_BUTTON } from '@/common/button'
 
 const { argumentationFramework } = defineProps<{
   argumentationFramework: ArgumentationFramework
@@ -80,11 +83,9 @@ function createArgumentProps(): NodeProps {
   }
 }
 
-// TODO ArgumentationFrameworkEditor depulicate colors
-// TODO ArgumentationFrameworkEditor actually set colors
-const COLOR_ATTACK = 'HSL(240, 100%, 27%)' // DarkBlue
-const COLOR_ARGUMENT = 'hsl(32.94, 100%, 50%)' // DarkOrange
-const COLOR_HIGHLIGHT_SELECTED = '#3584e4'
+const COLOR_ATTACK = Colors.LINK_BLUE
+const COLOR_ARGUMENT = Colors.NODE_DARK_ORANGE
+const COLOR_HIGHLIGHT_SELECTED = Colors.HIGHLIGHT_BLUE
 
 const graphInstanceRef = ref<GraphComponent | null>(null)
 
@@ -199,7 +200,6 @@ function onLinkCreated(event: CustomEvent<LinkCreatedDetail>) {
 }
 
 function onLinkDeleted(event: CustomEvent<LinkDeletedDetail>) {
-  console.log('onLinkDeleted', event)
   if (hasProgrammaticCause(event)) return
   const createdLink = event.detail.link
   const { sourceId: internalSourceId, targetId: internalTargetId } = parseLinkId(createdLink.id)
@@ -215,9 +215,6 @@ function onLinkDeleted(event: CustomEvent<LinkDeletedDetail>) {
   removeAttack(argumentationFramework, publicSourceId, publicTargetId)
   updateGraphComponent()
 }
-
-// TODO ArgumentationFrameworkEditor deduplicate
-const LEFT_MOUSE_BUTTON = 0
 
 function onNodeClicked(event: CustomEvent<NodeClickedDetail>) {
   const detail = event.detail
@@ -251,7 +248,6 @@ function updateGraphComponent() {
   }
 }
 
-const nameInput = useTemplateRef<HTMLInputElement>('name-input')
 const selectedNodeIdRef = ref<NodeId | null>(null)
 // TODO ArgumentationFrameworkEditor there should be a better solution
 // selectedAtomId might be an outdated ID, if the atom was deleted while beeing selected
@@ -264,14 +260,6 @@ const selectedArgumentRef = computed(() => {
 
 function selectArgument(nodeId: NodeId | null) {
   selectedNodeIdRef.value = nodeId
-  // TODO ArgumentationFrameworkEditor Focusing should be bound to actually showing the input menu
-  void nextTick(() => {
-    requestAnimationFrame(() => {
-      // focusVisible is a non-standard option used for improved accessibility in some browsers.
-      // @ts-expect-error Ignore TypeScript error about unknown property in FocusOptions.
-      nameInput.value?.focus({ focusVisible: true })
-    })
-  })
 }
 
 const processNameInput = computed(() => {
@@ -312,12 +300,12 @@ function highlightSelectedNodes() {
   <div class="menu menu-left">
     <div class="node-selection p-2">
       <div class="type p-2">
-        <div class="atom-type-legend" :style="{ backgroundColor: COLOR_ARGUMENT }"></div>
+        <div class="node-type-legend" :style="{ backgroundColor: COLOR_ARGUMENT }"></div>
         Argument
       </div>
       <div class="type p-2">
         <div
-          class="atom-type-legend"
+          class="node-type-legend"
           :style="{
             background: COLOR_ARGUMENT,
             // Generated with https://css-tricks.com/more-control-over-css-borders-with-background-image/
@@ -346,7 +334,8 @@ function highlightSelectedNodes() {
       <label class="label">Name</label>
       <div class="control">
         <input
-          ref="name-input"
+          v-focus
+          :key="selectedArgumentRef.id"
           :value="selectedArgumentRef.name"
           @input="
             (event) => {
@@ -416,8 +405,7 @@ function highlightSelectedNodes() {
   gap: 4px;
 }
 
-/* TODO ArgumentationFrameworkEditor rename to node type */
-.atom-type-legend {
+.node-type-legend {
   display: inline-block;
   width: 20px;
   height: 20px;

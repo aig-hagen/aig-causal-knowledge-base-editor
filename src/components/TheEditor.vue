@@ -4,6 +4,8 @@ import { getConnectionKey, useKnowledgeBase } from '@/stores/knowledgeBase'
 import { useNotifications } from '@/stores/notifications'
 import { useDebounceFn } from '@vueuse/core'
 import { computed, nextTick, onMounted, ref, useTemplateRef, watchEffect } from 'vue'
+import * as Colors from '@/common/colors'
+import { vFocus } from '@/common/vFocus'
 
 import {
   hasProgrammaticCause,
@@ -19,6 +21,7 @@ import {
   type NodeDeletedDetail,
   type NodeSizeRect,
 } from '@/util/graphComponentTypes'
+import { LEFT_MOUSE_BUTTON } from '@/common/button'
 
 defineExpose({
   getExportedData,
@@ -33,19 +36,12 @@ const { addSuccessNotification, addErrorNotification, clearNotifications } = use
 
 const loadingData = ref(false)
 
-// #3584e4 is the color used by Firefox for focused elements.
-// It looks good for highlighting selected nodes.
-const COLOR_HIGHLIGHT_SELECTED = '#3584e4'
-// #00d1b2 is the Bulma success color.
-// It is green and has a good contrast to the orange of nodes.
-// Also it is consistent with the Bulma theme.
-const COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION = '#48c78e'
+const COLOR_HIGHLIGHT_SELECTED = Colors.HIGHLIGHT_BLUE
+const COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION = Colors.HIGHLIGHT_GREEN
 const ID_DEF_COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION = 'highlight-relevant-for-explanation'
 
-const COLOR_BACKGROUND_ATOM = 'hsl(37.14, 100%, 91.76%)' // PapayaWhip
-const COLOR_EXPLAINABLE_ATOM = 'hsl(32.94, 100%, 50%)' // DarkOrange
-const COLOR_BACKGROUND_ATOM_TRANSPARENT = 'rgba(255, 239, 213, 0.5)' // PapayaWhip
-const COLOR_EXPLAINABLE_ATOM_TRANSPARENT = 'rgba(255, 140, 0, 0.5)' // DarkOrange
+const COLOR_BACKGROUND_ATOM = Colors.NODE_LIGHT_ORANGE
+const COLOR_EXPLAINABLE_ATOM = Colors.NODE_DARK_ORANGE
 const COLOR_CONJUNCTION = 'LightGray'
 const LABEL_CONJUNCTION = '&'
 const ATOM_MIN_WIDTH_IN_PX = 128
@@ -54,8 +50,8 @@ const PORT_RADIUS_IN_PX = 16
 // Use LaTex notation, after enabling LaTex support.
 // const LABEL_CONJUNCTION = '$\\land$'
 
-const COLOR_REGULAR_LINKS = 'HSL(240, 100%, 27%)' // DarkBlue
-const COLOR_NEGATED_LINKS = 'HSL(0, 100%, 27%)' // DarkRed
+const COLOR_REGULAR_LINKS = Colors.LINK_BLUE
+const COLOR_NEGATED_LINKS = Colors.LINK_RED
 
 type LinkType = 'REGULAR' | 'NEGATED'
 const selectedLinkType = ref<LinkType>('REGULAR')
@@ -111,8 +107,6 @@ computed(() => {
   if (nodes === undefined) return undefined
   return nodes[0] as HTMLElement
 })
-const nameInput = useTemplateRef<HTMLInputElement>('name-input')
-const negatedInput = useTemplateRef<HTMLInputElement>('negated-input')
 
 watchEffect(() => {
   const nodeElements = document.getElementsByClassName(
@@ -138,8 +132,7 @@ function updateAtomHighlightingForExplanation(atomId: number) {
 function updateOperatorHighlightingForExplanation(operatorId: number) {
   const nodeElement = document.getElementById(`gc-node-${operatorId.toString()}`)
   if (nodeElement !== null) {
-    // TODO Simplify logic
-    // Fix with https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/317
+    // TODO(https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/317) Simplify logic
     if (atomIdsToHighlight.length !== 0 && isNodeHighlighted(operatorId)) {
       nodeElement.style.filter = `url(#${ID_DEF_COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION})`
     } else {
@@ -151,8 +144,7 @@ function updateOperatorHighlightingForExplanation(operatorId: number) {
 function updateConnectionHighlightingForExplanation(connectionId: ConnectionId) {
   const linkElement = document.getElementById(`gc-link-${getLinkId(connectionId)}`)
   if (linkElement !== null) {
-    // TODO Simplify logic
-    // Fix with https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/317
+    // TODO(https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/317) Simplify logic
     const isHighlighted =
       atomIdsToHighlight.length !== 0 &&
       (isNodeHighlighted(connectionId.sourceId) ||
@@ -387,8 +379,7 @@ function getOperatorLabel(conjunction: Conjunction) {
 }
 
 function hasMoreThanOneIncomingConnection(conjunction: Conjunction) {
-  // TODO Restructure because not efficent
-  // Fix with https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/317
+  // TODO(https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/317) Restructure because not efficent
   return (
     [...knowledgeBase.connections.values()].filter(
       (connections) => connections.id.targetId === conjunction.id,
@@ -397,8 +388,7 @@ function hasMoreThanOneIncomingConnection(conjunction: Conjunction) {
 }
 
 function hasIncomingConnections(conjunction: Conjunction) {
-  // TODO Restructure because not efficent
-  // Fix with https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/317
+  // TODO(https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/317) Restructure because not efficent
   return [...knowledgeBase.connections.values()].some(
     (connections) => connections.id.targetId === conjunction.id,
   )
@@ -510,13 +500,6 @@ function selectAtom(atomId: number | null) {
   if (atomId !== null) {
     selectedConnectionIdRef.value = null
   }
-  void nextTick(() => {
-    requestAnimationFrame(() => {
-      // focusVisible is a non-standard option used for improved accessibility in some browsers.
-      // @ts-expect-error Ignore TypeScript error about unknown property in FocusOptions.
-      nameInput.value?.focus({ focusVisible: true })
-    })
-  })
 }
 
 function selectConnection(connectionId: ConnectionId | null) {
@@ -524,13 +507,6 @@ function selectConnection(connectionId: ConnectionId | null) {
   if (connectionId !== null) {
     selectedAtomIdRef.value = null
   }
-  void nextTick(() => {
-    requestAnimationFrame(() => {
-      // focusVisible is a non-standard option used for improved accessibility in some browsers.
-      // @ts-expect-error Ignore TypeScript error about unknown property in FocusOptions.
-      negatedInput.value?.focus({ focusVisible: true })
-    })
-  })
 }
 
 function onNodeCreated(event: CustomEvent<NodeCreatedDetail>) {
@@ -742,8 +718,7 @@ async function loadKnowledgeBase(
         x: atom.position.x,
         y: atom.position.y,
         color: getAtomColor(atom),
-        // TODO This logic is replicatio of logic in onNodeCreated
-        // Fix with https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/317
+        // TODO(https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/317) This logic is replicatio of logic in onNodeCreated
         labelEditable: false,
         allowIncomingLinks: false,
         allowOutgoingLinks: true,
@@ -873,8 +848,6 @@ async function loadKnowledgeBase(
   }
 }
 
-const LEFT_MOUSE_BUTTON = 0
-
 function onNodeClicked(event: CustomEvent<NodeClickedDetail>) {
   const detail = event.detail
   if (detail.button !== LEFT_MOUSE_BUTTON) return
@@ -954,7 +927,7 @@ function toogleAsumption(toogledValue: boolean) {
       <div class="title is-5 m-0"><h1>Atoms</h1></div>
       <div class="type p-2">
         <div
-          class="atom-type-legend"
+          class="node-type-legend"
           :style="{
             background: COLOR_BACKGROUND_ATOM,
           }"
@@ -962,7 +935,7 @@ function toogleAsumption(toogledValue: boolean) {
         Background atom
       </div>
       <div class="type p-2">
-        <div class="atom-type-legend" :style="{ backgroundColor: COLOR_EXPLAINABLE_ATOM }"></div>
+        <div class="node-type-legend" :style="{ backgroundColor: COLOR_EXPLAINABLE_ATOM }"></div>
         Explainable atom
       </div>
       <div class="title is-5 m-0"><h1>Causal relation</h1></div>
@@ -989,7 +962,7 @@ function toogleAsumption(toogledValue: boolean) {
       <div class="title is-5 m-0"><h1>Highlighting</h1></div>
       <div class="type p-2">
         <div
-          class="atom-type-legend"
+          class="node-type-legend"
           :style="{
             background: 'white',
             // Generated with https://css-tricks.com/more-control-over-css-borders-with-background-image/
@@ -1003,7 +976,7 @@ function toogleAsumption(toogledValue: boolean) {
       </div>
       <div class="type p-2">
         <div
-          class="atom-type-legend"
+          class="node-type-legend"
           :style="{
             backgroundColor: 'white',
             boxShadow: `0px 0px 6px 2px ${COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION}`,
@@ -1024,7 +997,8 @@ function toogleAsumption(toogledValue: boolean) {
       <label class="label">Name</label>
       <div class="control">
         <input
-          ref="name-input"
+          v-focus
+          :key="selectedAtomRef.id"
           :value="selectedAtomRef.name"
           @input="
             (event) => {
@@ -1135,7 +1109,8 @@ function toogleAsumption(toogledValue: boolean) {
         <div class="checkboxes">
           <label class="checkbox">
             <input
-              ref="negated-input"
+              v-focus
+              :key="getConnectionKey(selectedConnectionRef.id)"
               type="checkbox"
               name="negated"
               :checked="selectedConnectionRef.negated"
@@ -1147,11 +1122,12 @@ function toogleAsumption(toogledValue: boolean) {
       </div>
     </div>
   </div>
+  <!-- TODO an orange overlay is to gaudy -->
   <div
     class="overlay"
     v-if="loadingData"
     :style="{
-      background: `linear-gradient(120deg, ${COLOR_BACKGROUND_ATOM_TRANSPARENT} 0%, ${COLOR_EXPLAINABLE_ATOM_TRANSPARENT} 100%)`,
+      background: `linear-gradient(120deg, rgb(from ${COLOR_BACKGROUND_ATOM} r g b / 0.5)0%, rgb(from ${COLOR_EXPLAINABLE_ATOM} r g b / 0.5) 100%)`,
     }"
   >
     <div class="overlay-content">
@@ -1221,7 +1197,7 @@ function toogleAsumption(toogledValue: boolean) {
   gap: 4px;
 }
 
-.atom-type-legend {
+.node-type-legend {
   display: inline-block;
   width: 20px;
   height: 20px;

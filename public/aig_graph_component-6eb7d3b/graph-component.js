@@ -11811,6 +11811,7 @@ For rectangular nodes: {shape: 'rect', width: number, height: number, cornerRadi
         return M.append("path").classed("graph-controller__link", !0).style("stroke", (E) => E.color ? E.color : "").attr("id", (E) => r.value + "-link-" + E.id), M.append("path").classed("graph-controller__link-click-box", !0).on("dblclick", (E) => {
           ot(E);
         }).on("pointerout", (E) => pu(E)).on("pointerdown", (E, R) => {
+          ot(E);
           V0(R, E.button, n.value), mu(E, R);
         }).on("pointerup", (E, R) => {
           gu(E, R);

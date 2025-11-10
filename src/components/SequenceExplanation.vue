@@ -10,6 +10,7 @@ import {
   type NodeProps,
 } from '@/util/graphComponentTypes'
 import { onMounted, ref, useTemplateRef } from 'vue'
+import * as Colors from '@/common/colors'
 
 const { explanation, attacks, getReadableArgument } = defineProps<{
   explanation: DialectialSequenceExplanationDTO
@@ -40,8 +41,8 @@ function createArgumentProps(): NodeProps {
 }
 
 function getArgumentColor(isSupport: boolean) {
-  const COLOR_SUPPORTES = '#99ff99' // a shade of green
-  const COLOR_DEFEATED = '#ff9999' // a shade of red
+  const COLOR_SUPPORTES = Colors.NODE_GREEN
+  const COLOR_DEFEATED = Colors.NODE_RED
   // The colors are taken form "Sequence Explanations for Acceptance in Abstract Argumentation" by Lars Bengel and Matthias Thimm
   if (isSupport) {
     return COLOR_SUPPORTES
@@ -106,7 +107,7 @@ function drawExplanation(graphInstance: any) {
         throw new Error('Argument is undefined.')
       }
       const nodeId = argument
-      // TODO https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/399 improve layout
+      // TODO(https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/399) improve layouting
       nodes.push({
         id: nodeId,
         props: createArgumentProps(),
@@ -133,7 +134,7 @@ function drawExplanation(graphInstance: any) {
     })
   }
   const graph = { nodes, links }
-  // TODO https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/399 center after drawing.
+  // TODO(https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/399) center after drawing.
   graphInstance.setGraph(graph)
 }
 </script>
