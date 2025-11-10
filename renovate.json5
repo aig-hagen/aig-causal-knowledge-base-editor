@@ -15,4 +15,14 @@
   ],
   dependencyDashboardLabels: ["type/maintenance", "planning/next"],
   dependencyDashboardAutoclose: true,
+  {
+  "packageRules": [
+    // TODO Do not update Vue until Vue is externalized from the graph component build.
+    // See https://github.com/vuejs/core/issues/14067
+    {
+      "matchPackageNames": ["vue"],
+      "matchFileNames": ["npm"],
+      "enabled": false
+    }
+  ]
 }
