@@ -143,6 +143,7 @@ export interface GraphComponent {
     allowOutgoingLinks?: boolean,
   ): number
   setLabel(label: string, ids: string[] | number[] | string | number | undefined): void
+  setColor(color: string, ids: string[] | number[] | string | number | undefined): void
   getNodeSize(id: number): NodeSize
   setNodeSize(size: NodeSize | number, ids: number[] | number | undefined): void
   getNodeFixedPosition(id: number): NodePosition

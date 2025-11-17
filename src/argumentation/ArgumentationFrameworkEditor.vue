@@ -74,24 +74,19 @@ function getPublicId(nodeId: NodeId): ArgumentId {
   return publicId
 }
 
+const ARGUMNET_RADIUS_IN_PX = 28
 const ARGUMNET_WIDTH_IN_PX = 174
-const ARGUMNET_HEIGHT_IN_PX = 56
+const ARGUMNET_HEIGHT_IN_PX = ARGUMNET_RADIUS_IN_PX * 2
 
 function createArgumentProps(): NodeProps {
   return {
-    shape: NodeShape.RECTANGLE,
-    width: ARGUMNET_WIDTH_IN_PX,
-    height: ARGUMNET_HEIGHT_IN_PX,
-    cornerRadius: 4,
-    // The generall direction is from left to right.
-    // Most edges start at the right side of the left node and end on the left side of the right node.
-    // Therefore reflecitve edges should also start on the right side of nodes.
-    reflexiveEdgeStart: SideType.RIGHT,
+    shape: NodeShape.CIRCLE,
+    radius: ARGUMNET_RADIUS_IN_PX,
   }
 }
 
-const COLOR_ATTACK = Colors.LINK_BLUE
-const COLOR_ARGUMENT = Colors.NODE_DARK_ORANGE
+const COLOR_ATTACK = Colors.LINK_BLACK
+const COLOR_ARGUMENT = Colors.NODE_BLUE
 const COLOR_HIGHLIGHT_SELECTED = Colors.HIGHLIGHT_BLUE
 
 const graphInstanceRef = ref<GraphComponent | null>(null)
@@ -263,6 +258,14 @@ function getNodeIds(graphInstance: GraphComponent) {
   return nodeIds
 }
 
+function getLinkIds(graphInstance: GraphComponent) {
+  const graph = graphInstance.getGraph('json', false, false, false, false, false)
+  const linkIds = graph.links.map(
+    (link) => `${link.sourceId.toString()}-${link.targetId.toString()}`,
+  )
+  return linkIds
+}
+
 function updateGraphComponent() {
   void nextTick(() => {
     const graphInstance = ensureGraphInstance()
@@ -274,6 +277,7 @@ function updateGraphComponent() {
       const existed = internalNodeIdsToRemove.delete(internalId)
       if (existed) {
         graphInstance.setLabel(argument.name, internalId)
+        graphInstance.setColor(COLOR_ARGUMENT, internalId)
       } else {
         argumentsToCreate.push(argument)
       }
@@ -282,6 +286,7 @@ function updateGraphComponent() {
     if (argumentsToCreate.length > 0) {
       throw Error('Arguments cannot be created programmatically.')
     }
+    graphInstance.setColor(COLOR_ATTACK, getLinkIds(graphInstance))
   })
 }
 

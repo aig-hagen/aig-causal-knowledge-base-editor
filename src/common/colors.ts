@@ -1,13 +1,13 @@
 export const NODE_DARK_ORANGE = 'DarkOrange'
-// TOOO make obsolet
-export const NODE_DARK_ORANGE_TRANSPARENT = `rgb(from ${NODE_DARK_ORANGE} r g b / 0.5)`
 export const NODE_LIGHT_ORANGE = 'PapayaWhip'
-export const NODE_LIGHT_ORANGE_TRANSPARENT = `rgb(from ${NODE_LIGHT_ORANGE} r g b / 0.5)`
 
 // The colors are taken form "Sequence Explanations for Acceptance in Abstract Argumentation" by Lars Bengel and Matthias Thimm
+export const NODE_BLUE = '#99b7d5'
+export const NODE_ORANGE = '#e4bf97'
 export const NODE_GREEN = '#99ff99'
 export const NODE_RED = '#ff9999'
 
+export const LINK_BLACK = '#000000'
 export const LINK_BLUE = 'DarkBlue'
 export const LINK_RED = 'DarkRed'
 
