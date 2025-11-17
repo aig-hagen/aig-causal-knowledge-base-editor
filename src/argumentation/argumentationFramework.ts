@@ -3,7 +3,9 @@ import {
   addNode,
   createDirectedGraph,
   getNode,
+  getNodeIds,
   getNodes,
+  hasNode,
   removeEdge,
   removeNode,
   type DirectedGraph,
@@ -30,6 +32,13 @@ export function createArgumentationFramework() {
   }
 }
 
+export function hasArgument(
+  argumentationFramework: ArgumentationFramework,
+  argumentId: ArgumentId,
+) {
+  return hasNode(argumentationFramework.graph, argumentId)
+}
+
 export function getArgument(
   argumentationFramework: ArgumentationFramework,
   argumentId: ArgumentId,
@@ -39,6 +48,10 @@ export function getArgument(
 
 export function getArguments(argumentationFramework: ArgumentationFramework) {
   return getNodes(argumentationFramework.graph)
+}
+
+export function getArgumentIds(argumentationFramework: ArgumentationFramework) {
+  return getNodeIds(argumentationFramework.graph)
 }
 
 export function addArgument(argumentationFramework: ArgumentationFramework, argument: Argument) {
