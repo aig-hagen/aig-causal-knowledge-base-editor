@@ -24,19 +24,26 @@ import {
   type ArgumentationFramework,
   type ArgumentId,
 } from '@/argumentation/argumentationFramework'
-import { computed, onMounted, ref, useTemplateRef, watchEffect } from 'vue'
+import { computed, nextTick, onMounted, ref, useTemplateRef, watchEffect } from 'vue'
 import { useDebounceFn, useMutationObserver } from '@vueuse/core'
 import * as Colors from '@/common/colors'
 import { vFocus } from '@/common/vFocus'
 import { LEFT_MOUSE_BUTTON } from '@/common/button'
+import { getNextName } from './nextName'
 
 const { argumentationFramework } = defineProps<{
   argumentationFramework: ArgumentationFramework
 }>()
 
 const idCounter = ref(0)
+
 function nextId() {
   return (idCounter.value++).toString(10)
+}
+
+function getNextArgumentName() {
+  const existingNames = getArguments(argumentationFramework).map((argument) => argument.name)
+  return getNextName(existingNames)
 }
 
 const perPublicIdInternalId = new Map<ArgumentId, NodeId>()
@@ -178,7 +185,7 @@ function onNodeCreated(event: CustomEvent<NodeCreatedDetail>) {
   // When the event is handled, the HTML is not yet rendered.
   const argument: Argument = {
     id: nextId(),
-    name: '',
+    name: getNextArgumentName(),
     position: {
       x: createdNode.x,
       y: createdNode.y,
@@ -257,21 +264,25 @@ function getNodeIds(graphInstance: GraphComponent) {
 }
 
 function updateGraphComponent() {
-  const graphInstance = ensureGraphInstance()
-  const argumentsInFramework = getArguments(argumentationFramework)
-  const internalNodeIdsToRemove = getNodeIds(graphInstance)
-  const argumentsToCreate = []
-  for (const argument of argumentsInFramework) {
-    const internalId = getInternalId(argument)
-    const existed = internalNodeIdsToRemove.delete(internalId)
-    if (!existed) {
-      argumentsToCreate.push(argument)
+  void nextTick(() => {
+    const graphInstance = ensureGraphInstance()
+    const argumentsInFramework = getArguments(argumentationFramework)
+    const internalNodeIdsToRemove = getNodeIds(graphInstance)
+    const argumentsToCreate = []
+    for (const argument of argumentsInFramework) {
+      const internalId = getInternalId(argument)
+      const existed = internalNodeIdsToRemove.delete(internalId)
+      if (existed) {
+        graphInstance.setLabel(argument.name, internalId)
+      } else {
+        argumentsToCreate.push(argument)
+      }
     }
-  }
-  graphInstance.deleteElement([...internalNodeIdsToRemove])
-  if (argumentsToCreate.length > 0) {
-    throw Error('Arguments cannot be created programmatically.')
-  }
+    graphInstance.deleteElement([...internalNodeIdsToRemove])
+    if (argumentsToCreate.length > 0) {
+      throw Error('Arguments cannot be created programmatically.')
+    }
+  })
 }
 
 const selectedArgumentRef = ref<Argument | null>(null)
@@ -294,11 +305,11 @@ const processNameInput = computed(() => {
   const selectedArgument = selectedArgumentRef.value
   return useDebounceFn((name) => {
     if (selectedArgument === null) return
-    setName(selectedArgument, name)
+    setNameAndLabel(selectedArgument, name)
   }, 100)
 })
 
-function setName(argument: Argument, newName: string) {
+function setNameAndLabel(argument: Argument, newName: string) {
   argument.name = newName
   const internalId = getInternalId(argument)
   const graphInstance = graphInstanceRef.value
