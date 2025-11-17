@@ -24,7 +24,7 @@ const isSidebarRightActive = computed(() => {
     <main class="editor-layout-editor">
       <slot name="editor" />
     </main>
-    <aside v-if="$slots.sidebarRight" class="editor-layout-sidebar-right">
+    <aside v-show="isSidebarRightActive" class="editor-layout-sidebar-right">
       <slot name="sidebarRight" />
     </aside>
   </div>
