@@ -1054,12 +1054,12 @@ function toogleAsumption(toogledValue: boolean) {
     </div>
 
     <div class="field">
-      <label class="label">Atom type</label>
+      <label class="label">Type</label>
       <div class="control">
         <label class="radio is-block">
           <input
             type="radio"
-            name="question"
+            name="type"
             :checked="selectedAtomRef.assumption !== undefined"
             disabled
           />
@@ -1068,7 +1068,7 @@ function toogleAsumption(toogledValue: boolean) {
         <label class="radio is-block">
           <input
             type="radio"
-            name="question"
+            name="type"
             :checked="selectedAtomRef.assumption === undefined"
             disabled
           />

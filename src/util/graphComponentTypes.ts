@@ -146,6 +146,8 @@ export interface GraphComponent {
   setColor(color: string, ids: string[] | number[] | string | number | undefined): void
   getNodeSize(id: number): NodeSize
   setNodeSize(size: NodeSize | number, ids: number[] | number | undefined): void
+  setNodeShape(shape: NodeShape, ids: number[] | number | undefined): void
+  setNodeProps(nodeProps: NodeProps, ids: string[] | number[] | string | number | undefined): void
   getNodeFixedPosition(id: number): NodePosition
   setNodeFixedPosition(position: NodePosition, id: number): void
   setNodePosition(position: NodePosition, id: number): void

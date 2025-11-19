@@ -12,14 +12,23 @@ import {
 } from '@/graph/graph'
 
 export type ArgumentId = string
+
+export type Shape = 'circle' | 'rectangle'
+
 export interface Position {
   x: number
   y: number
 }
+
+export interface GraphicalData {
+  shape: Shape
+  position: Position
+}
+
 export interface Argument {
   id: ArgumentId
   name: string
-  position: Position
+  graphicalData: GraphicalData
 }
 
 export interface ArgumentationFramework {

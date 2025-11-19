@@ -23,6 +23,7 @@ import {
   type Argument,
   type ArgumentationFramework,
   type ArgumentId,
+  type Shape,
 } from '@/argumentation/argumentationFramework'
 import { computed, nextTick, onMounted, ref, useTemplateRef, watchEffect } from 'vue'
 import { useDebounceFn, useMutationObserver } from '@vueuse/core'
@@ -78,10 +79,27 @@ const ARGUMNET_RADIUS_IN_PX = 28
 const ARGUMNET_WIDTH_IN_PX = 174
 const ARGUMNET_HEIGHT_IN_PX = ARGUMNET_RADIUS_IN_PX * 2
 
-function createArgumentProps(): NodeProps {
-  return {
-    shape: NodeShape.CIRCLE,
-    radius: ARGUMNET_RADIUS_IN_PX,
+const DEFAULT_SHAPE: Shape = 'circle'
+
+function createArgumentProps(shape: Shape): NodeProps {
+  switch (shape) {
+    case 'circle':
+      return {
+        shape: NodeShape.CIRCLE,
+        radius: ARGUMNET_RADIUS_IN_PX,
+      }
+
+    case 'rectangle':
+      return {
+        shape: NodeShape.RECTANGLE,
+        width: ARGUMNET_WIDTH_IN_PX,
+        height: ARGUMNET_HEIGHT_IN_PX,
+        cornerRadius: 4,
+        // The generall direction is from left to right.
+        // Most edges start at the right side of the left node and end on the left side of the right node.
+        // Therefore reflecitve edges should also start on the right side of nodes.
+        reflexiveEdgeStart: SideType.RIGHT,
+      }
   }
 }
 
@@ -127,7 +145,7 @@ onMounted(() => {
     graphInstance.toggleZoom(true)
     graphInstance.setDefaults({
       nodeAutoGrowToLabelSize: false,
-      nodeProps: createArgumentProps(),
+      nodeProps: createArgumentProps(DEFAULT_SHAPE),
       nodeGUIEditability: {
         labelEditable: false,
       },
@@ -181,9 +199,12 @@ function onNodeCreated(event: CustomEvent<NodeCreatedDetail>) {
   const argument: Argument = {
     id: nextId(),
     name: getNextArgumentName(),
-    position: {
-      x: createdNode.x,
-      y: createdNode.y,
+    graphicalData: {
+      shape: DEFAULT_SHAPE,
+      position: {
+        x: createdNode.x,
+        y: createdNode.y,
+      },
     },
   }
   addArgumentAndUpdateMappedIds(createdNode.id, argument)
@@ -314,6 +335,13 @@ const processNameInput = computed(() => {
   }, 100)
 })
 
+function processShapeInput(argument: Argument, newShape: Shape) {
+  argument.graphicalData.shape = newShape
+  const internalId = getInternalId(argument)
+  const newProps = createArgumentProps(newShape)
+  graphInstanceRef.value?.setNodeProps(newProps, internalId)
+}
+
 function setNameAndLabel(argument: Argument, newName: string) {
   argument.name = newName
   const internalId = getInternalId(argument)
@@ -402,6 +430,29 @@ function highlightSelectedNodes() {
           type="text"
           placeholder="Name"
         />
+      </div>
+    </div>
+    <div class="field">
+      <label class="label">Shape</label>
+      <div class="control">
+        <label class="radio is-block">
+          <input
+            type="radio"
+            name="shape"
+            :checked="selectedArgumentRef.graphicalData.shape === 'circle'"
+            @change="processShapeInput(selectedArgumentRef, 'circle')"
+          />
+          Circle
+        </label>
+        <label class="radio is-block">
+          <input
+            type="radio"
+            name="shape"
+            :checked="selectedArgumentRef.graphicalData.shape === 'rectangle'"
+            @change="processShapeInput(selectedArgumentRef, 'rectangle')"
+          />
+          Rectangle
+        </label>
       </div>
     </div>
   </div>
