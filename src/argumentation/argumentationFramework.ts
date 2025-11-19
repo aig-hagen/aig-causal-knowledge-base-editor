@@ -2,6 +2,7 @@ import {
   addEdge,
   addNode,
   createDirectedGraph,
+  getEdges,
   getNode,
   getNodeIds,
   getNodes,
@@ -72,6 +73,10 @@ export function removeArgument(
   argumentId: ArgumentId,
 ) {
   removeNode(argumentationFramework.graph, argumentId)
+}
+
+export function getAttacks(argumentationFramework: ArgumentationFramework) {
+  return getEdges(argumentationFramework.graph)
 }
 
 export function addAttack(

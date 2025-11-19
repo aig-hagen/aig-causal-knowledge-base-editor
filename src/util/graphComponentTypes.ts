@@ -162,7 +162,10 @@ export interface GraphComponent {
     includeColor?: boolean,
     includeEditability?: boolean,
     includeIdImported?: boolean,
-  ): { nodes: { id: number }[]; links: { sourceId: number; targetId: number }[] }
+  ): {
+    nodes: { id: number; x?: number; y?: number }[]
+    links: { sourceId: number; targetId: number }[]
+  }
 }
 
 const enum EVENT_CAUSE {

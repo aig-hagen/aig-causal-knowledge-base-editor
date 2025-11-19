@@ -36,6 +36,10 @@ const { argumentationFramework } = defineProps<{
   argumentationFramework: ArgumentationFramework
 }>()
 
+defineExpose({
+  updatePositionsInArgumentationFramework,
+})
+
 const idCounter = ref(0)
 
 function nextId() {
@@ -275,7 +279,6 @@ function onNodeClicked(event: CustomEvent<NodeClickedDetail>) {
 function getNodeIds(graphInstance: GraphComponent) {
   const graph = graphInstance.getGraph('json', false, false, false, false, false)
   const nodeIds = new Set(graph.nodes.map((node) => node.id))
-  // const linkIds = new Set(graph.links.map((link) => link.sourceId))
   return nodeIds
 }
 
@@ -374,6 +377,27 @@ function highlightSelectedNodes() {
       nodeElement.style.strokeWidth = '4px'
       nodeElement.style.strokeDasharray = '10,5'
     }
+  }
+}
+
+function updatePositionsInArgumentationFramework() {
+  const graphInstance = ensureGraphInstance()
+  const graph = graphInstance.getGraph('json', true, false, false, false, false)
+  for (const node of graph.nodes) {
+    const internaId = node.id
+    if (node.x === undefined) {
+      throw Error('X position is undefined.')
+    }
+    if (node.y === undefined) {
+      throw Error('Y position is undefined.')
+    }
+    const publicId = getPublicId(internaId)
+    const argument = getArgument(argumentationFramework, publicId)
+    if (argument === undefined) {
+      throw Error(`Argument not found.`)
+    }
+    argument.graphicalData.position.x = node.x
+    argument.graphicalData.position.x = node.y
   }
 }
 </script>

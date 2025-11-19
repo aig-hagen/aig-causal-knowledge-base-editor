@@ -67,6 +67,18 @@ export function hasEdge<VertexT, VertexIdT>(
   return targetIds.has(targetId)
 }
 
+export function getEdges<VertexT, VertexIdT>(
+  graph: DirectedGraph<VertexT, VertexIdT>,
+): [VertexIdT, VertexIdT][] {
+  const edges: [VertexIdT, VertexIdT][] = []
+  for (const [id, targetIds] of graph.perIdTargetIds.entries()) {
+    for (const targetId of targetIds) {
+      edges.push([id, targetId])
+    }
+  }
+  return edges
+}
+
 export function addEdge<VertexT, VertexIdT>(
   graph: DirectedGraph<VertexT, VertexIdT>,
   sourceId: VertexIdT,
