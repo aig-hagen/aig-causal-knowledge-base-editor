@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref, useTemplateRef } from 'vue'
+import { computed, ref, useTemplateRef } from 'vue'
 import ControlsExplanation from '@/components/ControlsExplanation.vue'
 import { hasOneEntry } from '@/util/types'
 import saveAs from 'file-saver'
+import { useRouter } from 'vue-router'
+import { NAV_MORE_NAME_KEY, NAV_SHOW_USERGUIDE_KEY } from '@/router'
 
 const {
   title,
@@ -102,6 +104,15 @@ function saveToFile() {
   const fileName = `${pad(now.getFullYear(), 4)}-${pad(now.getMonth() + 1, 2)}-${pad(now.getDate(), 2)}.${fileNamePart}.json`
   saveAs(blob, fileName)
 }
+
+const router = useRouter()
+const showUserGuide = computed(() => {
+  return router.currentRoute.value.meta[NAV_SHOW_USERGUIDE_KEY] === true
+})
+
+const routesForMore = router.options.routes.filter(
+  (route) => typeof route.meta?.[NAV_MORE_NAME_KEY] === 'string',
+)
 </script>
 
 <template>
@@ -179,7 +190,13 @@ function saveToFile() {
 
           <div class="navbar-dropdown">
             <a class="navbar-item" @click="isShowControlExplanationModal = true"> Controls </a>
-            <a class="navbar-item" target="_blank" rel="noopener" href="/docs/user-guide.html">
+            <a
+              v-if="showUserGuide"
+              class="navbar-item"
+              target="_blank"
+              rel="noopener"
+              href="/docs/user-guide.html"
+            >
               User guide &#8599;</a
             >
             <hr
@@ -204,6 +221,22 @@ function saveToFile() {
             >
               Commit {{ editorCommit }} &#8599;</a
             >
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link">More</a>
+
+          <div class="navbar-dropdown">
+            <a
+              v-for="route in routesForMore"
+              :key="route.path"
+              class="navbar-item"
+              target="_blank"
+              rel="noopener"
+              :href="route.path"
+            >
+              {{ route.meta?.[NAV_MORE_NAME_KEY] }} &#8599;
+            </a>
           </div>
         </div>
       </div>

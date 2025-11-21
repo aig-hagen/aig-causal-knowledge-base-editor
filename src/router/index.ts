@@ -1,8 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '@/views/CausalKnowledgeBaseEditorView.vue'
+import CausalKnowledgeBaseEditorView from '@/views/CausalKnowledgeBaseEditorView.vue'
 import ArgumentationFrameworkEditorView from '@/views/ArgumentationFrameworkEditorView.vue'
 
-const DEFAULT_TITLE = 'Causal Knowledge Base Editor'
+const TITLE_KEY = 'title'
+
+export const NAV_SHOW_USERGUIDE_KEY = 'navShowUserGuide'
+export const EDITOR_TYPE_CAUSAL = 'causal'
+
+export const NAV_MORE_NAME_KEY = 'navMoreName'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -10,28 +15,44 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView,
+      component: CausalKnowledgeBaseEditorView,
       props: { previewFeatures: false },
+      meta: {
+        [TITLE_KEY]: 'Causal Knowledge Base Editor',
+        [NAV_MORE_NAME_KEY]: 'Causal Knowledge Base Editor',
+        [NAV_SHOW_USERGUIDE_KEY]: true,
+      },
     },
     {
-      path: '/preview',
-      name: 'preview',
-      component: HomeView,
+      path: '/causal-knowledge-base-preview',
+      name: 'causal-knowledge-base-preview',
+      component: CausalKnowledgeBaseEditorView,
       props: { previewFeatures: true },
+      meta: {
+        [TITLE_KEY]: 'Causal Knowledge Base Editor',
+        [NAV_MORE_NAME_KEY]: 'Causal Knowledge Base Editor (with preview features)',
+        [NAV_SHOW_USERGUIDE_KEY]: true,
+      },
     },
     {
       path: '/argumentation-framework',
       name: 'argumentation-framework',
       component: ArgumentationFrameworkEditorView,
       props: {},
-      meta: { title: 'Argumentation Framework Editor' },
+      meta: {
+        [TITLE_KEY]: 'Argumentation Framework Editor',
+        [NAV_MORE_NAME_KEY]: 'Argumentation Framework Editor',
+      },
     },
   ],
 })
 
 router.beforeEach((to, from, next) => {
-  // eslint-disable-next-line @typescript-eslint/no-base-to-string
-  document.title = String(to.meta.title ?? DEFAULT_TITLE)
+  const title = to.meta[TITLE_KEY]
+  if (typeof title !== 'string') {
+    throw Error('Invalid title.')
+  }
+  document.title = title
   next()
 })
 
