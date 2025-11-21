@@ -1,11 +1,7 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, expect, test } from 'vitest'
-import {
-  InvalidDataError,
-  JsonSyntaxError,
-  SchemaMismatchError,
-  useKnowledgeBase,
-} from './knowledgeBase'
+import { useKnowledgeBase } from './knowledgeBase'
+import { InvalidDataError, JsonSyntaxError, SchemaMismatchError } from '@/common/serialization'
 
 beforeEach(() => {
   setActivePinia(createPinia())

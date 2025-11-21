@@ -11,34 +11,12 @@ import schema from '@/assets/graphical-causal-knowledge-base-v1.schema.json' ass
 
 import { ajv } from '@/ajvInstance'
 import { hasMoreThenOneEntry } from '@/util/types'
-
-export abstract class ImportError {
-  abstract message: string
-}
-export class JsonSyntaxError extends ImportError {
-  message: string
-  constructor(cause: string, fileName: string) {
-    super()
-    this.message = `The provided file \`${fileName}\` is not a valid JSON file: ${cause}`
-  }
-}
-
-export class SchemaMismatchError extends ImportError {
-  message: string
-  constructor(cause: string) {
-    super()
-    // The `cause` will already contain a file name
-    this.message = `Data does not match the expected schema: ${cause}`
-  }
-}
-
-export class InvalidDataError extends ImportError {
-  message: string
-  constructor(cause: string, fileName: string) {
-    super()
-    this.message = `The provided file \`${fileName}\` contains invalid data: ${cause}`
-  }
-}
+import {
+  InvalidDataError,
+  JsonSyntaxError,
+  SchemaMismatchError,
+  type ImportError,
+} from '@/common/serialization'
 
 function atomIdToMessageString(atomId: number): string {
   return `\`${atomId.toString()}\``

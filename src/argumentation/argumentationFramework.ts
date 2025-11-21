@@ -36,7 +36,7 @@ export interface ArgumentationFramework {
   graph: DirectedGraph<Argument, ArgumentId>
 }
 
-export function createArgumentationFramework() {
+export function createArgumentationFramework(): ArgumentationFramework {
   return {
     graph: createDirectedGraph<Argument, ArgumentId>((argument) => argument.id),
   }

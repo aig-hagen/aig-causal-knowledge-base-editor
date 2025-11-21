@@ -21,7 +21,7 @@ export default defineConfigWithVueTs(
       '**/dist/**',
       '**/dist-ssr/**',
       '**/coverage/**',
-      '**/public/aig_graph_component-*/**',
+      '**/aig_graph_component-*/**',
     ],
   },
 

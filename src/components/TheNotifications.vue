@@ -15,7 +15,7 @@ const notifications = useNotifications()
         class="delete"
         @click="notifications.removeNotification(notification.id)"
       ></button>
-      {{ notification.message }}
+      <div style="white-space: pre-wrap">{{ notification.message }}</div>
     </div>
   </div>
 </template>

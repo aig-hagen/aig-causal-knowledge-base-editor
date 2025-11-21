@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
+// XXX consider binding notifications to component instead of making them global.
+
 interface Notification {
   id: number
   message: string

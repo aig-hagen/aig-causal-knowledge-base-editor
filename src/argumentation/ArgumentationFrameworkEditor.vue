@@ -18,6 +18,8 @@ import {
   addAttack,
   getArgument,
   getArguments,
+  getAttacks,
+  hasArgument,
   removeArgument,
   removeAttack,
   type Argument,
@@ -43,7 +45,13 @@ defineExpose({
 const idCounter = ref(0)
 
 function nextId() {
-  return (idCounter.value++).toString(10)
+  for (;;) {
+    const nextId = (idCounter.value++).toString(10)
+    const nextIdAlreadyExists = hasArgument(argumentationFramework, nextId)
+    if (!nextIdAlreadyExists) {
+      return nextId
+    }
+  }
 }
 
 function getNextArgumentName() {
@@ -111,6 +119,8 @@ const COLOR_ATTACK = Colors.LINK_BLACK
 const COLOR_ARGUMENT = Colors.NODE_BLUE
 const COLOR_HIGHLIGHT_SELECTED = Colors.HIGHLIGHT_BLUE
 
+const LABEL_EDITABLE = false
+
 const graphInstanceRef = ref<GraphComponent | null>(null)
 
 function ensureGraphInstance() {
@@ -151,12 +161,13 @@ onMounted(() => {
       nodeAutoGrowToLabelSize: false,
       nodeProps: createArgumentProps(DEFAULT_SHAPE),
       nodeGUIEditability: {
-        labelEditable: false,
+        labelEditable: LABEL_EDITABLE,
       },
       linkGUIEditability: {
-        labelEditable: false,
+        labelEditable: LABEL_EDITABLE,
       },
     })
+    createInitialGraph(graphInstance)
     graphHost.addEventListener('nodecreated', onNodeCreated)
     graphHost.addEventListener('nodedeleted', onNodeDeleted)
     graphHost.addEventListener('linkcreated', onLinkCreated)
@@ -184,6 +195,46 @@ onMounted(() => {
   )
 })
 
+function createInitialGraph(graphInstance: GraphComponent) {
+  const nodes = getArguments(argumentationFramework).map((argument) => {
+    return {
+      id: argument.id,
+      props: createArgumentProps(argument.graphicalData.shape),
+      label: argument.name,
+      x: argument.graphicalData.position.x,
+      y: argument.graphicalData.position.y,
+      color: COLOR_ARGUMENT,
+      labelEditable: LABEL_EDITABLE,
+    }
+  })
+  const links = getAttacks(argumentationFramework).map(([attacker, attacked]) => {
+    return {
+      sourceId: attacker,
+      targetId: attacked,
+      color: COLOR_ATTACK,
+      labelEditable: LABEL_EDITABLE,
+    }
+  })
+
+  graphInstance.setGraph({ nodes: nodes, links: links })
+  const { nodes: nodesWithInternalIds } = graphInstance.getGraph(
+    'json',
+    false,
+    false,
+    false,
+    false,
+    true,
+  )
+  for (const node of nodesWithInternalIds) {
+    const internalId = node.id
+    const publicId = node.idImported
+    if (typeof publicId !== 'string') {
+      throw Error(`Unexptected imported ID: ${JSON.stringify(publicId)}`)
+    }
+    addToMappedIds(internalId, publicId)
+  }
+}
+
 function onNodeCreated(event: CustomEvent<NodeCreatedDetail>) {
   if (hasProgrammaticCause(event)) return
   const createdNode = event.detail.node
@@ -199,7 +250,6 @@ function onNodeCreated(event: CustomEvent<NodeCreatedDetail>) {
     throw Error('Y position is not defined.')
   }
 
-  // When the event is handled, the HTML is not yet rendered.
   const argument: Argument = {
     id: nextId(),
     name: getNextArgumentName(),
@@ -211,15 +261,20 @@ function onNodeCreated(event: CustomEvent<NodeCreatedDetail>) {
       },
     },
   }
-  addArgumentAndUpdateMappedIds(createdNode.id, argument)
+  const internalId = createdNode.id
+  addArgument(argumentationFramework, argument)
+  addToMappedIds(createdNode.id, argument.id)
   selectArgument(argument.id)
-  updateGraphComponent()
+  void nextTick(() => {
+    const graphInstance = ensureGraphInstance()
+    graphInstance.setLabel(argument.name, internalId)
+    graphInstance.setColor(COLOR_ARGUMENT, internalId)
+  })
 }
 
-function addArgumentAndUpdateMappedIds(internaId: NodeId, argument: Argument) {
-  addArgument(argumentationFramework, argument)
-  perInternalIdPublicId.set(internaId, argument.id)
-  perPublicIdInternalId.set(argument.id, internaId)
+function addToMappedIds(internaId: NodeId, argumentId: ArgumentId) {
+  perInternalIdPublicId.set(internaId, argumentId)
+  perPublicIdInternalId.set(argumentId, internaId)
 }
 
 function onNodeDeleted(event: CustomEvent<NodeDeletedDetail>) {
@@ -248,7 +303,10 @@ function onLinkCreated(event: CustomEvent<LinkCreatedDetail>) {
   if (publicTargetId === undefined) return
 
   addAttack(argumentationFramework, publicSourceId, publicTargetId)
-  updateGraphComponent()
+  void nextTick(() => {
+    const graphInstance = ensureGraphInstance()
+    graphInstance.setColor(COLOR_ATTACK, createdLink.id)
+  })
 }
 
 function onLinkDeleted(event: CustomEvent<LinkDeletedDetail>) {
@@ -265,7 +323,6 @@ function onLinkDeleted(event: CustomEvent<LinkDeletedDetail>) {
   if (publicTargetId === undefined) return
 
   removeAttack(argumentationFramework, publicSourceId, publicTargetId)
-  updateGraphComponent()
 }
 
 function onNodeClicked(event: CustomEvent<NodeClickedDetail>) {
@@ -274,44 +331,6 @@ function onNodeClicked(event: CustomEvent<NodeClickedDetail>) {
   const internalId = detail.node.id
   const publicId = getPublicId(internalId)
   selectArgument(publicId)
-}
-
-function getNodeIds(graphInstance: GraphComponent) {
-  const graph = graphInstance.getGraph('json', false, false, false, false, false)
-  const nodeIds = new Set(graph.nodes.map((node) => node.id))
-  return nodeIds
-}
-
-function getLinkIds(graphInstance: GraphComponent) {
-  const graph = graphInstance.getGraph('json', false, false, false, false, false)
-  const linkIds = graph.links.map(
-    (link) => `${link.sourceId.toString()}-${link.targetId.toString()}`,
-  )
-  return linkIds
-}
-
-function updateGraphComponent() {
-  void nextTick(() => {
-    const graphInstance = ensureGraphInstance()
-    const argumentsInFramework = getArguments(argumentationFramework)
-    const internalNodeIdsToRemove = getNodeIds(graphInstance)
-    const argumentsToCreate = []
-    for (const argument of argumentsInFramework) {
-      const internalId = getInternalId(argument)
-      const existed = internalNodeIdsToRemove.delete(internalId)
-      if (existed) {
-        graphInstance.setLabel(argument.name, internalId)
-        graphInstance.setColor(COLOR_ARGUMENT, internalId)
-      } else {
-        argumentsToCreate.push(argument)
-      }
-    }
-    graphInstance.deleteElement([...internalNodeIdsToRemove])
-    if (argumentsToCreate.length > 0) {
-      throw Error('Arguments cannot be created programmatically.')
-    }
-    graphInstance.setColor(COLOR_ATTACK, getLinkIds(graphInstance))
-  })
 }
 
 const selectedArgumentRef = ref<Argument | null>(null)

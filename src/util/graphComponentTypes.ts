@@ -121,6 +121,32 @@ type GraphConfigurationInput = Partial<
   >
 >
 
+export interface NodeAppearance {
+  color?: string
+  props?: NodeProps
+  renderedSize?: NodeSize
+}
+
+export type jsonNode = {
+  id: number | string
+  x?: number
+  y?: number
+  label?: string
+} & NodeGUIEditability &
+  NodeAppearance
+
+export type jsonLink = {
+  sourceId: number | string
+  targetId: number | string
+  label?: string
+  color?: string
+} & LinkGUIEditability
+
+export interface jsonGraph {
+  nodes: jsonNode[]
+  links: jsonLink[]
+}
+
 export interface GraphComponent {
   toggleNodePhysics(isEnabled: boolean): void
   toggleZoom(isEnabled: boolean): void
@@ -163,9 +189,10 @@ export interface GraphComponent {
     includeEditability?: boolean,
     includeIdImported?: boolean,
   ): {
-    nodes: { id: number; x?: number; y?: number }[]
+    nodes: { id: number; x?: number; y?: number; idImported?: number | string }[]
     links: { sourceId: number; targetId: number }[]
   }
+  setGraph(graphToSet: string | jsonGraph | undefined): void
 }
 
 const enum EVENT_CAUSE {
