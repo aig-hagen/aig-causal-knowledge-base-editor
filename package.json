@@ -37,7 +37,7 @@
     "@types/file-saver": "2.0.7",
     "@types/jsdom": "27.0.0",
     "@types/node": "24.10.1",
-    "@vitejs/plugin-vue": "6.0.1",
+    "@vitejs/plugin-vue": "6.0.2",
     "@vitejs/plugin-vue-jsx": "5.1.1",
     "@vitest/browser": "4.0.10",
     "@vitest/eslint-plugin": "1.4.3",
