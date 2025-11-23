@@ -12,7 +12,7 @@ import {
 } from '@/composables/useEvaluationRequest'
 import EvaluationErrorText from './EvaluationBlockerText.vue'
 import ExplanationText from './ExplanationText.vue'
-import SequenceExplanationText from './SequenceExplanationText.vue'
+import SequenceExplanationText from '@/sequence-explanation/SequenceExplanationText.vue'
 
 const { previewFeatures } = defineProps<{
   previewFeatures: boolean
