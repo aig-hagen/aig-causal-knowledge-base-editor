@@ -39,7 +39,7 @@
     "@types/node": "24.10.1",
     "@vitejs/plugin-vue": "6.0.2",
     "@vitejs/plugin-vue-jsx": "5.1.2",
-    "@vitest/browser": "4.0.10",
+    "@vitest/browser": "4.0.12",
     "@vitest/eslint-plugin": "1.4.3",
     "@vue/eslint-config-prettier": "10.2.0",
     "@vue/eslint-config-typescript": "14.6.0",
@@ -65,7 +65,7 @@
     "vite": "7.2.4",
     "vite-plugin-static-copy": "3.1.4",
     "vite-plugin-vue-devtools": "8.0.5",
-    "vitest": "4.0.10",
+    "vitest": "4.0.12",
     "vitest-browser-vue": "2.0.1",
     "vue-tsc": "3.1.4",
     "vuepress": "2.0.0-rc.26"
