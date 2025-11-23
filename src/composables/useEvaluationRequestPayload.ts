@@ -2,6 +2,19 @@ import { findCycle } from '@/model/cycles'
 import type { Connection, ConnectionId, Id } from '@/model/graphicalCausalKnowledgeBase'
 import { computed, unref, type ComputedRef, type MaybeRef } from 'vue'
 
+const editorCommit = import.meta.env.VITE_EDITOR_COMMIT?.slice(0, 7)
+const editorVersion = import.meta.env.VITE_EDITOR_VERSION
+
+let USER_ID = 'causal-knowledge-base-editor.aig.fernuni-hagen.de'
+
+if (editorVersion !== undefined) {
+  USER_ID = USER_ID + '/' + editorVersion
+}
+
+if (editorCommit !== undefined) {
+  USER_ID = USER_ID + ' ' + editorCommit
+}
+
 export interface Atom {
   id: number
 }
@@ -63,6 +76,7 @@ type EvaluationRequestPayloadCmd =
   | 'get_sequence_explanations'
 
 export interface EvaluationRequestPayload {
+  email?: string
   cmd: EvaluationRequestPayloadCmd
   kb: string
   observations: string
@@ -122,6 +136,7 @@ function constructEvaluationRequestPayload(
     conclusionsFilter === null ? undefined : conclusionsFilter.join(', ')
 
   return {
+    email: USER_ID,
     cmd: cmd,
     kb: [...equations, `{${assumptionsPayload}}`].join('\n'),
     observations: observationsPayload,
