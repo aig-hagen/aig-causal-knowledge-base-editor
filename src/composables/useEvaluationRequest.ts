@@ -8,12 +8,7 @@ import type { Connection, Id } from '@/model/graphicalCausalKnowledgeBase'
 import { useFetch } from '@vueuse/core'
 import { computed, type MaybeRef, ref, type Ref, unref, watchEffect } from 'vue'
 import { ajv } from '@/ajvInstance'
-
-declare global {
-  interface Window {
-    TWEETY_API_URL: string
-  }
-}
+import { TWEETY_API_URL } from '@/common/server'
 
 export function useConclusionEvaluationRequest(
   atoms: MaybeRef<Set<number>>,
@@ -283,7 +278,7 @@ export function useEvaluationRequest<ResultT>(
   payload: MaybeRef<EvaluationRequestPayload | NonEvaluableKnowledgebaseError>,
   handleReply: (reply: string) => ResultOrError<ResultT>,
 ) {
-  const url = window.TWEETY_API_URL + '/causal'
+  const url = TWEETY_API_URL + '/causal'
 
   const evaluationBlocker: Ref<Error | null> = computed(() => {
     const payloadValue = unref(payload)

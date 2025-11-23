@@ -1,19 +1,7 @@
+import { USER_ID } from '@/common/server'
 import { findCycle } from '@/model/cycles'
 import type { Connection, ConnectionId, Id } from '@/model/graphicalCausalKnowledgeBase'
 import { computed, unref, type ComputedRef, type MaybeRef } from 'vue'
-
-const editorCommit = import.meta.env.VITE_EDITOR_COMMIT?.slice(0, 7)
-const editorVersion = import.meta.env.VITE_EDITOR_VERSION
-
-let USER_ID = 'causal-knowledge-base-editor.aig.fernuni-hagen.de'
-
-if (editorVersion !== undefined) {
-  USER_ID = USER_ID + '/' + editorVersion
-}
-
-if (editorCommit !== undefined) {
-  USER_ID = USER_ID + ' ' + editorCommit
-}
 
 export interface Atom {
   id: number
