@@ -1,3 +1,5 @@
+/// <reference types="vite/client" />
+
 const editorCommit = import.meta.env.VITE_EDITOR_COMMIT?.slice(0, 7)
 const editorVersion = import.meta.env.VITE_EDITOR_VERSION
 

@@ -416,7 +416,7 @@ function updatePositionsInArgumentationFramework() {
       throw Error(`Argument not found.`)
     }
     argument.graphicalData.position.x = node.x
-    argument.graphicalData.position.x = node.y
+    argument.graphicalData.position.y = node.y
   }
 }
 </script>

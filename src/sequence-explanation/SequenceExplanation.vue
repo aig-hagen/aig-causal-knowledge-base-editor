@@ -1,8 +1,4 @@
 <script setup lang="ts">
-import type {
-  AttackDTO,
-  DialectialSequenceExplanationDTO,
-} from '@/composables/useEvaluationRequest'
 import {
   NodeShape,
   SideType,
@@ -11,6 +7,9 @@ import {
 } from '@/util/graphComponentTypes'
 import { onMounted, ref, useTemplateRef } from 'vue'
 import * as Colors from '@/common/colors'
+import { useMutationObserver } from '@vueuse/core'
+import type { DialectialSequenceExplanationDTO } from '@/sequence-explanation/DialectialSequenceExplanationDTO'
+import type { AttackDTO } from '@/sequence-explanation/useSequenceExplanationRequest'
 
 const { explanation, attacks, getReadableArgument } = defineProps<{
   explanation: DialectialSequenceExplanationDTO
@@ -64,25 +63,54 @@ onMounted(() => {
     throw new Error('Graph component element empty.')
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const graphInstance = (graphComponentElement as any)._instance.exposed as GraphComponent
-  graphInstanceRef.value = graphInstance
-  graphInstance.toggleNodePhysics(false)
-  graphInstance.toggleZoom(true)
-  graphInstance.setDefaults({ nodeAutoGrowToLabelSize: false, nodeProps: createArgumentProps() })
-  drawExplanation(graphInstance)
-  graphInstance.setEditability(
-    {
-      fixedPosition: {
-        x: true,
-        y: true,
+  const graphHost = graphComponentElement.getElementsByClassName(
+    'graph-controller__graph-host',
+  )[0] as HTMLElement
+
+  function isInitialised() {
+    return !graphHost.classList.contains('uninitialised')
+  }
+
+  function initGraphInstance(graphComponentElement: HTMLElement) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const graphInstance = (graphComponentElement as any)._instance.exposed as GraphComponent
+    graphInstanceRef.value = graphInstance
+    graphInstance.toggleNodePhysics(false)
+    graphInstance.toggleZoom(true)
+    graphInstance.setDefaults({ nodeAutoGrowToLabelSize: false, nodeProps: createArgumentProps() })
+    drawExplanation(graphInstance)
+    graphInstance.setEditability(
+      {
+        fixedPosition: {
+          x: true,
+          y: true,
+        },
+        deletable: false,
+        labelEditable: false,
+        allowIncomingLinks: false,
+        allowOutgoingLinks: false,
       },
-      deletable: false,
-      labelEditable: false,
-      allowIncomingLinks: false,
-      allowOutgoingLinks: false,
+      undefined,
+    )
+  }
+
+  if (isInitialised()) {
+    initGraphInstance(graphComponentElement)
+  }
+
+  const stopObserver = useMutationObserver(
+    graphHost,
+    (mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.attributeName === 'class') {
+          if (isInitialised()) {
+            initGraphInstance(graphComponentElement)
+            stopObserver.stop()
+          }
+        }
+      }
     },
-    undefined,
+    { attributes: true, attributeFilter: ['class'] },
   )
 })
 

@@ -10,7 +10,7 @@ import {
   useExplanationEvaluationRequest,
   useSequenceExplanationEvaluationRequest,
 } from '@/composables/useEvaluationRequest'
-import EvaluationErrorText from './EvaluationBlockerText.vue'
+import EvaluationBlockerText from './EvaluationBlockerText.vue'
 import ExplanationText from './ExplanationText.vue'
 import SequenceExplanationText from '@/sequence-explanation/SequenceExplanationText.vue'
 
@@ -319,7 +319,7 @@ const {
         </article>
         <article v-if="conclusionsEvaluationBlocker !== null" class="message is-warning">
           <div class="message-body is-size-6">
-            <EvaluationErrorText
+            <EvaluationBlockerText
               :atoms="knowledgeBase.atoms"
               :blocker="conclusionsEvaluationBlocker"
             />

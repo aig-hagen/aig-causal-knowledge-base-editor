@@ -444,6 +444,7 @@ function highlightSelectedNodes() {
   }
 }
 
+// TODO (https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/399)further encapsualte graph componet
 onMounted(() => {
   const graphComponentElement = graphComponentElementRef.value
   if (graphComponentElement === null) {

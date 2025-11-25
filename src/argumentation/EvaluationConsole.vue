@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watchEffect } from 'vue'
 import {
-  getArgument,
   getArgumentIds,
   getArguments,
   hasArgument,
@@ -9,6 +8,9 @@ import {
   type ArgumentationFramework,
   type ArgumentId,
 } from './argumentationFramework'
+import { useSequenceExplanationRequest } from '@/sequence-explanation/useSequenceExplanationRequest'
+import EvaluationBlockerText from './EvaluationBlockerText.vue'
+import SequenceExplanationText2 from '@/sequence-explanation/SequenceExplanationText2.vue'
 
 const { argumentationFramework } = defineProps<{
   argumentationFramework: ArgumentationFramework
@@ -41,7 +43,14 @@ const argumentsToShowConclusionFor = computed(() => {
   }
 })
 
-const evaluateConclusions = null
+const {
+  evaluationBlocker,
+  evaluate,
+  abortEvaluation,
+  isEvaluating,
+  evaluationError,
+  evaluationResult,
+} = useSequenceExplanationRequest(argumentationFramework, argumentsToShowConclusionFor)
 </script>
 
 <template>
@@ -51,18 +60,14 @@ const evaluateConclusions = null
         <form
           @submit.prevent="
             () => {
-              if (evaluateConclusions !== null) evaluateConclusions()
+              if (evaluate !== null) evaluate()
             }
           "
         >
           <div class="field is-grouped is-gapless">
             <div class="field has-addons is-flex-grow-1">
               <div class="control">
-                <button
-                  :disabled="evaluateConclusions === null"
-                  type="submit"
-                  class="button is-primary"
-                >
+                <button :disabled="evaluate === null" type="submit" class="button is-primary">
                   Explain
                 </button>
               </div>
@@ -85,9 +90,45 @@ const evaluateConclusions = null
                   </select>
                 </div>
               </div>
+              <div class="control">
+                <button
+                  v-if="abortEvaluation !== null"
+                  type="button"
+                  class="button"
+                  @click="abortEvaluation()"
+                >
+                  Abort
+                </button>
+              </div>
             </div>
           </div>
         </form>
+      </div>
+    </div>
+    <!-- TODO Oleks check if one or many .columns are needed. -->
+    <div class="columns">
+      <div class="column is-full">
+        <article v-if="isEvaluating" class="message">
+          <div class="message-body is-size-6">Evaluating...</div>
+        </article>
+        <article v-if="evaluationBlocker !== null" class="message is-warning">
+          <div class="message-body is-size-6">
+            <EvaluationBlockerText :blocker="evaluationBlocker" />
+          </div>
+        </article>
+        <article v-if="evaluationError !== null" class="message is-danger">
+          <div class="message-body is-size-6">
+            {{ evaluationError }}
+          </div>
+        </article>
+        <article v-if="evaluationResult !== null" class="message is-dark">
+          <div class="message-body is-size-6">
+            <SequenceExplanationText2
+              :argumentation-framework="argumentationFramework"
+              :sequence-explanation-result="evaluationResult"
+            />
+          </div>
+        </article>
       </div>
     </div>
   </div>
