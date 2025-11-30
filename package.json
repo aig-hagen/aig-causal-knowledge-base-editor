@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@vueform/multiselect": "2.6.11",
-    "@vueuse/core": "14.0.0",
+    "@vueuse/core": "14.1.0",
     "ajv": "8.17.1",
     "bulma": "1.0.4",
     "file-saver": "2.0.5",
