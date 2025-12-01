@@ -53,7 +53,7 @@
     "@vue/tsconfig": "0.8.1",
     "@vuepress/bundler-vite": "2.0.0-rc.26",
     "@vuepress/plugin-markdown-ext": "2.0.0-rc.120",
-    "@vuepress/plugin-markdown-hint": "2.0.0-rc.118",
+    "@vuepress/plugin-markdown-hint": "2.0.0-rc.120",
     "@vuepress/plugin-markdown-image": "2.0.0-rc.118",
     "@vuepress/theme-default": "2.0.0-rc.118",
     "eslint": "9.39.1",
