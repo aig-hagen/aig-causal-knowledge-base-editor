@@ -62,7 +62,7 @@
     "jiti": "2.6.1",
     "jsdom": "27.2.0",
     "json-schema-to-typescript": "15.0.4",
-    "msw": "2.12.3",
+    "msw": "2.12.4",
     "npm-run-all2": "8.0.4",
     "playwright": "1.57.0",
     "prettier": "3.7.4",
