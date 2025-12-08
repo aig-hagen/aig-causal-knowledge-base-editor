@@ -14,6 +14,8 @@ import {
 } from '@/common/serialization'
 import { getOrSet } from '@/util/map'
 
+const API_VERSION = 'graphical-argumentation-framework/v1' as const
+
 const ArgumentId = z.string()
 
 const Shape = z.union([z.literal('circle'), z.literal('rectangle')])
@@ -41,6 +43,7 @@ const Attack = z.strictObject({
 
 const ArgumentationFrameworkDTO = z
   .strictObject({
+    apiVersion: z.literal('graphical-argumentation-framework/v1'),
     arguments: z.array(Argument).superRefine((arguments_, ctx) => {
       const perSeenIdToIdx = new Map()
       arguments_.forEach((argument, idx) => {
@@ -133,6 +136,7 @@ export function serializeToDto(
   const attacks = getAttacks(argumentationFramework)
 
   const dto = {
+    apiVersion: API_VERSION,
     arguments: allAguments.map((argument) => ({
       id: argument.id,
       name: argument.name,

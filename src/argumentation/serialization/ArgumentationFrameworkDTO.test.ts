@@ -25,9 +25,13 @@ test('fail importing JSON with syntax error', () => {
 })
 
 test('fail importing JSON with missing property', () => {
-  const badData = `{ "arguments": [] }`
+  const data = {
+    apiVersion: 'graphical-argumentation-framework/v1',
+    arguments: [],
+  }
+  const stringifiedData = JSON.stringify(data)
 
-  const errors = deserializeWithErrors(badData)
+  const errors = deserializeWithErrors(stringifiedData)
 
   expect(errors).toHaveLength(1)
   expect.soft(errors[0]).toBeInstanceOf(ValidationError)
@@ -43,6 +47,7 @@ test('fail importing JSON with missing property', () => {
 
 test('fail importing JSON with duplicate id', () => {
   const data = {
+    apiVersion: 'graphical-argumentation-framework/v1',
     arguments: [
       {
         id: '1',
@@ -88,6 +93,7 @@ test('fail importing JSON with duplicate id', () => {
 
 test('fail importing JSON with duplicate attack', () => {
   const data = {
+    apiVersion: 'graphical-argumentation-framework/v1',
     arguments: [
       {
         id: '1',
@@ -142,6 +148,7 @@ test('fail importing JSON with duplicate attack', () => {
 
 test('fail importing JSON with unknown attacks', () => {
   const data = {
+    apiVersion: 'graphical-argumentation-framework/v1',
     arguments: [],
     attacks: [
       {
