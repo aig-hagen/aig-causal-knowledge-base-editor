@@ -9,6 +9,8 @@ export const EDITOR_TYPE_CAUSAL = 'causal'
 
 export const NAV_MORE_NAME_KEY = 'navMoreName'
 
+const CAUSAL_KNOWLEDGE_BASE_EDITOR_TITLE = 'Causal Knowledge Base Editor'
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -18,8 +20,8 @@ const router = createRouter({
       component: CausalKnowledgeBaseEditorView,
       props: { previewFeatures: false },
       meta: {
-        [TITLE_KEY]: 'Causal Knowledge Base Editor',
-        [NAV_MORE_NAME_KEY]: 'Causal Knowledge Base Editor',
+        [TITLE_KEY]: CAUSAL_KNOWLEDGE_BASE_EDITOR_TITLE,
+        [NAV_MORE_NAME_KEY]: CAUSAL_KNOWLEDGE_BASE_EDITOR_TITLE,
         [NAV_SHOW_USERGUIDE_KEY]: true,
       },
     },
@@ -29,8 +31,8 @@ const router = createRouter({
       component: CausalKnowledgeBaseEditorView,
       props: { previewFeatures: true },
       meta: {
-        [TITLE_KEY]: 'Causal Knowledge Base Editor',
-        [NAV_MORE_NAME_KEY]: 'Causal Knowledge Base Editor (with preview features)',
+        [TITLE_KEY]: CAUSAL_KNOWLEDGE_BASE_EDITOR_TITLE,
+        [NAV_MORE_NAME_KEY]: `${CAUSAL_KNOWLEDGE_BASE_EDITOR_TITLE} (with preview features)`,
         [NAV_SHOW_USERGUIDE_KEY]: true,
       },
     },
@@ -50,7 +52,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const title = to.meta[TITLE_KEY]
   if (typeof title !== 'string') {
-    throw Error('Invalid title.')
+    return CAUSAL_KNOWLEDGE_BASE_EDITOR_TITLE
   }
   document.title = title
   next()
