@@ -15,4 +15,11 @@
   ],
   dependencyDashboardLabels: ["type/maintenance", "planning/next"],
   dependencyDashboardAutoclose: true,
+  packageRules: [
+    {
+      matchDatasources: ["docker"],
+      matchPackageNames: ["ghcr.io/odzhychko/tweetyproject/tweetyproject-web-server"],
+      versioning: "semver"
+    }
+  ]
 }
