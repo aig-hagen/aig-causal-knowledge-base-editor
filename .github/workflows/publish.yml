@@ -13,8 +13,10 @@ jobs:
 
     # Permissions required for publishing Docker image.
     # See https://docs.github.com/en/actions/use-cases-and-examples/publishing-packages/publishing-docker-images#publishing-images-to-github-packages
+    # And permissions required for creating releases.
+    # See https://github.com/softprops/action-gh-release
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
@@ -38,9 +40,23 @@ jobs:
         # will be served by the backend server.
       - name: Set backend URL
         run: sed -i "s|\$TWEETY_API_URL||g" ./dist/index.html
-      
+
       - name: Build docs
         run: npm run docs:build
+
+      - name: Bundle web server with frontend
+        id: bundle_with_server
+        run: |
+          ./bundle_with_server.sh
+          VERSION="${GITHUB_REF_NAME#v}"
+          SERVER_ARTIFACT="${RUNNER_TEMP}/org.tweetyproject.web-with-causal-knowledge-base-editor-${VERSION}.jar"
+          mv "${RUNNER_TEMP}/org.tweetyproject.web-with-causal-knowledge-base-editor.jar" $SERVER_ARTIFACT
+          echo "server_artifact=$SERVER_ARTIFACT" >> $GITHUB_OUTPUT
+
+      - name: Publish web server with frontend
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.bundle_with_server.outputs.server_artifact }}
 
       # The Docker setup follows
       # https://docs.github.com/en/actions/use-cases-and-examples/publishing-packages/publishing-docker-images#publishing-images-to-github-packages
