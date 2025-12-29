@@ -60,7 +60,7 @@
     "eslint-plugin-playwright": "2.4.0",
     "eslint-plugin-vue": "10.6.2",
     "jiti": "2.6.1",
-    "jsdom": "27.3.0",
+    "jsdom": "27.4.0",
     "json-schema-to-typescript": "15.0.4",
     "msw": "2.12.4",
     "npm-run-all2": "8.0.4",
