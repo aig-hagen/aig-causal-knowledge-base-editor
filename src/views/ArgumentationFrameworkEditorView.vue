@@ -3,7 +3,7 @@ import { createArgumentationFramework } from '@/argumentation/argumentationFrame
 import ArgumentationFrameworkEditor from '@/argumentation/ArgumentationFrameworkEditor.vue'
 import EvaluationConsole from '@/argumentation/EvaluationConsole.vue'
 import EditorLayout from '@/components/EditorLayout.vue'
-import EditorNavbar from '@/components/EditorNavbar.vue'
+import EditorNavbar, { type Dataset } from '@/components/EditorNavbar.vue'
 import TheNotifications from '@/components/TheNotifications.vue'
 import { ref, useTemplateRef } from 'vue'
 import {
@@ -11,10 +11,18 @@ import {
   serializeToDto,
 } from '@/argumentation/serialization/ArgumentationFrameworkDTO'
 import { useNotifications } from '@/stores/notifications'
+import datasets from '@/argumentation/examples'
 const { addSuccessNotification, addErrorNotification, clearNotifications } = useNotifications()
 
-const sampleDatasets: { name: string; load(): void }[] = []
+const sampleDatasets: Dataset[] = datasets.map((dataset) => ({
+  name: dataset.name,
+  load() {
+    argumentationFrameworkKeyCounter.value = argumentationFrameworkKeyCounter.value + 1
+    argumentationFramework.value = dataset.load()
+  },
+}))
 const argumentationFramework = ref(createArgumentationFramework())
+
 // Key is used to render editor component and evaluation console from scratch after import.
 const argumentationFrameworkKeyCounter = ref(0)
 const showEvaluationConsole = ref<boolean>(true)

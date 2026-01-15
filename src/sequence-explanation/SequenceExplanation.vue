@@ -17,10 +17,10 @@ const { explanation, attacks, getReadableArgument } = defineProps<{
   getReadableArgument(argument: string): string
 }>()
 
-const ARGUMNET_WIDTH_IN_PX = 174
-const ARGUMNET_HEIGHT_IN_PX = 56
+const ARGUMENT_WIDTH_IN_PX = 174
+const ARGUMENT_HEIGHT_IN_PX = 56
 
-const Y_OFFSET = ARGUMNET_HEIGHT_IN_PX * 1.5
+const Y_OFFSET = ARGUMENT_HEIGHT_IN_PX * 1.5
 const X_OFFSET = Y_OFFSET
 
 const Y_SPACING = 64
@@ -29,8 +29,8 @@ const X_SPACING = Y_SPACING
 function createArgumentProps(): NodeProps {
   return {
     shape: NodeShape.RECTANGLE,
-    width: ARGUMNET_WIDTH_IN_PX,
-    height: ARGUMNET_HEIGHT_IN_PX,
+    width: ARGUMENT_WIDTH_IN_PX,
+    height: ARGUMENT_HEIGHT_IN_PX,
     cornerRadius: 4,
     // The generall direction is from left to right.
     // Most edges start at the right side of the left node and end on the left side of the right node.
@@ -140,8 +140,8 @@ function drawExplanation(graphInstance: any) {
         id: nodeId,
         props: createArgumentProps(),
         label: getReadableArgument(argument),
-        x: column * (ARGUMNET_WIDTH_IN_PX + X_SPACING) + X_OFFSET,
-        y: row * (ARGUMNET_HEIGHT_IN_PX + Y_SPACING) + Y_OFFSET,
+        x: column * (ARGUMENT_WIDTH_IN_PX + X_SPACING) + X_OFFSET,
+        y: row * (ARGUMENT_HEIGHT_IN_PX + Y_SPACING) + Y_OFFSET,
         color: getArgumentColor(isSupporters),
       })
     }
@@ -164,6 +164,8 @@ function drawExplanation(graphInstance: any) {
   const graph = { nodes, links }
   // TODO(https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/399) center after drawing.
   graphInstance.setGraph(graph)
+  // NOTE Consider zooming out after setting inital graph
+  // Would also be relevant for other graphs
 }
 </script>
 

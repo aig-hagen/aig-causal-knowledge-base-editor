@@ -2,13 +2,13 @@
 
 Graphical editor to create causal knowledge bases as described in [_Argumentation-based Causal and Counterfactual Reasoning_](https://www.researchgate.net/publication/363185581_Argumentation-based_Causal_and_Counterfactual_Reasoning). 
 
-Try out at: https://causal-knowledge-base-editor.aig.fernuni-hagen.de
+Try out at https://causal-knowledge-base-editor.aig.fernuni-hagen.de
 
 ## Deployment
 
-The AIG Causal Knowledge Base Editor is published as a Docker image on GitHub Container Registry: ghcr.io/aig-hagen/aig-causal-knowledge-base-editor
+The AIG Causal Knowledge Base Editor is published as a Docker image on GitHub Container Registry: https://ghcr.io/aig-hagen/aig-causal-knowledge-base-editor
 
-For example you can deploy it using Docker Compose. Below is a minimal example configuration:
+For example, you can deploy it using Docker Compose. Below is a minimal example configuration:
 
 ```yaml
 services:
@@ -27,7 +27,7 @@ services:
 
 TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
 
-## Customize configuration
+## Customize Configuration
 
 See [Vite Configuration Reference](https://vite.dev/config/).
 
@@ -79,3 +79,9 @@ npm run test:e2e --debug
 ```sh
 npm run lint
 ```
+
+## Acknowledgment
+
+The Causal Knowledge Base Editor bundles examples from [AF-XRAY](https://github.com/xai-ca/xray).
+It is developed by employees of the University of Illinois Urbana-Champaign and licensed under the MIT License.  
+The license and examples are included in [third_party/xray](third_party/xray)

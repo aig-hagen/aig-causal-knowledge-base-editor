@@ -33,6 +33,11 @@ import * as Colors from '@/common/colors'
 import { vFocus } from '@/common/vFocus'
 import { LEFT_MOUSE_BUTTON } from '@/common/button'
 import { getNextName } from './nextName'
+import {
+  ARGUMENT_HEIGHT_IN_PX,
+  ARGUMENT_RADIUS_IN_PX,
+  ARGUMENT_WIDTH_IN_PX,
+} from '@/argumentation/consts'
 
 const { argumentationFramework } = defineProps<{
   argumentationFramework: ArgumentationFramework
@@ -87,10 +92,6 @@ function getPublicId(nodeId: NodeId): ArgumentId {
   return publicId
 }
 
-const ARGUMNET_RADIUS_IN_PX = 28
-const ARGUMNET_WIDTH_IN_PX = 174
-const ARGUMNET_HEIGHT_IN_PX = ARGUMNET_RADIUS_IN_PX * 2
-
 const DEFAULT_SHAPE: Shape = 'circle'
 
 function createArgumentProps(shape: Shape): NodeProps {
@@ -98,14 +99,14 @@ function createArgumentProps(shape: Shape): NodeProps {
     case 'circle':
       return {
         shape: NodeShape.CIRCLE,
-        radius: ARGUMNET_RADIUS_IN_PX,
+        radius: ARGUMENT_RADIUS_IN_PX,
       }
 
     case 'rectangle':
       return {
         shape: NodeShape.RECTANGLE,
-        width: ARGUMNET_WIDTH_IN_PX,
-        height: ARGUMNET_HEIGHT_IN_PX,
+        width: ARGUMENT_WIDTH_IN_PX,
+        height: ARGUMENT_HEIGHT_IN_PX,
         cornerRadius: 4,
         // The generall direction is from left to right.
         // Most edges start at the right side of the left node and end on the left side of the right node.
@@ -216,6 +217,7 @@ function createInitialGraph(graphInstance: GraphComponent) {
     }
   })
 
+  console.log({ nodes: nodes, links: links })
   graphInstance.setGraph({ nodes: nodes, links: links })
   const { nodes: nodesWithInternalIds } = graphInstance.getGraph(
     'json',

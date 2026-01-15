@@ -105,7 +105,7 @@ const {
         </form>
       </div>
     </div>
-    <!-- TODO Oleks check if one or many .columns are needed. -->
+    <!-- TODO Check if one or many .columns are needed. -->
     <div class="columns">
       <div class="column is-full">
         <article v-if="isEvaluating" class="message">

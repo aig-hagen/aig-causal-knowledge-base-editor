@@ -6,6 +6,11 @@ import saveAs from 'file-saver'
 import { useRouter } from 'vue-router'
 import { NAV_MORE_NAME_KEY, NAV_SHOW_USERGUIDE_KEY } from '@/router'
 
+export interface Dataset {
+  name: string
+  load(): void
+}
+
 const {
   title,
   getExportedData,
@@ -18,7 +23,7 @@ const {
   title: string
   getExportedData?(): { data: unknown; fileNamePart: string }
   loadFromFileData?(loadFileData: () => Promise<{ fileName: string; fileText: string }>): void
-  datasets: { name: string; load(): void }[]
+  datasets: Dataset[]
   showSidebarRight: boolean
   sidebarRightName?: string
   controlElementNames: {
@@ -148,16 +153,27 @@ const routesForMore = router.options.routes.filter(
       <div class="navbar-start">
         <div
           class="navbar-item has-dropdown is-hoverable"
-          v-if="
-            getExportedData !== undefined || loadFromFileData !== undefined || datasets.length > 0
-          "
+          v-if="getExportedData !== undefined || loadFromFileData !== undefined"
         >
-          <a class="navbar-link">Data</a>
+          <a class="navbar-link">File</a>
           <div class="navbar-dropdown">
-            <a v-if="getExportedData" class="navbar-item" @click="saveToFile()">Save to disk</a>
+            <a v-if="getExportedData" class="navbar-item" @click="saveToFile()">Save As...</a>
             <a v-if="loadFromFileData" class="navbar-item" @click="triggerFileUpload()"
-              >Load from disk</a
+              >Open File...</a
             >
+            <input
+              ref="file-input"
+              type="file"
+              v-show="false"
+              accept="application/json"
+              @change="loadFromFileInput($event)"
+            />
+          </div>
+        </div>
+
+        <div class="navbar-item has-dropdown is-hoverable" v-if="datasets.length > 0">
+          <a class="navbar-link">Example</a>
+          <div class="navbar-dropdown">
             <input
               ref="file-input"
               type="file"
@@ -171,7 +187,7 @@ const routesForMore = router.options.routes.filter(
               :key="dataset.name"
               @click="dataset.load"
               ><span
-                >Load example <em>{{ dataset.name }}</em></span
+                >Open <em>{{ dataset.name }}</em></span
               ></a
             >
           </div>

@@ -1,0 +1,3 @@
+export const ARGUMENT_RADIUS_IN_PX = 28
+export const ARGUMENT_WIDTH_IN_PX = 174
+export const ARGUMENT_HEIGHT_IN_PX = ARGUMENT_RADIUS_IN_PX * 2
