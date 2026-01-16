@@ -10,7 +10,7 @@ import type {
 import schema from '@/assets/graphical-causal-knowledge-base-v1.schema.json' assert { type: 'json' }
 
 import { ajv } from '@/ajvInstance'
-import { hasMoreThenOneEntry } from '@/util/types'
+import { hasMoreThenOneEntry } from '@/misc/types'
 import {
   InvalidDataError,
   JsonSyntaxError,

@@ -12,7 +12,7 @@ import {
   ValidationError,
   type DeserializationResult,
 } from '@/common/serialization'
-import { getOrSet } from '@/util/map'
+import { getOrSet } from '@/misc/map'
 
 const API_VERSION = 'graphical-argumentation-framework/v1' as const
 

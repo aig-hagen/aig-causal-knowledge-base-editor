@@ -12,7 +12,7 @@ import {
   type NodeDeletedDetail,
   type NodeId,
   type NodeProps,
-} from '@/util/graphComponentTypes'
+} from '@/misc/graphComponentTypes'
 import {
   addArgument,
   addAttack,

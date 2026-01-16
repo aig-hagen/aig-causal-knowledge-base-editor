@@ -20,7 +20,7 @@ import {
   type NodeCreatedDetail,
   type NodeDeletedDetail,
   type NodeSizeRect,
-} from '@/util/graphComponentTypes'
+} from '@/misc/graphComponentTypes'
 import { LEFT_MOUSE_BUTTON } from '@/common/button'
 
 defineExpose({

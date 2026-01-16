@@ -4,7 +4,7 @@ import {
   SideType,
   type GraphComponent,
   type NodeProps,
-} from '@/util/graphComponentTypes'
+} from '@/misc/graphComponentTypes'
 import { onMounted, ref, useTemplateRef } from 'vue'
 import * as Colors from '@/common/colors'
 import { useMutationObserver } from '@vueuse/core'

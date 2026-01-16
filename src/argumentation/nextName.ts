@@ -1,4 +1,4 @@
-import * as CodePoint from '@/util/CodePoint'
+import * as CodePoint from '@/misc/CodePoint'
 
 export function getNextName(names: string[]) {
   let codePointNextName = CodePoint.a

@@ -3,7 +3,7 @@ import type { Atom, Id } from '@/model/graphicalCausalKnowledgeBase'
 import { type Literal } from '@/composables/useEvaluationRequestPayload'
 import { getDisplayName } from '@/stores/knowledgeBase'
 import { computed } from 'vue'
-import { hasOneEntry } from '@/util/types'
+import { hasOneEntry } from '@/misc/types'
 
 const props = defineProps<{
   atoms: Map<number, Atom>

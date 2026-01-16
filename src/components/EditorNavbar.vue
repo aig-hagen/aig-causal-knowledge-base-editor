@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, useTemplateRef } from 'vue'
 import ControlsExplanation from '@/components/ControlsExplanation.vue'
-import { hasOneEntry } from '@/util/types'
+import { hasOneEntry } from '@/misc/types'
 import saveAs from 'file-saver'
 import { useRouter } from 'vue-router'
 import { NAV_MORE_NAME_KEY, NAV_SHOW_USERGUIDE_KEY } from '@/router'
