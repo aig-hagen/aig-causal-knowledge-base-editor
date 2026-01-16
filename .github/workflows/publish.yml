@@ -47,7 +47,7 @@ jobs:
       - name: Bundle web server with frontend
         id: bundle_with_server
         run: |
-          ./bundle_with_server.sh
+          ./bundle-with-server.sh
           VERSION="${GITHUB_REF_NAME#v}"
           SERVER_ARTIFACT="${RUNNER_TEMP}/org.tweetyproject.web-with-causal-knowledge-base-editor-${VERSION}.jar"
           mv "${RUNNER_TEMP}/org.tweetyproject.web-with-causal-knowledge-base-editor.jar" $SERVER_ARTIFACT
