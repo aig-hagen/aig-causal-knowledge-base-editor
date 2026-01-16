@@ -2,86 +2,69 @@
 
 Graphical editor to create causal knowledge bases as described in [_Argumentation-based Causal and Counterfactual Reasoning_](https://www.researchgate.net/publication/363185581_Argumentation-based_Causal_and_Counterfactual_Reasoning). 
 
-Try out at https://causal-knowledge-base-editor.aig.fernuni-hagen.de
+## Usage
 
-## Deployment
+### Public Deployment
 
-The AIG Causal Knowledge Base Editor is published as a Docker image on GitHub Container Registry: https://ghcr.io/aig-hagen/aig-causal-knowledge-base-editor
+Try it out at https://causal-knowledge-base-editor.aig.fernuni-hagen.de
 
-For example, you can deploy it using Docker Compose. Below is a minimal example configuration:
+### OCI Image
 
-```yaml
-services:
-  aig-editor:
-    image: ghcr.io/aig-hagen/aig-causal-knowledge-base-editor:latest
-    ports:
-      - "8080:8080"           # Expose port 8080 on the host
-    restart: unless-stopped   # Automatically restart the container unless manually stopped
+[Container images](https://github.com/aig-hagen/aig-causal-knowledge-base-editor/pkgs/container/aig-causal-knowledge-base-editor) are provided and can be run with Docker, Podman or other  container runtimes.
+
+```sh
+docker run -p 8080:8080 ghcr.io/aig-hagen/aig-causal-knowledge-base-editor:latest
 ```
 
-## Recommended IDE Setup
+### Java Archive
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+JARs are provided as Artifacts with each [release](https://github.com/aig-hagen/aig-causal-knowledge-base-editor/releases) and can be run with Java 17 or higher.
 
-## Type Support for `.vue` Imports in TS
+```sh
+java -jar ./org.tweetyproject.web-with-causal-knowledge-base-editor-0.8.0.jar
+```
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+## Acknowledgment
 
-## Customize Configuration
+### [TweetyProject](https://tweetyproject.org/)
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+It's web server is used for logical reasoning and explanation and is bundled with the [OCI Image](#oci-image) and [Java Archive](#java-archive).
 
-## Project Setup
+Maintained by [Matthias Thimm](https://mthimm.de/), collaboratively developed by several contributors and [licensed (mostly) under the LGPL License version 3](https://github.com/TweetyProjectTeam/TweetyProject?tab=readme-ov-file#license).
+
+### [Graph Component](https://github.com/aig-hagen/aig_graph_component)
+
+This component is used to display and edit graphs.
+
+It is developed by the Artificial Intelligence Group of the University of Hagen and [licensed under the MIT License](third_party/aig-hagen/aig_graph_component/420ec12/LICENSE.md).
+
+### [Argumentation Framework eXplanation, Reasoning, and AnalYsis](https://github.com/xai-ca/xray)
+
+This projects [example argumentation frameworks](third_party/xai-ca/xray/7a83aa5/examples/) are bundled and used. Moreover, inspired by it was the automatic layout of argumentation frameworks with Graphviz.
+
+It is developed by employees of the University of Illinois Urbana-Champaign and [licensed under the MIT License](third_party/xai-ca/xray/7a83aa5/LICENSE).
+
+## Development
+
+### Install Dependencies
 
 ```sh
 npm install-clean
 ```
 
-### Compile and Hot-Reload for Development
+### Run with Hot-Reload
 
 ```sh
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+### Run Tests
 
 ```sh
 npm run test:unit
+npm run test:browser
 ```
 
-### Run End-to-End Tests with [Playwright](https://playwright.dev)
+### IDE Support
 
-```sh
-# Install browsers for the first run
-npx playwright install
-
-# When testing on CI, must build the project first
-npm run build
-
-# Runs the end-to-end tests
-npm run test:e2e
-# Runs the tests only on Chromium
-npm run test:e2e --project=chromium
-# Runs the tests of a specific file
-npm run test:e2e tests/example.spec.ts
-# Runs the tests in debug mode
-npm run test:e2e --debug
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
-
-## Acknowledgment
-
-The Causal Knowledge Base Editor bundles examples from [AF-XRAY](https://github.com/xai-ca/xray).
-It is developed by employees of the University of Illinois Urbana-Champaign and licensed under the MIT License.  
-The license and examples are included in [third_party/xray](third_party/xray)
+See [IDE Support for Vue](https://vuejs.org/guide/typescript/overview.html#ide-support)
