@@ -69,3 +69,8 @@ npm run test:browser
 ### IDE Support
 
 See [IDE Support for Vue](https://vuejs.org/guide/typescript/overview.html#ide-support)
+
+## License
+
+This project is licensed under the GNU General Public License v3.0.
+See the [LICENSE file](./LICENSE) for details.

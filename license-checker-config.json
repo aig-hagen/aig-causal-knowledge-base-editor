@@ -1,0 +1,22 @@
+{
+  "license": "license-checker-header.txt",
+  "ignoreFile": "license-checker-ignore.txt",
+  "licenseFormats": {
+    "ts|css": {
+      "prepend": "/*",
+      "append": " */",
+      "eachLine": {
+        "prepend": " * "
+      }
+    },
+    "html|vue": {
+      "prepend": "<!--",
+      "append": " *-->",
+      "eachLine": {
+        "prepend": "  "
+      }
+    }
+  },
+  "regexIdentifier": "##",
+  "trailingWhitespace": "TRIM"
+}
