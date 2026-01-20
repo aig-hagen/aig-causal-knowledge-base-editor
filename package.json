@@ -24,7 +24,8 @@
     "format:check": "prettier --check src/",
     "format:fix": "prettier --write src/",
     "docs:dev": "vuepress dev docs",
-    "docs:build": "vuepress build docs"
+    "docs:build": "vuepress build docs",
+    "generate-attributions": "node ./generate-attributions.ts"
   },
   "dependencies": {
     "@hpcc-js/wasm-graphviz": "1.20.0",
