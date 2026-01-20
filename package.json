@@ -9,6 +9,7 @@
       "onFail": "warn"
     }
   },
+  "license": "GPL-3.0-or-later",
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
