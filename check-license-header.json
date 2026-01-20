@@ -1,6 +1,6 @@
 {
-  "license": "license-checker-header.txt",
-  "ignoreFile": "license-checker-ignore.txt",
+  "license": "check-license-header.txt",
+  "ignoreFile": "check-license-header-ignore.txt",
   "defaultFormat": {
     "prepend": "/*",
     "append": " */",
