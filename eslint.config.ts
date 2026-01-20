@@ -21,7 +21,8 @@ export default defineConfigWithVueTs(
       '**/dist/**',
       '**/dist-ssr/**',
       '**/coverage/**',
-      '**/aig_graph_component-*/**',
+      '**/third-party/**',
+      'generate-attributions.ts',
     ],
   },
 

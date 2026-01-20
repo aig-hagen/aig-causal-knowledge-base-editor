@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import CausalKnowledgeBaseEditorView from '@/views/CausalKnowledgeBaseEditorView.vue'
 import ArgumentationFrameworkEditorView from '@/views/ArgumentationFrameworkEditorView.vue'
+import ThirdPartyLicensesView from '@/thirdPartyLicenses/ThirdPartyLicensesView.vue'
 
 const TITLE_KEY = 'title'
 
@@ -23,6 +24,14 @@ const router = createRouter({
         [TITLE_KEY]: CAUSAL_KNOWLEDGE_BASE_EDITOR_TITLE,
         [NAV_MORE_NAME_KEY]: CAUSAL_KNOWLEDGE_BASE_EDITOR_TITLE,
         [NAV_SHOW_USERGUIDE_KEY]: true,
+      },
+    },
+    {
+      path: '/third-party-licenses',
+      name: 'third-party-licenses',
+      component: ThirdPartyLicensesView,
+      meta: {
+        [TITLE_KEY]: 'Third-Party Licenses',
       },
     },
     {
@@ -50,11 +59,11 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const title = to.meta[TITLE_KEY]
+  let title = to.meta[TITLE_KEY]
   if (typeof title !== 'string') {
-    return CAUSAL_KNOWLEDGE_BASE_EDITOR_TITLE
+    title = CAUSAL_KNOWLEDGE_BASE_EDITOR_TITLE
   }
-  document.title = title
+  document.title = title as string
   next()
 })
 

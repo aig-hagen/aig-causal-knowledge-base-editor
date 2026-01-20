@@ -237,6 +237,10 @@ const routesForMore = router.options.routes.filter(
             >
               Commit {{ editorCommit }} &#8599;</a
             >
+            <hr class="navbar-divider" />
+            <a class="navbar-item" target="_blank" rel="noopener" href="/third-party-licenses">
+              Third-Party Licenses &#8599;
+            </a>
           </div>
         </div>
         <div class="navbar-item has-dropdown is-hoverable">
