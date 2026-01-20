@@ -1707,7 +1707,7 @@
   {
     "scope": "vue",
     "name": "compiler-core",
-    "version": "3.5.26",
+    "version": "3.5.27",
     "license": "MIT",
     "repository": "https://github.com/vuejs/core",
     "home": "https://github.com/vuejs/core",
@@ -1717,7 +1717,7 @@
   {
     "scope": "vue",
     "name": "compiler-dom",
-    "version": "3.5.26",
+    "version": "3.5.27",
     "license": "MIT",
     "repository": "https://github.com/vuejs/core",
     "home": "https://github.com/vuejs/core",
@@ -1727,7 +1727,7 @@
   {
     "scope": "vue",
     "name": "compiler-sfc",
-    "version": "3.5.26",
+    "version": "3.5.27",
     "license": "MIT",
     "repository": "https://github.com/vuejs/core",
     "home": "https://github.com/vuejs/core",
@@ -1737,7 +1737,7 @@
   {
     "scope": "vue",
     "name": "compiler-ssr",
-    "version": "3.5.26",
+    "version": "3.5.27",
     "license": "MIT",
     "repository": "https://github.com/vuejs/core",
     "home": "https://github.com/vuejs/core",
@@ -1886,7 +1886,7 @@
   {
     "scope": "vue",
     "name": "reactivity",
-    "version": "3.5.26",
+    "version": "3.5.27",
     "license": "MIT",
     "repository": "https://github.com/vuejs/core",
     "home": "https://github.com/vuejs/core",
@@ -1896,7 +1896,7 @@
   {
     "scope": "vue",
     "name": "runtime-core",
-    "version": "3.5.26",
+    "version": "3.5.27",
     "license": "MIT",
     "repository": "https://github.com/vuejs/core",
     "home": "https://github.com/vuejs/core",
@@ -1906,7 +1906,7 @@
   {
     "scope": "vue",
     "name": "runtime-dom",
-    "version": "3.5.26",
+    "version": "3.5.27",
     "license": "MIT",
     "repository": "https://github.com/vuejs/core",
     "home": "https://github.com/vuejs/core",
@@ -1916,7 +1916,7 @@
   {
     "scope": "vue",
     "name": "server-renderer",
-    "version": "3.5.26",
+    "version": "3.5.27",
     "license": "MIT",
     "repository": "https://github.com/vuejs/core",
     "home": "https://github.com/vuejs/core",
@@ -1926,7 +1926,7 @@
   {
     "scope": "vue",
     "name": "shared",
-    "version": "3.5.26",
+    "version": "3.5.27",
     "license": "MIT",
     "repository": "https://github.com/vuejs/core",
     "home": "https://github.com/vuejs/core",
@@ -5016,7 +5016,7 @@
   },
   {
     "name": "p-map",
-    "version": "7.0.3",
+    "version": "7.0.4",
     "license": "MIT",
     "repository": "https://github.com/sindresorhus/p-map",
     "home": "https://github.com/sindresorhus/p-map",
@@ -6493,7 +6493,7 @@
   },
   {
     "name": "vite-plugin-static-copy",
-    "version": "3.1.4",
+    "version": "3.1.5",
     "license": "MIT",
     "repository": "https://github.com/sapphi-red/vite-plugin-static-copy",
     "home": "https://github.com/sapphi-red/vite-plugin-static-copy",
@@ -6599,7 +6599,7 @@
   },
   {
     "name": "vue",
-    "version": "3.5.26",
+    "version": "3.5.27",
     "license": "MIT",
     "repository": "https://github.com/vuejs/core",
     "home": "https://github.com/vuejs/core",
