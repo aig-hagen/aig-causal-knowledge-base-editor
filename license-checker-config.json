@@ -1,6 +1,13 @@
 {
   "license": "license-checker-header.txt",
   "ignoreFile": "license-checker-ignore.txt",
+  "defaultFormat": {
+    "prepend": "/*",
+    "append": " */",
+    "eachLine": {
+      "prepend": " * "
+    }
+  },
   "licenseFormats": {
     "ts|css": {
       "prepend": "/*",
@@ -11,7 +18,7 @@
     },
     "html|vue": {
       "prepend": "<!--",
-      "append": " *-->",
+      "append": "-->",
       "eachLine": {
         "prepend": "  "
       }
