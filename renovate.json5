@@ -5,13 +5,6 @@
     // Causes dependencies to be pinned in package.json
     // For rational see https://docs.renovatebot.com/dependency-pinning/#should-you-pin-your-javascript-dependencies
     "config:js-app",
-    ":automergeStableNonMajor",
-    // Allow automatic merging without tests.
-    // Renovate would trigger many test runs.
-    // Private repositories have limited free GitHub Action minutes.
-    // As long as this repository is private, I do not want to waste them for testing dependencies updates.
-    // I'm fine with occasionally fixing or rolling back broken updates.
-    ":skipStatusChecks",
   ],
   dependencyDashboardLabels: ["type/maintenance", "planning/next"],
   dependencyDashboardAutoclose: true,
