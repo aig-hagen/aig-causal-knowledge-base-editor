@@ -1026,7 +1026,7 @@
   {
     "scope": "playwright",
     "name": "test",
-    "version": "1.57.0",
+    "version": "1.58.0",
     "license": "Apache-2.0",
     "repository": "https://github.com/microsoft/playwright",
     "home": "https://github.com/microsoft/playwright",
@@ -1538,7 +1538,7 @@
   {
     "scope": "vitest",
     "name": "browser",
-    "version": "4.0.17",
+    "version": "4.0.18",
     "license": "MIT",
     "repository": "https://github.com/vitest-dev/vitest",
     "home": "https://github.com/vitest-dev/vitest",
@@ -1557,7 +1557,7 @@
   {
     "scope": "vitest",
     "name": "expect",
-    "version": "4.0.17",
+    "version": "4.0.18",
     "license": "MIT",
     "repository": "https://github.com/vitest-dev/vitest",
     "home": "https://github.com/vitest-dev/vitest",
@@ -1566,7 +1566,7 @@
   {
     "scope": "vitest",
     "name": "mocker",
-    "version": "4.0.17",
+    "version": "4.0.18",
     "license": "MIT",
     "repository": "https://github.com/vitest-dev/vitest",
     "home": "https://github.com/vitest-dev/vitest",
@@ -1575,7 +1575,7 @@
   {
     "scope": "vitest",
     "name": "pretty-format",
-    "version": "4.0.17",
+    "version": "4.0.18",
     "license": "MIT",
     "repository": "https://github.com/vitest-dev/vitest",
     "home": "https://github.com/vitest-dev/vitest",
@@ -1584,7 +1584,7 @@
   {
     "scope": "vitest",
     "name": "runner",
-    "version": "4.0.17",
+    "version": "4.0.18",
     "license": "MIT",
     "repository": "https://github.com/vitest-dev/vitest",
     "home": "https://github.com/vitest-dev/vitest",
@@ -1593,7 +1593,7 @@
   {
     "scope": "vitest",
     "name": "snapshot",
-    "version": "4.0.17",
+    "version": "4.0.18",
     "license": "MIT",
     "repository": "https://github.com/vitest-dev/vitest",
     "home": "https://github.com/vitest-dev/vitest",
@@ -1602,7 +1602,7 @@
   {
     "scope": "vitest",
     "name": "spy",
-    "version": "4.0.17",
+    "version": "4.0.18",
     "license": "MIT",
     "repository": "https://github.com/vitest-dev/vitest",
     "home": "https://github.com/vitest-dev/vitest",
@@ -1611,7 +1611,7 @@
   {
     "scope": "vitest",
     "name": "utils",
-    "version": "4.0.17",
+    "version": "4.0.18",
     "license": "MIT",
     "repository": "https://github.com/vitest-dev/vitest",
     "home": "https://github.com/vitest-dev/vitest",
@@ -1877,7 +1877,7 @@
   {
     "scope": "vue",
     "name": "language-core",
-    "version": "3.2.2",
+    "version": "3.2.3",
     "license": "MIT",
     "repository": "https://github.com/vuejs/language-tools",
     "home": "https://github.com/vuejs/language-tools",
@@ -2561,15 +2561,6 @@
     "home": "https://github.com/browserslist/browserslist",
     "publisher": "Andrey Sitnik",
     "licenseText": "The MIT License (MIT)\n\nCopyright 2014 Andrey Sitnik <andrey@sitnik.ru> and other contributors\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\nthe Software, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\nFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\nCOPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n"
-  },
-  {
-    "name": "buffer-builder",
-    "version": "0.2.0",
-    "license": "MIT*",
-    "repository": "https://github.com/PeterReid/node-buffer-builder",
-    "home": "https://github.com/PeterReid/node-buffer-builder",
-    "publisher": "Peter Reid",
-    "licenseText": "Copyright (C) 2012 Peter Reid\r\n\r\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\r\n\r\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\r\n\r\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\r\n"
   },
   {
     "name": "bulma",
@@ -3285,7 +3276,7 @@
   },
   {
     "name": "eslint-plugin-playwright",
-    "version": "2.5.0",
+    "version": "2.5.1",
     "license": "MIT",
     "repository": "https://github.com/mskelton/eslint-plugin-playwright",
     "home": "https://github.com/mskelton/eslint-plugin-playwright",
@@ -5246,7 +5237,7 @@
   },
   {
     "name": "playwright-core",
-    "version": "1.57.0",
+    "version": "1.58.0",
     "license": "Apache-2.0",
     "repository": "https://github.com/microsoft/playwright",
     "home": "https://github.com/microsoft/playwright",
@@ -5255,7 +5246,7 @@
   },
   {
     "name": "playwright",
-    "version": "1.57.0",
+    "version": "1.58.0",
     "license": "Apache-2.0",
     "repository": "https://github.com/microsoft/playwright",
     "home": "https://github.com/microsoft/playwright",
@@ -5324,7 +5315,7 @@
   },
   {
     "name": "prettier",
-    "version": "3.8.0",
+    "version": "3.8.1",
     "license": "MIT",
     "repository": "https://github.com/prettier/prettier",
     "home": "https://github.com/prettier/prettier",
@@ -5594,7 +5585,7 @@
   },
   {
     "name": "sass-embedded-linux-musl-x64",
-    "version": "1.97.2",
+    "version": "1.97.3",
     "license": "MIT",
     "repository": "https://github.com/sass/embedded-host-node",
     "home": "https://github.com/sass/embedded-host-node",
@@ -5603,7 +5594,7 @@
   },
   {
     "name": "sass-embedded-linux-x64",
-    "version": "1.97.2",
+    "version": "1.97.3",
     "license": "MIT",
     "repository": "https://github.com/sass/embedded-host-node",
     "home": "https://github.com/sass/embedded-host-node",
@@ -5612,7 +5603,7 @@
   },
   {
     "name": "sass-embedded",
-    "version": "1.97.2",
+    "version": "1.97.3",
     "license": "MIT",
     "repository": "https://github.com/sass/embedded-host-node",
     "home": "https://github.com/sass/embedded-host-node",
@@ -6493,7 +6484,7 @@
   },
   {
     "name": "vite-plugin-static-copy",
-    "version": "3.1.5",
+    "version": "3.1.6",
     "license": "MIT",
     "repository": "https://github.com/sapphi-red/vite-plugin-static-copy",
     "home": "https://github.com/sapphi-red/vite-plugin-static-copy",
@@ -6538,7 +6529,7 @@
   },
   {
     "name": "vitest-browser-vue",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "license": "MIT",
     "repository": "https://github.com/vitest-community/vitest-browser-vue",
     "home": "https://github.com/vitest-community/vitest-browser-vue",
@@ -6547,7 +6538,7 @@
   },
   {
     "name": "vitest",
-    "version": "4.0.17",
+    "version": "4.0.18",
     "license": "MIT",
     "repository": "https://github.com/vitest-dev/vitest",
     "home": "https://github.com/vitest-dev/vitest",
@@ -6591,7 +6582,7 @@
   },
   {
     "name": "vue-tsc",
-    "version": "3.2.2",
+    "version": "3.2.3",
     "license": "MIT",
     "repository": "https://github.com/vuejs/language-tools",
     "home": "https://github.com/vuejs/language-tools",
@@ -6893,7 +6884,7 @@
   },
   {
     "name": "zod",
-    "version": "4.3.5",
+    "version": "4.3.6",
     "license": "MIT",
     "repository": "https://github.com/colinhacks/zod",
     "home": "https://github.com/colinhacks/zod",

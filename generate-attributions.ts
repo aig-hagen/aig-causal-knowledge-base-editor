@@ -223,7 +223,7 @@ async function fetchLicense(
     return null
   } else if (packageName === 'varint@6.0.0') {
     return null
-  } else if (packageName === 'vitest-browser-vue@2.0.1') {
+  } else if (packageName === 'vitest-browser-vue@2.0.2') {
     return null
   } else {
     throw new Error(`No license file for ${packageName} with ${JSON.stringify(info)}`)
