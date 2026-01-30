@@ -33,7 +33,7 @@
     "generate-attributions": "node ./generate-attributions.ts"
   },
   "dependencies": {
-    "@hpcc-js/wasm-graphviz": "1.20.0",
+    "@hpcc-js/wasm-graphviz": "1.20.1",
     "@vueform/multiselect": "2.6.11",
     "@vueuse/core": "14.1.0",
     "ajv": "8.17.1",
