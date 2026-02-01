@@ -22,7 +22,7 @@ export default defineConfig({
     viteStaticCopy({
       targets: [
         {
-          src: 'src/assets/graphical-causal-knowledge-base-v1.schema.json',
+          src: 'src/modules/causal-knowledge/graphical-causal-knowledge-base-v1.schema.json',
           dest: '',
         },
       ],

@@ -19,7 +19,7 @@
     "test:e2e": "playwright test",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
-    "generate": "json2ts src/assets/graphical-causal-knowledge-base-v1.schema.json src/model/graphicalCausalKnowledgeBase.d.ts --bannerComment \"$(cat ./json2ts.banner.txt)\"",
+    "generate": "json2ts src/modules/causal-knowledge/graphical-causal-knowledge-base-v1.schema.json src/modules/causal-knowledge/graphicalCausalKnowledgeBase.d.ts --bannerComment \"$(cat ./json2ts.banner.txt)\"",
     "eslint:check": "eslint .",
     "eslint:fix": "eslint . --fix",
     "license-headers:check": "license-check-and-add check -f check-license-header.json",
