@@ -2,7 +2,7 @@
 
 import checker, { type ModuleInfo, type InitOpts, type ModuleInfos } from 'license-checker'
 import { readFile, writeFile, readdir } from 'fs/promises'
-import { type Attribution } from './src/third-party-licenses/types.ts'
+import { type Attribution } from './src/modules/third-party-licenses/types.ts'
 
 const GRAPH_COMPONENT_VERSION = await getVersionFromDirName(
   'third-party/aig-hagen/aig_graph_component',
