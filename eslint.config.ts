@@ -39,4 +39,11 @@ export default defineConfigWithVueTs(
     files: ['e2e/**/*.{test,spec}.{js,ts,jsx,tsx}'],
   },
   skipFormatting,
+  {
+    rules: {
+      'no-console': ['error', { allow: ['warn', 'error'] }],
+      // this disallows console.log, console.info, etc.,
+      // but still allows console.warn and console.error
+    },
+  },
 )

@@ -131,7 +131,6 @@ const datasets: LazyArgumentationFrameworkDataset[] = afXrayExampleSources.map(
 
 function getNodePositions(example: AfXrayExample): Map<AfXrayExampleId, Position> {
   const dotSource = afXrayExampleToDotSource(example)
-  console.log(dotSource)
   const dotJsonString = graphviz.dot(dotSource, 'json')
   const dotJson = JSON.parse(dotJsonString) as DotJson
 

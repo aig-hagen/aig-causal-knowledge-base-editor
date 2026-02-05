@@ -235,7 +235,6 @@ function createInitialGraph(graphInstance: GraphComponent) {
     }
   })
 
-  console.log({ nodes: nodes, links: links })
   graphInstance.setGraph({ nodes: nodes, links: links })
   const { nodes: nodesWithInternalIds } = graphInstance.getGraph(
     'json',
