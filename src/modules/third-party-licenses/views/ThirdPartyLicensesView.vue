@@ -56,7 +56,7 @@ function getAttributionId(attribution: Attribution) {
           </aside>
         </section>
       </div>
-      <div class="column is-">
+      <div class="column">
         <section class="section">
           <div class="content">
             <h1>Third-Party Licenses</h1>
