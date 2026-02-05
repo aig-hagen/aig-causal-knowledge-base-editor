@@ -24,7 +24,7 @@ import {
 } from '@/modules/causal-knowledge/composables/useEvaluationRequestPayload'
 import type { Connection, Id } from '@/modules/causal-knowledge/graphicalCausalKnowledgeBase'
 import { useFetch } from '@vueuse/core'
-import { computed, type MaybeRef, ref, type Ref, unref, watchEffect } from 'vue'
+import { computed, type MaybeRef, ref, type Ref, unref, watch } from 'vue'
 import { ajv } from '@/modules/shared/ajvInstance'
 import { TWEETY_API_URL } from '@/modules/common/server'
 import type {
@@ -298,22 +298,21 @@ export function useEvaluationRequest<ResultT>(
     }
   })
 
-  const evaluationError: Ref<string | null> = ref(null)
-
-  const evaluationResult: Ref<ResultT | null> = ref(null)
-
-  const { error, data, abort, canAbort, execute, isFetching, isFinished } = useFetch(url, {
+  const { error, data, abort, canAbort, execute, isFetching } = useFetch(url, {
     immediate: false,
   }).post(payload, 'json')
+
+  const startedExecutingWithCurrentPayload = ref(false)
+  function executeFetch() {
+    startedExecutingWithCurrentPayload.value = true
+    void execute()
+  }
 
   const evaluate = computed(() => {
     if (isFetching.value || evaluationBlocker.value !== null) {
       return null
     } else {
-      return () => {
-        watchHandleResponseEffect.resume()
-        void execute()
-      }
+      return executeFetch
     }
   })
 
@@ -325,40 +324,39 @@ export function useEvaluationRequest<ResultT>(
     }
   })
 
-  const isEvaluating = computed(() => isFetching.value)
+  const response = computed(() => {
+    if (isFetching.value) {
+      return { error: null, result: null }
+    }
 
-  const watchHandleResponseEffect = watchEffect(() => {
+    if (!startedExecutingWithCurrentPayload.value) {
+      return { error: null, result: null }
+    }
+
     if (error.value) {
-      evaluationError.value = 'Evaluation failed: ' + String(error.value)
-      evaluationResult.value = null
-    } else if (isFinished.value) {
-      const { error, result } = handleReponseData(data.value, handleReply)
-      evaluationError.value = error
-      evaluationResult.value = result
-    } else {
-      evaluationError.value = null
-      evaluationResult.value = null
+      return { error: 'Evaluation failed: ' + String(error.value), result: null }
     }
+
+    return handleReponseData(data.value, handleReply)
   })
 
-  watchEffect(() => {
-    watchHandleResponseEffect.pause()
-    const payloadValue = unref(payload)
-    if (payloadValue instanceof NonEvaluableKnowledgebaseError) {
-      abort()
-      evaluationError.value = null
-      evaluationResult.value = null
-    } else {
-      abort()
-      evaluationError.value = null
-      evaluationResult.value = null
-    }
-  })
+  const evaluationError = computed(() => response.value.error)
+  const evaluationResult = computed(() => response.value.result)
+
+  watch(
+    () => unref(payload),
+    () => {
+      if (canAbort.value) {
+        abort()
+      }
+      startedExecutingWithCurrentPayload.value = false
+    },
+  )
 
   return {
     evaluationBlocker,
     evaluate,
-    isEvaluating,
+    isEvaluating: isFetching,
     evaluationError,
     evaluationResult,
     abortEvaluation,

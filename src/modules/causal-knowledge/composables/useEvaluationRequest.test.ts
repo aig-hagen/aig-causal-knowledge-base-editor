@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import { beforeAll, expect, it, vi } from 'vitest'
-import { nextTick, ref } from 'vue'
+import { ref, watch } from 'vue'
 import {
   handleConclusionsReply,
   useEvaluationRequest,
@@ -46,16 +46,51 @@ async function useOkResponse(responseBody: Record<string, unknown>) {
   return useResponse(HttpResponse.json(responseBody))
 }
 
+async function waitUntilEvaluated<ResultT>(
+  evaluationRequest: ReturnType<typeof useEvaluationRequest<ResultT>>,
+) {
+  // A simpler approach would be to simply wait until either a result or error exists:
+  //   await vi.waitUntil(() => evaluationError.value !== null || evaluationResult.value !== null)
+  // However, we use `watch` instead to ensure that immediately after `isEvaluating` changes
+  // from `true` to `false` (i.e., evaluation has finished), a result or error has been set.
+  // This guarantees that the invariant "evaluation has completed => result or error is present" holds
+  // synchronously at the moment the evaluation ends.
+  const { isEvaluating, evaluationError, evaluationResult } = evaluationRequest
+  return new Promise<void>((resolve, reject) => {
+    const stop = watch(
+      [isEvaluating],
+      ([newIsEvaluating], [oldIsEvaluating]) => {
+        if (!oldIsEvaluating) {
+          return
+        }
+        if (newIsEvaluating) {
+          return
+        }
+        stop()
+        try {
+          expect(evaluationResult.value !== null || evaluationError.value !== null).toBe(true)
+        } catch (violatedInvariant) {
+          // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+          reject(violatedInvariant)
+          return
+        }
+        resolve()
+      },
+      {
+        flush: 'sync',
+      },
+    )
+  })
+}
+
 async function useResponse<BodyType extends DefaultBodyType>(
   response: AsyncResponseResolverReturnType<BodyType>,
 ) {
   server.use(http.all('*', () => response))
-  const { evaluationResult, evaluationError, evaluate } = useEvaluationRequest(
-    fakePayload(),
-    handleConclusionsReply,
-  )
+  const evaluationRequest = useEvaluationRequest(fakePayload(), handleConclusionsReply)
+  const { evaluate, evaluationError, evaluationResult } = evaluationRequest
   evaluate.value?.()
-  await vi.waitUntil(() => evaluationError.value !== null || evaluationResult.value != null)
+  await waitUntilEvaluated(evaluationRequest)
   return { result: evaluationResult.value, error: evaluationError.value }
 }
 
@@ -101,17 +136,11 @@ it('should abort evaluation', async () => {
       throw new Error('never')
     }),
   )
+  const evaluationRequest = useEvaluationRequest(fakePayload(), handleConclusionsReply)
   const { evaluate, isEvaluating, evaluationError, evaluationResult, abortEvaluation } =
-    useEvaluationRequest(fakePayload(), handleConclusionsReply)
-
+    evaluationRequest
   evaluate.value?.()
-  await nextTick()
-
-  expect(isEvaluating.value).toBe(true)
-  expect(evaluationError.value).toBeNull()
-  expect(evaluationResult.value).toBeNull()
-  expect(abortEvaluation.value).not.toBeNull()
-  expect(evaluate.value).toBeNull()
+  await vi.waitUntil(() => isEvaluating.value)
 
   abortEvaluation.value?.()
   await vi.waitUntil(() => !isEvaluating.value)
@@ -133,10 +162,12 @@ it('changing payload should reset result', async () => {
       })
     }),
   )
+  const evaluationRequest = useEvaluationRequest(payload, handleConclusionsReply)
   const { evaluate, isEvaluating, evaluationError, evaluationResult, abortEvaluation } =
-    useEvaluationRequest(payload, handleConclusionsReply)
+    evaluationRequest
   evaluate.value?.()
-  await vi.waitUntil(() => evaluationResult.value !== null)
+  await waitUntilEvaluated(evaluationRequest)
+  expect(evaluationResult.value).not.toBeNull()
 
   payload.value = fakePayload()
   await vi.waitUntil(() => evaluationResult.value === null)
