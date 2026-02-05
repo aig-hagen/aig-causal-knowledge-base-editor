@@ -19,7 +19,11 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, expect, test } from 'vitest'
 import { useKnowledgeBase } from '@/modules/causal-knowledge/stores/knowledgeBase'
-import { InvalidDataError, JsonSyntaxError, SchemaMismatchError } from '@/modules/common/serialization'
+import {
+  InvalidDataError,
+  JsonSyntaxError,
+  SchemaMismatchError,
+} from '@/modules/common/serialization'
 
 beforeEach(() => {
   setActivePinia(createPinia())

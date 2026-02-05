@@ -18,7 +18,11 @@
  */
 import { USER_ID } from '@/modules/common/server'
 import { findCycle } from '@/modules/causal-knowledge/cycles'
-import type { Connection, ConnectionId, Id } from '@/modules/causal-knowledge/graphicalCausalKnowledgeBase'
+import type {
+  Connection,
+  ConnectionId,
+  Id,
+} from '@/modules/causal-knowledge/graphicalCausalKnowledgeBase'
 import { computed, unref, type ComputedRef, type MaybeRef } from 'vue'
 
 export interface Atom {
