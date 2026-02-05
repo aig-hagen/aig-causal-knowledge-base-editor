@@ -233,6 +233,8 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
   }
 })
 
+export type KnowledgeBase = ReturnType<typeof useKnowledgeBase>
+
 export function getDisplayName(atom: Atom, negated: boolean): string {
   const idString = String(atom.id)
   const displayName = atom.name.length == 0 ? `unnamed[id=${idString}]` : atom.name
