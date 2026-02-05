@@ -80,6 +80,6 @@ test('renders empty knowledge base error', () => {
   const wrapper = mount(EvaluationBlockerText, {
     props: { atoms, blocker },
   })
-  expect(wrapper.text()).toContain('The knowledge base has no atoms.')
+  expect(wrapper.text()).toContain('The causal model has no atoms.')
   expect(wrapper.text()).toContain('Evaluation is therefore not possible.')
 })

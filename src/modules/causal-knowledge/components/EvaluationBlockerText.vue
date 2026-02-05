@@ -84,7 +84,7 @@ Evaluation is therefore not possible.
           </ul>
         </template>
       </template>
-      <template v-if="isEmptyKnowlegeBase">The knowledge base has no atoms.</template>
+      <template v-if="isEmptyKnowlegeBase">The causal model has no atoms.</template>
     </p>
     <p>Evaluation is therefore not possible.</p>
   </div>
