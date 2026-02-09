@@ -211,6 +211,12 @@ export interface GraphComponent {
     links: { sourceId: number; targetId: number }[]
   }
   setGraph(graphToSet: string | jsonGraph | undefined): void
+  centerView(options?: {
+    marginTop?: number
+    marginRight?: number
+    marginBottom?: number
+    marginLeft?: number
+  }): void
 }
 
 const enum EVENT_CAUSE {

@@ -62,9 +62,9 @@ const Attack = z.strictObject({
 const ArgumentationFrameworkDTO = z
   .strictObject({
     apiVersion: z.literal('graphical-argumentation-framework/v1'),
-    arguments: z.array(Argument).superRefine((arguments_, ctx) => {
+    arguments: z.array(Argument).superRefine((argumentArray, ctx) => {
       const perSeenIdToIdx = new Map()
-      arguments_.forEach((argument, idx) => {
+      argumentArray.forEach((argument, idx) => {
         if (perSeenIdToIdx.has(argument.id)) {
           const previousIndex = perSeenIdToIdx.get(argument.id)
           ctx.addIssue({
@@ -72,7 +72,7 @@ const ArgumentationFrameworkDTO = z
             message: `Duplicate argument with ID \`${argument.id}\``,
             path: [previousIndex, 'id'],
             params: { id: argument.id },
-            input: arguments_[previousIndex],
+            input: argumentArray[previousIndex],
           })
           ctx.addIssue({
             code: 'custom',

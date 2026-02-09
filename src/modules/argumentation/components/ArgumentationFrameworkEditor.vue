@@ -57,9 +57,14 @@ import {
   ARGUMENT_WIDTH_IN_PX,
 } from '@/modules/argumentation/consts'
 
-const { argumentationFramework } = defineProps<{
+const { argumentationFramework, readonly = false } = defineProps<{
   argumentationFramework: ArgumentationFramework
+  readonly?: boolean
 }>()
+
+// XXX After initially setting whether the argumentation framework is editable, changing the related prop will have no effect.
+// It could be implemented but is currently not needed.
+const readonlyStatic = readonly
 
 defineExpose({
   updatePositionsInArgumentationFramework,
@@ -179,10 +184,17 @@ onMounted(() => {
     graphInstance.setDefaults({
       nodeAutoGrowToLabelSize: false,
       nodeProps: createArgumentProps(DEFAULT_SHAPE),
+      allowNodeCreationViaGUI: !readonlyStatic,
       nodeGUIEditability: {
+        // Allow moving even if readonly.
+        fixedPosition: { x: false, y: false },
+        deletable: !readonlyStatic,
         labelEditable: LABEL_EDITABLE,
+        allowIncomingLinks: !readonlyStatic,
+        allowOutgoingLinks: !readonlyStatic,
       },
       linkGUIEditability: {
+        deletable: !readonlyStatic,
         labelEditable: LABEL_EDITABLE,
       },
     })
@@ -223,7 +235,6 @@ function createInitialGraph(graphInstance: GraphComponent) {
       x: argument.graphicalData.position.x,
       y: argument.graphicalData.position.y,
       color: COLOR_ARGUMENT,
-      labelEditable: LABEL_EDITABLE,
     }
   })
   const links = getAttacks(argumentationFramework).map(([attacker, attacked]) => {
@@ -231,7 +242,6 @@ function createInitialGraph(graphInstance: GraphComponent) {
       sourceId: attacker,
       targetId: attacked,
       color: COLOR_ATTACK,
-      labelEditable: LABEL_EDITABLE,
     }
   })
 
@@ -252,6 +262,13 @@ function createInitialGraph(graphInstance: GraphComponent) {
     }
     addToMappedIds(internalId, publicId)
   }
+  const margin = ARGUMENT_HEIGHT_IN_PX
+  graphInstance.centerView({
+    marginTop: margin,
+    marginRight: margin,
+    marginBottom: margin,
+    marginLeft: margin,
+  })
 }
 
 function onNodeCreated(event: CustomEvent<NodeCreatedDetail>) {
@@ -409,7 +426,7 @@ function highlightSelectedNodes() {
     const stroke = argument.id === selectedArgumentRef.value?.id ? COLOR_HIGHLIGHT_SELECTED : ''
     const internalId = getInternalIdMaybe(argument)
     if (internalId === undefined) return
-    const nodeElement = document.getElementById(`gc-node-${internalId.toString()}`)
+    const nodeElement = document.getElementById(`${graphComponentId}-node-${internalId.toString()}`)
     if (nodeElement !== null) {
       nodeElement.style.stroke = stroke
       nodeElement.style.strokeWidth = '4px'
@@ -438,10 +455,18 @@ function updatePositionsInArgumentationFramework() {
     argument.graphicalData.position.y = node.y
   }
 }
+
+// IDs starting with numbers break the graph component code
+// because they are used without escaping in CSS selectors
+const graphComponentId = 'g' + crypto.randomUUID()
 </script>
 
 <template>
-  <graph-component @click="updateSelection($event.target)" ref="graph-component"></graph-component>
+  <graph-component
+    @click="updateSelection($event.target)"
+    ref="graph-component"
+    :id="graphComponentId"
+  ></graph-component>
   <div class="menu menu-left">
     <div class="node-selection p-2">
       <div class="type p-2">
@@ -482,6 +507,7 @@ function updatePositionsInArgumentationFramework() {
           v-focus
           :key="selectedArgumentRef.id"
           :value="selectedArgumentRef.name"
+          :readonly="readonlyStatic"
           @input="
             (event) => {
               const target = (event as InputEvent).target as HTMLInputElement
@@ -501,6 +527,7 @@ function updatePositionsInArgumentationFramework() {
           <input
             type="radio"
             name="shape"
+            :disabled="readonlyStatic"
             :checked="selectedArgumentRef.graphicalData.shape === 'circle'"
             @change="processShapeInput(selectedArgumentRef, 'circle')"
           />
@@ -510,6 +537,7 @@ function updatePositionsInArgumentationFramework() {
           <input
             type="radio"
             name="shape"
+            :disabled="readonlyStatic"
             :checked="selectedArgumentRef.graphicalData.shape === 'rectangle'"
             @change="processShapeInput(selectedArgumentRef, 'rectangle')"
           />

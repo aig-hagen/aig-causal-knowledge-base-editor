@@ -9,7 +9,7 @@
   {
     "scope": "aig-hagen",
     "name": "graph-component",
-    "version": "420ec12",
+    "version": "c068e56",
     "license": "MIT",
     "publisher": "Artificial Intelligence Group of the University of Hagen",
     "repository": "https://github.com/aig-hagen/aig_graph_component",
@@ -17,7 +17,7 @@
   },
   {
     "name": "Argumentation Framework eXplanation, Reasoning, and AnalYsis",
-    "version": "420ec12",
+    "version": "7a83aa5",
     "license": "MIT",
     "repository": "https://github.com/xai-ca/xray",
     "publisher": "University of Illinois Urbana-Champaign",

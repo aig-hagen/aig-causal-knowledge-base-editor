@@ -23,7 +23,10 @@ import type {
   ConnectionId,
   Id,
 } from '@/modules/causal-knowledge/graphicalCausalKnowledgeBase'
-import { getConnectionKey, useKnowledgeBase } from '@/modules/causal-knowledge/stores/knowledgeBase'
+import {
+  getConnectionKey,
+  type KnowledgeBase,
+} from '@/modules/causal-knowledge/stores/knowledgeBase'
 import { useNotifications } from '@/modules/common/stores/notifications'
 import { useDebounceFn, useMutationObserver } from '@vueuse/core'
 import { computed, nextTick, onMounted, ref, useTemplateRef, watchEffect } from 'vue'
@@ -51,8 +54,9 @@ defineExpose({
   loadKnowledgeBase,
 })
 
-const { atomIdsToHighlight } = defineProps<{
+const { atomIdsToHighlight, knowledgeBase } = defineProps<{
   atomIdsToHighlight: Id[]
+  knowledgeBase: KnowledgeBase
 }>()
 
 const { addSuccessNotification, addErrorNotification, clearNotifications } = useNotifications()
@@ -111,8 +115,6 @@ const selectedAtomRef = computed(() => {
   return knowledgeBase.atoms.get(selectedAtomId)
 })
 
-const knowledgeBase = useKnowledgeBase()
-
 const selectedConnectionIdRef = ref<ConnectionId | null>(null)
 // selectedLinkId might be an outdated ID, if the link was deleted while beeing selected
 const selectedConnectionRef = computed(() => {
@@ -132,9 +134,9 @@ computed(() => {
 })
 
 watchEffect(() => {
-  const nodeElements = document.getElementsByClassName(
+  const nodeElements = (graphComponentElementRef.value?.getElementsByClassName(
     'graph-controller__node',
-  ) as HTMLCollectionOf<SVGCircleElement>
+  ) ?? []) as Iterable<SVGCircleElement>
   for (const nodeElement of nodeElements) {
     nodeElement.style.stroke = ''
   }
@@ -142,7 +144,7 @@ watchEffect(() => {
 })
 
 function updateAtomHighlightingForExplanation(atomId: number) {
-  const nodeElement = document.getElementById(`gc-node-${atomId.toString()}`)
+  const nodeElement = document.getElementById(`${graphComponentId}-node-${atomId.toString()}`)
   if (nodeElement !== null) {
     if (isNodeHighlightedForExplanation(atomId)) {
       nodeElement.style.filter = `url(#${ID_DEF_COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION})`
@@ -153,7 +155,7 @@ function updateAtomHighlightingForExplanation(atomId: number) {
 }
 
 function updateOperatorHighlightingForExplanation(operatorId: number) {
-  const nodeElement = document.getElementById(`gc-node-${operatorId.toString()}`)
+  const nodeElement = document.getElementById(`${graphComponentId}-node-${operatorId.toString()}`)
   if (nodeElement !== null) {
     // TODO(https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/317) Simplify logic
     if (atomIdsToHighlight.length !== 0 && isNodeHighlighted(operatorId)) {
@@ -165,7 +167,7 @@ function updateOperatorHighlightingForExplanation(operatorId: number) {
 }
 
 function updateConnectionHighlightingForExplanation(connectionId: ConnectionId) {
-  const linkElement = document.getElementById(`gc-link-${getLinkId(connectionId)}`)
+  const linkElement = document.getElementById(`${graphComponentId}-link-${getLinkId(connectionId)}`)
   if (linkElement !== null) {
     // TODO(https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/317) Simplify logic
     const isHighlighted =
@@ -458,7 +460,7 @@ function highlightSelectedNodes() {
   }
 
   for (const nodeId of nodeIdsToHighlight) {
-    const nodeElement = document.getElementById(`gc-node-${nodeId.toString()}`)
+    const nodeElement = document.getElementById(`${graphComponentId}-node-${nodeId.toString()}`)
     if (nodeElement !== null) {
       nodeElement.style.stroke = COLOR_HIGHLIGHT_SELECTED
       nodeElement.style.strokeWidth = '4px'
@@ -467,7 +469,7 @@ function highlightSelectedNodes() {
   }
 }
 
-// TODO (https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/399)further encapsualte graph componet
+// TODO (https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/399) further encapsualte graph componet
 onMounted(() => {
   const graphComponentElement = graphComponentElementRef.value
   if (graphComponentElement === null) {
@@ -970,138 +972,147 @@ function toogleAsumption(toogledValue: boolean) {
     }
   }
 }
+
+// IDs starting with numbers break the graph component code
+// because they are used without escaping in CSS selectors
+const graphComponentId = 'g' + crypto.randomUUID()
 </script>
 
 <template>
-  <graph-component @click="updateSelection($event.target)" ref="graph-component"></graph-component>
+  <div>
+    <graph-component
+      @click="updateSelection($event.target)"
+      ref="graph-component"
+      :id="graphComponentId"
+    ></graph-component>
 
-  <div class="menu menu-left">
-    <div class="node-selection p-2">
-      <div class="title is-5 m-0"><h1>Atoms</h1></div>
-      <div class="type p-2">
-        <div
-          class="node-type-legend"
-          :style="{
-            background: COLOR_BACKGROUND_ATOM,
-          }"
-        ></div>
-        Background atom
-      </div>
-      <div class="type p-2">
-        <div class="node-type-legend" :style="{ backgroundColor: COLOR_EXPLAINABLE_ATOM }"></div>
-        Explainable atom
-      </div>
-      <div class="title is-5 m-0"><h1>Causal relation</h1></div>
-      <div class="type p-2">
-        <!-- https://en.wikipedia.org/wiki/Wedge_(symbol) -->
-        <div class="operator-type-legend" :style="{ backgroundColor: COLOR_CONJUNCTION }"></div>
-        Independent
-      </div>
-      <div class="type p-2">
-        <!-- https://en.wikipedia.org/wiki/Wedge_(symbol) -->
-        <div class="operator-type-legend" :style="{ backgroundColor: COLOR_CONJUNCTION }">
-          {{ LABEL_CONJUNCTION }}
-        </div>
-        Dependent
-      </div>
-      <div class="type p-2">
-        <div class="link-type-legend" :style="{ color: COLOR_REGULAR_LINKS }">&#8594;</div>
-        Regular
-      </div>
-      <div class="type p-2">
-        <div class="link-type-legend" :style="{ color: COLOR_NEGATED_LINKS }">&#8594;</div>
-        Negated
-      </div>
-      <div class="title is-5 m-0"><h1>Highlighting</h1></div>
-      <div class="type p-2">
-        <div
-          class="node-type-legend"
-          :style="{
-            background: 'white',
-            // Generated with https://css-tricks.com/more-control-over-css-borders-with-background-image/
-            backgroundImage: `repeating-linear-gradient(0deg, ${COLOR_HIGHLIGHT_SELECTED}, ${COLOR_HIGHLIGHT_SELECTED} 5px, transparent 5px, transparent 8px, ${COLOR_HIGHLIGHT_SELECTED} 8px), repeating-linear-gradient(90deg, ${COLOR_HIGHLIGHT_SELECTED}, ${COLOR_HIGHLIGHT_SELECTED} 5px, transparent 5px, transparent 8px, ${COLOR_HIGHLIGHT_SELECTED} 8px), repeating-linear-gradient(180deg, ${COLOR_HIGHLIGHT_SELECTED}, ${COLOR_HIGHLIGHT_SELECTED} 5px, transparent 5px, transparent 8px, ${COLOR_HIGHLIGHT_SELECTED} 8px), repeating-linear-gradient(270deg, ${COLOR_HIGHLIGHT_SELECTED}, ${COLOR_HIGHLIGHT_SELECTED} 5px, transparent 5px, transparent 8px, ${COLOR_HIGHLIGHT_SELECTED} 8px)`,
-            backgroundSize: `3px 100%, 100% 3px, 3px 100% , 100% 3px`,
-            backgroundPosition: '0 0, 0 0, 100% 0, 0 100%',
-            backgroundRepeat: 'no-repeat',
-          }"
-        ></div>
-        Selected for editing
-      </div>
-      <div class="type p-2">
-        <div
-          class="node-type-legend"
-          :style="{
-            backgroundColor: 'white',
-            boxShadow: `0px 0px 6px 2px ${COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION}`,
-          }"
-        ></div>
-        Used in explanation
-      </div>
-    </div>
-  </div>
-  <div
-    v-if="selectedAtomRef !== undefined"
-    class="menu menu-right p-2"
-    @keydown.esc="selectAtom(null)"
-  >
-    <div class="title is-5"><h1>Atom properties</h1></div>
-
-    <div class="field">
-      <label class="label">Name</label>
-      <div class="control">
-        <input
-          v-focus
-          :key="selectedAtomRef.id"
-          :value="selectedAtomRef.name"
-          @input="
-            (event) => {
-              const target = (event as InputEvent).target as HTMLInputElement
-              processNameInput(target.value)
-            }
-          "
-          class="input"
-          type="text"
-          placeholder="Name"
-        />
-      </div>
-    </div>
-
-    <div class="field">
-      <label class="label">Description</label>
-      <div class="control">
-        <textarea
-          v-model="selectedAtomRef.description"
-          class="textarea"
-          placeholder="Description"
-        ></textarea>
-      </div>
-    </div>
-
-    <div class="field">
-      <label class="label">Type</label>
-      <div class="control">
-        <label class="radio is-block">
-          <input
-            type="radio"
-            name="type"
-            :checked="selectedAtomRef.assumption !== undefined"
-            disabled
-          />
+    <div class="menu menu-left">
+      <div class="node-selection p-2">
+        <div class="title is-5 m-0"><h1>Atoms</h1></div>
+        <div class="type p-2">
+          <div
+            class="node-type-legend"
+            :style="{
+              background: COLOR_BACKGROUND_ATOM,
+            }"
+          ></div>
           Background atom
-        </label>
-        <label class="radio is-block">
-          <input
-            type="radio"
-            name="type"
-            :checked="selectedAtomRef.assumption === undefined"
-            disabled
-          />
+        </div>
+        <div class="type p-2">
+          <div class="node-type-legend" :style="{ backgroundColor: COLOR_EXPLAINABLE_ATOM }"></div>
           Explainable atom
-        </label>
+        </div>
+        <div class="title is-5 m-0"><h1>Causal relation</h1></div>
+        <div class="type p-2">
+          <!-- https://en.wikipedia.org/wiki/Wedge_(symbol) -->
+          <div class="operator-type-legend" :style="{ backgroundColor: COLOR_CONJUNCTION }"></div>
+          Independent
+        </div>
+        <div class="type p-2">
+          <!-- https://en.wikipedia.org/wiki/Wedge_(symbol) -->
+          <div class="operator-type-legend" :style="{ backgroundColor: COLOR_CONJUNCTION }">
+            {{ LABEL_CONJUNCTION }}
+          </div>
+          Dependent
+        </div>
+        <div class="type p-2">
+          <div class="link-type-legend" :style="{ color: COLOR_REGULAR_LINKS }">&#8594;</div>
+          Regular
+        </div>
+        <div class="type p-2">
+          <div class="link-type-legend" :style="{ color: COLOR_NEGATED_LINKS }">&#8594;</div>
+          Negated
+        </div>
+        <div class="title is-5 m-0"><h1>Highlighting</h1></div>
+        <div class="type p-2">
+          <div
+            class="node-type-legend"
+            :style="{
+              background: 'white',
+              // Generated with https://css-tricks.com/more-control-over-css-borders-with-background-image/
+              backgroundImage: `repeating-linear-gradient(0deg, ${COLOR_HIGHLIGHT_SELECTED}, ${COLOR_HIGHLIGHT_SELECTED} 5px, transparent 5px, transparent 8px, ${COLOR_HIGHLIGHT_SELECTED} 8px), repeating-linear-gradient(90deg, ${COLOR_HIGHLIGHT_SELECTED}, ${COLOR_HIGHLIGHT_SELECTED} 5px, transparent 5px, transparent 8px, ${COLOR_HIGHLIGHT_SELECTED} 8px), repeating-linear-gradient(180deg, ${COLOR_HIGHLIGHT_SELECTED}, ${COLOR_HIGHLIGHT_SELECTED} 5px, transparent 5px, transparent 8px, ${COLOR_HIGHLIGHT_SELECTED} 8px), repeating-linear-gradient(270deg, ${COLOR_HIGHLIGHT_SELECTED}, ${COLOR_HIGHLIGHT_SELECTED} 5px, transparent 5px, transparent 8px, ${COLOR_HIGHLIGHT_SELECTED} 8px)`,
+              backgroundSize: `3px 100%, 100% 3px, 3px 100% , 100% 3px`,
+              backgroundPosition: '0 0, 0 0, 100% 0, 0 100%',
+              backgroundRepeat: 'no-repeat',
+            }"
+          ></div>
+          Selected for editing
+        </div>
+        <div class="type p-2">
+          <div
+            class="node-type-legend"
+            :style="{
+              backgroundColor: 'white',
+              boxShadow: `0px 0px 6px 2px ${COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION}`,
+            }"
+          ></div>
+          Used in explanation
+        </div>
       </div>
     </div>
-    <!-- UI for sliders, when we enable selecting between five values again. -->
-    <!-- <div class="field" v-if="selectedAtomRef.assumption !== undefined">
+    <div
+      v-if="selectedAtomRef !== undefined"
+      class="menu menu-right p-2"
+      @keydown.esc="selectAtom(null)"
+    >
+      <div class="title is-5"><h1>Atom properties</h1></div>
+
+      <div class="field">
+        <label class="label">Name</label>
+        <div class="control">
+          <input
+            v-focus
+            :key="selectedAtomRef.id"
+            :value="selectedAtomRef.name"
+            @input="
+              (event) => {
+                const target = (event as InputEvent).target as HTMLInputElement
+                processNameInput(target.value)
+              }
+            "
+            class="input"
+            type="text"
+            placeholder="Name"
+          />
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Description</label>
+        <div class="control">
+          <textarea
+            v-model="selectedAtomRef.description"
+            class="textarea"
+            placeholder="Description"
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Type</label>
+        <div class="control">
+          <label class="radio is-block">
+            <input
+              type="radio"
+              name="type"
+              :checked="selectedAtomRef.assumption !== undefined"
+              disabled
+            />
+            Background atom
+          </label>
+          <label class="radio is-block">
+            <input
+              type="radio"
+              name="type"
+              :checked="selectedAtomRef.assumption === undefined"
+              disabled
+            />
+            Explainable atom
+          </label>
+        </div>
+      </div>
+      <!-- UI for sliders, when we enable selecting between five values again. -->
+      <!-- <div class="field" v-if="selectedAtomRef.assumption !== undefined">
         <label class="label">Assumption</label>
         <div class="control is-flex is-flex-direction-column" style="width: fit-content">
           <input
@@ -1126,65 +1137,66 @@ function toogleAsumption(toogledValue: boolean) {
         </div>
       </div> -->
 
-    <div class="field" v-if="selectedAtomRef.assumption !== undefined">
-      <label class="label">Assumptions</label>
-      <div class="control">
-        <div class="checkboxes">
-          <label class="checkbox">
-            <input
-              type="checkbox"
-              :checked="[3, 4, 5].includes(selectedAtomRef.assumption)"
-              @change="toogleAsumption(true)"
-            />
-            true
-          </label>
-          <label class="checkbox">
-            <input
-              type="checkbox"
-              :checked="[1, 2, 3].includes(selectedAtomRef.assumption)"
-              @change="toogleAsumption(false)"
-            />
-            false
-          </label>
+      <div class="field" v-if="selectedAtomRef.assumption !== undefined">
+        <label class="label">Assumptions</label>
+        <div class="control">
+          <div class="checkboxes">
+            <label class="checkbox">
+              <input
+                type="checkbox"
+                :checked="[3, 4, 5].includes(selectedAtomRef.assumption)"
+                @change="toogleAsumption(true)"
+              />
+              true
+            </label>
+            <label class="checkbox">
+              <input
+                type="checkbox"
+                :checked="[1, 2, 3].includes(selectedAtomRef.assumption)"
+                @change="toogleAsumption(false)"
+              />
+              false
+            </label>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-  <div
-    v-if="selectedConnectionRef !== undefined"
-    class="menu menu-right p-2"
-    @keydown.esc="selectConnection(null)"
-  >
-    <div class="title is-5"><h1>Relation properties</h1></div>
-    <div class="field">
-      <label class="label">Relation type</label>
-      <div class="control">
-        <div class="checkboxes">
-          <label class="checkbox">
-            <input
-              v-focus
-              :key="getConnectionKey(selectedConnectionRef.id)"
-              type="checkbox"
-              name="negated"
-              :checked="selectedConnectionRef.negated"
-              @change="updateLinkType(!selectedConnectionRef.negated)"
-            />
-            Negated
-          </label>
+    <div
+      v-if="selectedConnectionRef !== undefined"
+      class="menu menu-right p-2"
+      @keydown.esc="selectConnection(null)"
+    >
+      <div class="title is-5"><h1>Relation properties</h1></div>
+      <div class="field">
+        <label class="label">Relation type</label>
+        <div class="control">
+          <div class="checkboxes">
+            <label class="checkbox">
+              <input
+                v-focus
+                :key="getConnectionKey(selectedConnectionRef.id)"
+                type="checkbox"
+                name="negated"
+                :checked="selectedConnectionRef.negated"
+                @change="updateLinkType(!selectedConnectionRef.negated)"
+              />
+              Negated
+            </label>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-  <!-- TODO an orange overlay is to gaudy -->
-  <div
-    class="overlay"
-    v-if="loadingData"
-    :style="{
-      background: `linear-gradient(120deg, rgb(from ${COLOR_BACKGROUND_ATOM} r g b / 0.5)0%, rgb(from ${COLOR_EXPLAINABLE_ATOM} r g b / 0.5) 100%)`,
-    }"
-  >
-    <div class="overlay-content">
-      <progress class="progress is-small is-primary" max="100">15%</progress>
+    <!-- TODO an orange overlay is to gaudy -->
+    <div
+      class="overlay"
+      v-if="loadingData"
+      :style="{
+        background: `linear-gradient(120deg, rgb(from ${COLOR_BACKGROUND_ATOM} r g b / 0.5)0%, rgb(from ${COLOR_EXPLAINABLE_ATOM} r g b / 0.5) 100%)`,
+      }"
+    >
+      <div class="overlay-content">
+        <progress class="progress is-small is-primary" max="100">15%</progress>
+      </div>
     </div>
   </div>
 </template>

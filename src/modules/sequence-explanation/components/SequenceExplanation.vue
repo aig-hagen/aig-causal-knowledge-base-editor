@@ -185,11 +185,15 @@ function drawExplanation(graphInstance: any) {
   // NOTE Consider zooming out after setting inital graph
   // Would also be relevant for other graphs
 }
+
+// IDs starting with numbers break the graph component code
+// because they are used without escaping in CSS selectors
+const graphComponentId = 'g' + crypto.randomUUID()
 </script>
 
 <template>
   <div class="sequence-explantion">
-    <graph-component ref="graph-component"></graph-component>
+    <graph-component ref="graph-component" :id="graphComponentId"></graph-component>
   </div>
 </template>
 

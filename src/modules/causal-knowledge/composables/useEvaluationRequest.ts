@@ -128,6 +128,26 @@ export function useSequenceExplanationEvaluationRequest(
   return useEvaluationRequest(payload, handleSequenceExplanationReply)
 }
 
+export function useArgumentionFrameworkRequest(
+  atoms: MaybeRef<Set<number>>,
+  conjunctions: MaybeRef<Set<number>>,
+  connections: MaybeRef<Connection[]>,
+  observations: MaybeRef<Literal[]>,
+  assumptions: MaybeRef<Literal[]>,
+  conclusionsFilter: MaybeRef<Id[] | null>,
+) {
+  const payload = useEvaluationRequestPayload(
+    atoms,
+    conjunctions,
+    connections,
+    observations,
+    assumptions,
+    conclusionsFilter,
+    'get_argumentation_framework',
+  )
+  return useEvaluationRequest(payload, handleArgumentionFrameworkReply)
+}
+
 const explanationReplySchema = {
   type: 'object',
   propertyNames: {
@@ -274,6 +294,70 @@ function handleSequenceExplanationReply(reply: string): ResultOrError<SequenceEx
 
   return {
     result: replyObject as SequenceExplanationReply,
+    error: null,
+  }
+}
+
+const argumentionFrameworkReplySchema = {
+  definitions: {
+    Argument: {
+      type: 'string',
+    },
+    AttackDTO: {
+      type: 'object',
+      properties: {
+        attacker: { $ref: '#/definitions/Argument' },
+        attacked: { $ref: '#/definitions/Argument' },
+      },
+      required: ['attacker', 'attacked'],
+      additionalProperties: false,
+    },
+  },
+  type: 'object',
+  properties: {
+    attacks: {
+      type: 'array',
+      items: { $ref: '#/definitions/AttackDTO' },
+    },
+  },
+  required: ['attacks'],
+  additionalProperties: false,
+}
+
+const validateArgumentionFrameworkReply = ajv.compile(argumentionFrameworkReplySchema)
+
+export interface ArgumentionFrameworkReply {
+  attacks: AttackDTO[]
+}
+
+function handleArgumentionFrameworkReply(reply: string): ResultOrError<ArgumentionFrameworkReply> {
+  let replyObject
+  try {
+    replyObject = JSON.parse(reply)
+  } catch (error) {
+    console.error(`Unexpected sequence explantion reply`, reply, error)
+    return {
+      result: null,
+      error: 'Unexpected sequence explantion reply.',
+    }
+  }
+
+  const valid = validateArgumentionFrameworkReply(replyObject)
+
+  if (!valid) {
+    console.error(
+      `Unexpected sequence explantion reply`,
+      replyObject,
+      validateArgumentionFrameworkReply.errors,
+    )
+    return {
+      result: null,
+      error: 'Unexpected evaluation reply.',
+    }
+  }
+
+  return {
+    result: replyObject as ArgumentionFrameworkReply,
     error: null,
   }
 }

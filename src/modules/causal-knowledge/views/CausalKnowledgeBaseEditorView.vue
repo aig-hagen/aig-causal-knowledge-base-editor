@@ -17,7 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import TheEditor from '@/modules/causal-knowledge/components/TheEditor.vue'
+import EditorTab from '@/modules/causal-knowledge/components/EditorTab.vue'
 import TheNotifications from '@/modules/common/components/TheNotifications.vue'
 import EditorLayout from '@/modules/causal-knowledge/components/EditorLayout.vue'
 import TheEvaluationConsole from '@/modules/causal-knowledge/components/TheEvaluationConsole.vue'
@@ -26,6 +26,21 @@ import exampleDrowning from '@/modules/causal-knowledge/examples/drowning.json'
 import exampleDiagnosis from '@/modules/causal-knowledge/examples/diagnosis.json'
 import { computed, ref, useTemplateRef } from 'vue'
 import type { Id } from '@/modules/causal-knowledge/graphicalCausalKnowledgeBase'
+import ArgumentationGraphTab from '../components/ArgumentationGraphTab.vue'
+import SequenceExplanationTab from '../components/SequenceExplanationTab.vue'
+import { useKnowledgeBase } from '../stores/knowledgeBase'
+import type { Literal } from '../composables/useEvaluationRequestPayload'
+
+const CAUSAL_MODAL_TAB = Symbol()
+const ARGUMENTATION_GRAPH_TAB = Symbol()
+const SEQUENCE_EXPLANATION_TAB = Symbol()
+
+const knowledgeBase = useKnowledgeBase()
+const observations = ref<Literal[]>([])
+
+const activeTab = ref<
+  typeof CAUSAL_MODAL_TAB | typeof ARGUMENTATION_GRAPH_TAB | typeof SEQUENCE_EXPLANATION_TAB
+>(CAUSAL_MODAL_TAB)
 
 const { previewFeatures } = defineProps<{
   previewFeatures: boolean
@@ -89,6 +104,9 @@ const atomIdsToHighlight = computed(() => {
   }
   return atomIdsToHighlightIndependentOnOpenEvaluationConsole.value
 })
+
+const isArgumentationGraphTabActive = computed(() => activeTab.value === ARGUMENTATION_GRAPH_TAB)
+const isSequenceExplnationTabActive = computed(() => activeTab.value === SEQUENCE_EXPLANATION_TAB)
 </script>
 
 <template>
@@ -109,12 +127,53 @@ const atomIdsToHighlight = computed(() => {
       />
     </template>
     <template v-slot:editor>
-      <TheEditor ref="editor" :atom-ids-to-highlight="atomIdsToHighlight" />
+      <div>
+        <div class="tabs mb-0">
+          <ul>
+            <li
+              :class="{ 'is-active': activeTab === CAUSAL_MODAL_TAB }"
+              @click="activeTab = CAUSAL_MODAL_TAB"
+            >
+              <a>Causal Model</a>
+            </li>
+            <li
+              :class="{ 'is-active': activeTab === ARGUMENTATION_GRAPH_TAB }"
+              @click="activeTab = ARGUMENTATION_GRAPH_TAB"
+            >
+              <a>Argumentation Graph</a>
+            </li>
+            <li
+              :class="{ 'is-active': activeTab === SEQUENCE_EXPLANATION_TAB }"
+              @click="activeTab = SEQUENCE_EXPLANATION_TAB"
+            >
+              <a>Sequence Explanation</a>
+            </li>
+          </ul>
+        </div>
+        <EditorTab
+          v-show="activeTab === CAUSAL_MODAL_TAB"
+          ref="editor"
+          :atom-ids-to-highlight="atomIdsToHighlight"
+          :knowledge-base="knowledgeBase"
+        />
+        <ArgumentationGraphTab
+          v-show="isArgumentationGraphTabActive"
+          :is-active="isArgumentationGraphTabActive"
+          :observations="observations"
+        />
+        <SequenceExplanationTab
+          v-show="isSequenceExplnationTabActive"
+          :is-active="isSequenceExplnationTabActive"
+          :observations="observations"
+        />
+      </div>
     </template>
     <template v-slot:sidebarRight>
       <TheEvaluationConsole
         :preview-features="previewFeatures"
         v-model:atomIdsToHighlight="atomIdsToHighlightIndependentOnOpenEvaluationConsole"
+        v-model:observations="observations"
+        :knowledge-base="knowledgeBase"
       />
     </template>
   </EditorLayout>

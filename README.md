@@ -37,7 +37,7 @@ Maintained by [Matthias Thimm](https://mthimm.de/), collaboratively developed by
 
 This component is used to display and edit graphs.
 
-It is developed by the Artificial Intelligence Group of the University of Hagen and [licensed under the MIT License](third-party/aig-hagen/aig_graph_component/420ec12/LICENSE.md).
+It is developed by the Artificial Intelligence Group of the University of Hagen and [licensed under the MIT License](third-party/aig-hagen/aig_graph_component/c068e56/LICENSE.md).
 
 ### [Argumentation Framework eXplanation, Reasoning, and AnalYsis](https://github.com/xai-ca/xray)
 

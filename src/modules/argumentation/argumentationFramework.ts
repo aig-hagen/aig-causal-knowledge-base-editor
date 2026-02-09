@@ -93,7 +93,9 @@ export function removeArgument(
   removeNode(argumentationFramework.graph, argumentId)
 }
 
-export function getAttacks(argumentationFramework: ArgumentationFramework) {
+export type Attack = [ArgumentId, ArgumentId]
+
+export function getAttacks(argumentationFramework: ArgumentationFramework): Attack[] {
   return getEdges(argumentationFramework.graph)
 }
 

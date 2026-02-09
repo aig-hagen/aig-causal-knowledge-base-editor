@@ -20,7 +20,7 @@
 import {
   getAssumptions,
   getDisplayName,
-  useKnowledgeBase,
+  type KnowledgeBase,
 } from '@/modules/causal-knowledge/stores/knowledgeBase'
 import { computed, ref, watchEffect } from 'vue'
 import Multiselect from '@vueform/multiselect'
@@ -28,6 +28,7 @@ import ConclusionsText from '@/modules/causal-knowledge/components/ConclusionsTe
 import {
   getLiteralString,
   parseLiteralString,
+  type Literal,
 } from '@/modules/causal-knowledge/composables/useEvaluationRequestPayload'
 import type { Atom, Id } from '@/modules/causal-knowledge/graphicalCausalKnowledgeBase'
 import {
@@ -39,15 +40,16 @@ import EvaluationBlockerText from '@/modules/causal-knowledge/components/Evaluat
 import ExplanationText from '@/modules/causal-knowledge/components/ExplanationText.vue'
 import SequenceExplanationText from '@/modules/sequence-explanation/components/SequenceExplanationText.vue'
 
-const { previewFeatures } = defineProps<{
+const { previewFeatures, knowledgeBase, observations } = defineProps<{
   previewFeatures: boolean
+  knowledgeBase: KnowledgeBase
+  observations: Literal[]
 }>()
 
 const emit = defineEmits<{
   'update:atomIdsToHighlight': [atomIdsToHighlight: Id[]]
+  'update:observations': [observations: Literal[]]
 }>()
-
-const knowledgeBase = useKnowledgeBase()
 
 const atoms = computed(() => [...knowledgeBase.atoms.values()])
 const assumptions = computed(() =>
@@ -121,9 +123,12 @@ function setObservations(newObservations: string[]) {
   selectedObservations.value = newObservations
 }
 
-const obserervationAtoms = computed(() =>
-  selectedObservations.value.map((observation) => parseLiteralString(observation)),
-)
+watchEffect(() => {
+  const observationAtoms = selectedObservations.value.map((observation) =>
+    parseLiteralString(observation),
+  )
+  emit('update:observations', observationAtoms)
+})
 
 const nonSelected = Symbol('nonSelected')
 const selectedAtomToShowConclusionFor = ref<Id | typeof nonSelected>(nonSelected)
@@ -201,7 +206,7 @@ const {
   computed(() => new Set(knowledgeBase.atoms.keys())),
   computed(() => new Set(knowledgeBase.operators.keys())),
   computed(() => [...knowledgeBase.connections.values()]),
-  obserervationAtoms,
+  observations,
   assumptions,
   conclusionFilterEvaluation,
 )
@@ -223,7 +228,7 @@ const {
   computed(() => new Set(knowledgeBase.atoms.keys())),
   computed(() => new Set(knowledgeBase.operators.keys())),
   computed(() => [...knowledgeBase.connections.values()]),
-  obserervationAtoms,
+  observations,
   assumptions,
   conclusionFilterExplanation,
 )
@@ -238,7 +243,7 @@ const {
   computed(() => new Set(knowledgeBase.atoms.keys())),
   computed(() => new Set(knowledgeBase.operators.keys())),
   computed(() => [...knowledgeBase.connections.values()]),
-  obserervationAtoms,
+  observations,
   assumptions,
   conclusionFilterExplanation,
 )
@@ -359,7 +364,7 @@ const {
           <div class="message-body is-size-6">
             <ConclusionsText
               :atoms="knowledgeBase.atoms"
-              :observations="obserervationAtoms"
+              :observations="observations"
               :conclusions="conclusionsEvaluationResult"
               :requesed-atoms-for-conclusion="atomsToShowConclusionFor"
             />

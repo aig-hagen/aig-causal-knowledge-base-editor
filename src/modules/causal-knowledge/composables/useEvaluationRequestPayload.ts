@@ -84,6 +84,7 @@ type EvaluationRequestPayloadCmd =
   | 'get_conclusions'
   | 'get_significant_atoms'
   | 'get_sequence_explanations'
+  | 'get_argumentation_framework'
 
 export interface EvaluationRequestPayload {
   email?: string
