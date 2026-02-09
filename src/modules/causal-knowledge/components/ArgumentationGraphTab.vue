@@ -17,11 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import {
-  getAssumptions,
-  getDisplayName,
-  useKnowledgeBase,
-} from '@/modules/causal-knowledge/stores/knowledgeBase'
+import { getDisplayName, useKnowledgeBase } from '@/modules/causal-knowledge/stores/knowledgeBase'
 import { computed, watchEffect } from 'vue'
 import ArgumentationFrameworkEditor from '@/modules/argumentation/components/ArgumentationFrameworkEditor.vue'
 import { type Literal } from '@/modules/causal-knowledge/composables/useEvaluationRequestPayload'
@@ -38,19 +34,13 @@ import { layout } from '@/modules/argumentation/layout'
 
 const knowledgeBase = useKnowledgeBase()
 
-const { isActive, observations } = defineProps<{
+const { isActive, observations, assumptions } = defineProps<{
   isActive: boolean
   observations: Literal[]
+  assumptions: Literal[]
 }>()
 
 const atoms = computed(() => [...knowledgeBase.atoms.values()])
-const assumptions = computed(() =>
-  atoms.value
-    .filter((atom) => atom.assumption !== undefined)
-    .flatMap((atom) =>
-      getAssumptions(atom).map((assumption) => ({ atomId: atom.id, negated: !assumption })),
-    ),
-)
 
 const { evaluationBlocker, evaluate, isEvaluating, evaluationError, evaluationResult } =
   useArgumentionFrameworkRequest(
@@ -58,7 +48,7 @@ const { evaluationBlocker, evaluate, isEvaluating, evaluationError, evaluationRe
     computed(() => new Set(knowledgeBase.operators.keys())),
     computed(() => [...knowledgeBase.connections.values()]),
     computed(() => observations),
-    assumptions,
+    computed(() => assumptions),
     null,
   )
 

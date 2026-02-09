@@ -40,19 +40,21 @@ import EvaluationBlockerText from '@/modules/causal-knowledge/components/Evaluat
 import ExplanationText from '@/modules/causal-knowledge/components/ExplanationText.vue'
 import SequenceExplanationText from '@/modules/sequence-explanation/components/SequenceExplanationText.vue'
 
-const { previewFeatures, knowledgeBase, observations } = defineProps<{
+const { previewFeatures, knowledgeBase, observations, assumptions } = defineProps<{
   previewFeatures: boolean
   knowledgeBase: KnowledgeBase
   observations: Literal[]
+  assumptions: Literal[]
 }>()
 
 const emit = defineEmits<{
   'update:atomIdsToHighlight': [atomIdsToHighlight: Id[]]
   'update:observations': [observations: Literal[]]
+  'update:assumptions': [assumptions: Literal[]]
 }>()
 
 const atoms = computed(() => [...knowledgeBase.atoms.values()])
-const assumptions = computed(() =>
+const modeledAssumptions = computed(() =>
   atoms.value
     .filter((atom) => atom.assumption !== undefined)
     .flatMap((atom) =>
@@ -60,8 +62,8 @@ const assumptions = computed(() =>
     ),
 )
 
-const assumptionLiteralStrings = computed(() =>
-  assumptions.value.map((assumption) => getLiteralString(assumption)),
+const modeledAssumptionLiteralStrings = computed(() =>
+  modeledAssumptions.value.map((assumption) => getLiteralString(assumption)),
 )
 
 function convertToOptions(atoms: Atom[]): { label: string; value: string }[] {
@@ -87,9 +89,10 @@ const observationOptions = computed(() => {
   return convertToOptions(explainableAtoms.value)
 })
 
+const backgroundAtoms = computed(() => atoms.value.filter((atom) => atom.assumption !== undefined))
+
 const assumptionOptions = computed(() => {
-  const backgroundAtoms = atoms.value.filter((atom) => atom.assumption !== undefined)
-  return convertToOptions(backgroundAtoms)
+  return convertToOptions(backgroundAtoms.value)
 })
 
 const selectedObservations = ref<string[]>([])
@@ -116,6 +119,7 @@ function setObservations(newObservations: string[]) {
     const negatedLiteral = { ...literal, negated: !literal.negated }
     const negatedObservation = getLiteralString(negatedLiteral)
     const index = selectedObservations.value.indexOf(negatedObservation)
+    // Remove negation of new observation, because the only "x" or "not x" can be observerd.
     if (index !== -1) {
       newObservations.splice(index, 1)
     }
@@ -128,6 +132,73 @@ watchEffect(() => {
     parseLiteralString(observation),
   )
   emit('update:observations', observationAtoms)
+})
+
+const ignoreModeledAssumptions = ref(false)
+
+function setIgnoreModeledAssumptions(newOverrideAssumptions: boolean) {
+  ignoreModeledAssumptions.value = newOverrideAssumptions
+  if (newOverrideAssumptions) {
+    overridenAssumptions.value = modeledAssumptionLiteralStrings.value
+  }
+}
+
+const overridenAssumptions = ref<string[]>([])
+
+function setOverridenAssumptions(newAssumptions: string[]) {
+  const previousAssumptions = overridenAssumptions.value
+  const removedAssumptions = previousAssumptions.filter((value) => !newAssumptions.includes(value))
+  for (const removedAssumption of removedAssumptions) {
+    const literal = parseLiteralString(removedAssumption)
+    const negatedLiteral = { ...literal, negated: !literal.negated }
+    const negatedAssumption = getLiteralString(negatedLiteral)
+    const index = selectedObservations.value.indexOf(negatedAssumption)
+    // Add the negation of the removed assumption, because at least one assumption per background atom must exist.
+    if (index === -1) {
+      newAssumptions.push(negatedAssumption)
+    }
+  }
+  overridenAssumptions.value = newAssumptions
+}
+
+const validOverridenAssumptions = computed(() => {
+  return backgroundAtoms.value.flatMap((atom) => {
+    const literal = getLiteralString({ atomId: atom.id, negated: false })
+    const literalAlreadyIncluded = overridenAssumptions.value.includes(literal)
+    const negatedLiteral = getLiteralString({ atomId: atom.id, negated: true })
+    const negatedLiteralAlreadyIncluded = overridenAssumptions.value.includes(negatedLiteral)
+    const newAssumptions = []
+    if (literalAlreadyIncluded) {
+      newAssumptions.push(literal)
+    }
+    if (negatedLiteralAlreadyIncluded) {
+      newAssumptions.push(negatedLiteral)
+    }
+    if (!literalAlreadyIncluded && !negatedLiteralAlreadyIncluded) {
+      const modeledAssumptions = getAssumptions(atom).map((assumption) =>
+        getLiteralString({ atomId: atom.id, negated: !assumption }),
+      )
+      newAssumptions.push(...modeledAssumptions)
+    }
+    return newAssumptions
+  })
+})
+
+watchEffect(() => {
+  overridenAssumptions.value = validOverridenAssumptions.value
+})
+
+watchEffect(() => {
+  let effectiveAssumptions
+  if (ignoreModeledAssumptions.value) {
+    effectiveAssumptions = overridenAssumptions.value
+  } else {
+    effectiveAssumptions = modeledAssumptionLiteralStrings.value
+  }
+  const assumptionLiterals = effectiveAssumptions.map((assumption) =>
+    parseLiteralString(assumption),
+  )
+  emit('update:assumptions', assumptionLiterals)
 })
 
 const nonSelected = Symbol('nonSelected')
@@ -206,8 +277,8 @@ const {
   computed(() => new Set(knowledgeBase.atoms.keys())),
   computed(() => new Set(knowledgeBase.operators.keys())),
   computed(() => [...knowledgeBase.connections.values()]),
-  observations,
-  assumptions,
+  computed(() => observations),
+  computed(() => assumptions),
   conclusionFilterEvaluation,
 )
 
@@ -228,8 +299,8 @@ const {
   computed(() => new Set(knowledgeBase.atoms.keys())),
   computed(() => new Set(knowledgeBase.operators.keys())),
   computed(() => [...knowledgeBase.connections.values()]),
-  observations,
-  assumptions,
+  computed(() => observations),
+  computed(() => assumptions),
   conclusionFilterExplanation,
 )
 
@@ -243,8 +314,8 @@ const {
   computed(() => new Set(knowledgeBase.atoms.keys())),
   computed(() => new Set(knowledgeBase.operators.keys())),
   computed(() => [...knowledgeBase.connections.values()]),
-  observations,
-  assumptions,
+  computed(() => observations),
+  computed(() => assumptions),
   conclusionFilterExplanation,
 )
 </script>
@@ -255,14 +326,14 @@ const {
       <div class="column is-full">
         <form>
           <div class="field">
-            <label class="label">Assumptions</label>
+            <label class="label">Assumptions (modeled)</label>
             <div class="control">
               <!-- Setting `:allow-absent="true"` is workaround for the fact that `sources` is only updated after `assumptions` is updated.
            This leads to some values from `assumptions` not beeing shown in the multiselect.
            See https://github.com/vueform/multiselect/issues/446 -->
               <Multiselect
                 :options="assumptionOptions"
-                v-model="assumptionLiteralStrings"
+                v-model="modeledAssumptionLiteralStrings"
                 mode="tags"
                 :searchable="true"
                 :close-on-select="false"
@@ -270,6 +341,39 @@ const {
                 track-by="label"
                 :allow-absent="true"
                 :disabled="true"
+              />
+            </div>
+          </div>
+          <div class="field">
+            <label class="label">Assumptions (overridden)</label>
+            <div class="control">
+              <div class="checkboxes">
+                <label class="checkbox">
+                  <input
+                    type="checkbox"
+                    name="negated"
+                    :checked="ignoreModeledAssumptions"
+                    @change="setIgnoreModeledAssumptions(!ignoreModeledAssumptions)"
+                  />
+                  Override modeled assumptions for evaluation
+                </label>
+              </div>
+            </div>
+            <div class="control mt-2">
+              <!-- Setting `:allow-absent="true"` is workaround for the fact that `sources` is only updated after `assumptions` is updated.
+           This leads to some values from `assumptions` not beeing shown in the multiselect.
+           See https://github.com/vueform/multiselect/issues/446 -->
+              <Multiselect
+                v-if="ignoreModeledAssumptions"
+                :options="assumptionOptions"
+                v-model="overridenAssumptions"
+                mode="tags"
+                :searchable="true"
+                :close-on-select="false"
+                label="label"
+                track-by="label"
+                :allow-absent="true"
+                @input="setOverridenAssumptions($event)"
               />
             </div>
           </div>

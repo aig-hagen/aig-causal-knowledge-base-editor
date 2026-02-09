@@ -30,17 +30,18 @@ import ArgumentationGraphTab from '../components/ArgumentationGraphTab.vue'
 import SequenceExplanationTab from '../components/SequenceExplanationTab.vue'
 import { useKnowledgeBase } from '../stores/knowledgeBase'
 import type { Literal } from '../composables/useEvaluationRequestPayload'
-
-const CAUSAL_MODAL_TAB = Symbol()
-const ARGUMENTATION_GRAPH_TAB = Symbol()
-const SEQUENCE_EXPLANATION_TAB = Symbol()
+import {
+  ARGUMENTATION_GRAPH_TAB,
+  CAUSAL_MODAL_TAB,
+  SEQUENCE_EXPLANATION_TAB,
+  type Tab,
+} from '../tabs'
 
 const knowledgeBase = useKnowledgeBase()
 const observations = ref<Literal[]>([])
+const assumptions = ref<Literal[]>([])
 
-const activeTab = ref<
-  typeof CAUSAL_MODAL_TAB | typeof ARGUMENTATION_GRAPH_TAB | typeof SEQUENCE_EXPLANATION_TAB
->(CAUSAL_MODAL_TAB)
+const activeTab = ref<Tab>(CAUSAL_MODAL_TAB)
 
 const { previewFeatures } = defineProps<{
   previewFeatures: boolean
@@ -160,6 +161,7 @@ const isSequenceExplnationTabActive = computed(() => activeTab.value === SEQUENC
           v-show="isArgumentationGraphTabActive"
           :is-active="isArgumentationGraphTabActive"
           :observations="observations"
+          :assumptions="assumptions"
         />
         <SequenceExplanationTab
           v-show="isSequenceExplnationTabActive"
@@ -173,7 +175,9 @@ const isSequenceExplnationTabActive = computed(() => activeTab.value === SEQUENC
         :preview-features="previewFeatures"
         v-model:atomIdsToHighlight="atomIdsToHighlightIndependentOnOpenEvaluationConsole"
         v-model:observations="observations"
+        v-model:assumptions="assumptions"
         :knowledge-base="knowledgeBase"
+        :active-tab="activeTab"
       />
     </template>
   </EditorLayout>
