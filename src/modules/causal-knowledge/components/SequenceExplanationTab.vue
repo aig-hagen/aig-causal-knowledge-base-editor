@@ -17,21 +17,81 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { type Literal } from '@/modules/causal-knowledge/composables/useEvaluationRequestPayload'
+import { computed, ref, watch } from 'vue'
+import type { SequenceExplanationReply } from '../composables/useEvaluationRequest'
+import SequenceExplanation from '@/modules/sequence-explanation/components/SequenceExplanation.vue'
+import { getDisplayName, type KnowledgeBase } from '../stores/knowledgeBase'
 
-const { isActive, observations } = defineProps<{
+const { isActive, sequenceExplanations, knowledgeBase } = defineProps<{
   isActive: boolean
-  observations: Literal[]
+  sequenceExplanations?: SequenceExplanationReply
+  knowledgeBase: KnowledgeBase
 }>()
+
+const explanations = computed(() => {
+  if (sequenceExplanations === undefined) {
+    return []
+  }
+  return Object.values(sequenceExplanations.perAtomSequenceExplanations).flatMap(
+    (explanations) => explanations,
+  )
+})
+
+const selectedExplanationIndex = ref<number>(0)
+watch(explanations, () => {
+  selectedExplanationIndex.value = 0
+})
+const selectedExplanation = computed(() => explanations.value[selectedExplanationIndex.value])
+const selectedExplanationKey = ref(0)
+watch(selectedExplanation, () => {
+  selectedExplanationKey.value = selectedExplanationKey.value + 1
+})
+
+function getReadableArgument(argument: string): string {
+  // TODO (https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/399) check if this always works out as expected
+  for (const [atomId, atom] of knowledgeBase.atoms) {
+    argument = argument.replace(new RegExp(atomId.toString(), 'g'), getDisplayName(atom, false))
+  }
+  return argument
+}
 </script>
 
 <template>
-  <div>
+  <div v-if="sequenceExplanations === undefined">
     <div class="container is-max-tablet pt-6">
-      <div class="message is-danger">
-        <!-- TODO Continue here: Implement tab for sequence explanations -->
-        <div class="message-body">Not implemented.</div>
+      <div class="message is-info">
+        <div class="message-body">
+          Evaluate sequence explanations first in the evaluation console to display them here.
+        </div>
       </div>
     </div>
+  </div>
+  <div v-else-if="explanations.length === 0">
+    <div class="container is-max-tablet pt-6">
+      <div class="message is-warning">
+        <div class="message-body">No sequence explanations to display.</div>
+      </div>
+    </div>
+  </div>
+  <div v-else-if="isActive">
+    <div class="tabs mb-0" :style="{ width: 'max-content' }">
+      <ul>
+        <li
+          @click="selectedExplanationIndex = index"
+          v-for="(explanation, index) in explanations"
+          :key="index"
+          :class="{ 'is-active': selectedExplanationIndex === index }"
+        >
+          <a>Explanation {{ index + 1 }}</a>
+        </li>
+      </ul>
+    </div>
+    <SequenceExplanation
+      v-if="selectedExplanation !== undefined"
+      :key="selectedExplanationKey"
+      :attacks="sequenceExplanations.attacks"
+      :explanation="selectedExplanation"
+      :getReadableArgument="getReadableArgument"
+    ></SequenceExplanation>
   </div>
 </template>

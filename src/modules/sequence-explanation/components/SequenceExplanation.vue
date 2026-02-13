@@ -21,6 +21,8 @@ import {
   NodeShape,
   SideType,
   type GraphComponent,
+  type jsonLink,
+  type jsonNode,
   type NodeProps,
 } from '@/modules/common/graphComponentTypes'
 import { onMounted, ref, useTemplateRef } from 'vue'
@@ -28,6 +30,14 @@ import * as Colors from '@/modules/common/colors'
 import { useMutationObserver } from '@vueuse/core'
 import type { DialectialSequenceExplanationDTO } from '@/modules/sequence-explanation/DialectialSequenceExplanationDTO'
 import type { AttackDTO } from '@/modules/sequence-explanation/composables/useSequenceExplanationRequest'
+import {
+  addEdge,
+  addNode,
+  createDirectedGraph,
+  getEdges,
+  hasEdge,
+  hasNode,
+} from '@/modules/graph/graph'
 
 const { explanation, attacks, getReadableArgument } = defineProps<{
   explanation: DialectialSequenceExplanationDTO
@@ -100,8 +110,8 @@ onMounted(() => {
     graphInstance.setEditability(
       {
         fixedPosition: {
-          x: true,
-          y: true,
+          x: false,
+          y: false,
         },
         deletable: false,
         labelEditable: false,
@@ -110,6 +120,13 @@ onMounted(() => {
       },
       undefined,
     )
+    const margin = ARGUMENT_HEIGHT_IN_PX
+    graphInstance.centerView({
+      marginTop: margin,
+      marginRight: margin,
+      marginBottom: margin,
+      marginLeft: margin,
+    })
   }
 
   if (isInitialised()) {
@@ -132,58 +149,117 @@ onMounted(() => {
   )
 })
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function drawExplanation(graphInstance: any) {
-  const nodes = []
-  for (
-    let column = 0;
-    column < explanation.defeated.length + explanation.supporters.length;
-    column++
-  ) {
-    const isSupporters = column % 2 === 0
+function drawExplanation(graphInstance: GraphComponent) {
+  // Create directed graph for lookup
+  const directedGraph = createDirectedGraph<string, string>((argumentId) => argumentId)
+  for (const [...defeated] of explanation.defeated) {
+    for (const argument of defeated) {
+      addNode(directedGraph, argument)
+    }
+  }
+  for (const [...supporters] of explanation.supporters) {
+    for (const argument of supporters) {
+      addNode(directedGraph, argument)
+    }
+  }
+  for (const { attacker, attacked } of attacks) {
+    const atteckerInNodes = hasNode(directedGraph, attacker)
+    if (!atteckerInNodes) {
+      continue
+    }
+    const atteckedInNodes = hasNode(directedGraph, attacked)
+    if (!atteckedInNodes) {
+      continue
+    }
+    addEdge(directedGraph, attacker, attacked)
+  }
+
+  // Create init layout of arguments in columns and rows
+  const columns = new Array<(string | undefined)[]>(
+    explanation.defeated.length + explanation.supporters.length,
+  )
+  for (let columnIdx = 0; columnIdx < columns.length; columnIdx++) {
+    const isSupporters = columnIdx % 2 === 0
     const argumentsInColumn = isSupporters
-      ? explanation.supporters[Math.floor(column / 2)]
-      : explanation.defeated[Math.floor(column / 2)]
+      ? explanation.supporters[Math.floor(columnIdx / 2)]
+      : explanation.defeated[Math.floor(columnIdx / 2)]
     if (argumentsInColumn === undefined) {
       throw new Error('No argument list found.')
     }
-    for (let row = 0; row < argumentsInColumn.length; row++) {
-      const argument = argumentsInColumn[row]
+    const column: string[] = []
+    columns[columnIdx] = column
+    for (const argument of argumentsInColumn) {
+      column.push(argument)
+    }
+  }
+  // Iterate to avoid some nodes overlapping links
+  for (let rowIdx = 0; ; rowIdx++) {
+    let noMoreRows = true
+    for (const column of columns) {
+      if (column.length > rowIdx) {
+        noMoreRows = false
+      }
+    }
+    if (noMoreRows) {
+      break
+    }
+    for (let columnStartIdx = 0; columnStartIdx < columns.length; columnStartIdx++) {
+      const argumentStart = columns[columnStartIdx]?.[rowIdx]
+      if (argumentStart === undefined) {
+        continue
+      }
+      let needsToMoveDown = false
+      for (
+        let columndEndIdx = columns.length - 1;
+        columndEndIdx > columnStartIdx;
+        columndEndIdx--
+      ) {
+        const argumentEnd = columns[columndEndIdx]?.[rowIdx]
+        if (argumentEnd === undefined) {
+          continue
+        }
+        if (needsToMoveDown) {
+          columns[columndEndIdx]?.unshift(undefined)
+        }
+        if (
+          hasEdge(directedGraph, argumentStart, argumentEnd) ||
+          hasEdge(directedGraph, argumentStart, argumentEnd)
+        ) {
+          needsToMoveDown = true
+        }
+      }
+    }
+  }
+
+  // Create and pass graph to graph component
+  const nodes: jsonNode[] = []
+  columns.forEach((column, columnIdx) => {
+    const isSupporters = columnIdx % 2 === 0
+    for (let rowIdx = 0; rowIdx < column.length; rowIdx++) {
+      const argument = column[rowIdx]
       if (argument === undefined) {
-        throw new Error('Argument is undefined.')
+        continue
       }
       const nodeId = argument
-      // TODO(https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/399) improve layouting
       nodes.push({
         id: nodeId,
         props: createArgumentProps(),
         label: getReadableArgument(argument),
-        x: column * (ARGUMENT_WIDTH_IN_PX + X_SPACING) + X_OFFSET,
-        y: row * (ARGUMENT_HEIGHT_IN_PX + Y_SPACING) + Y_OFFSET,
+        x: columnIdx * (ARGUMENT_WIDTH_IN_PX + X_SPACING) + X_OFFSET,
+        y: rowIdx * (ARGUMENT_HEIGHT_IN_PX + Y_SPACING) + Y_OFFSET,
         color: getArgumentColor(isSupporters),
       })
     }
-  }
-  const links = []
-  for (const attack of attacks) {
-    const atteckerInNodes = nodes.some((node) => node.id === attack.attacker)
-    if (!atteckerInNodes) {
-      continue
-    }
-    const atteckedInNodes = nodes.some((node) => node.id === attack.attacked)
-    if (!atteckedInNodes) {
-      continue
-    }
+  })
+  const links: jsonLink[] = []
+  for (const [attacker, attacked] of getEdges(directedGraph)) {
     links.push({
-      sourceId: attack.attacker,
-      targetId: attack.attacked,
+      sourceId: attacker,
+      targetId: attacked,
     })
   }
   const graph = { nodes, links }
-  // TODO(https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/399) center after drawing.
   graphInstance.setGraph(graph)
-  // NOTE Consider zooming out after setting inital graph
-  // Would also be relevant for other graphs
 }
 
 // IDs starting with numbers break the graph component code

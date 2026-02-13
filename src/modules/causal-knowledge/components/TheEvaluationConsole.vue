@@ -35,22 +35,26 @@ import {
   useConclusionEvaluationRequest,
   useExplanationEvaluationRequest,
   useSequenceExplanationEvaluationRequest,
+  type SequenceExplanationReply,
 } from '@/modules/causal-knowledge/composables/useEvaluationRequest'
 import EvaluationBlockerText from '@/modules/causal-knowledge/components/EvaluationBlockerText.vue'
 import ExplanationText from '@/modules/causal-knowledge/components/ExplanationText.vue'
-import SequenceExplanationText from '@/modules/sequence-explanation/components/SequenceExplanationText.vue'
+import { SEQUENCE_EXPLANATION_TAB, type Tab } from '../tabs'
 
-const { previewFeatures, knowledgeBase, observations, assumptions } = defineProps<{
+const { knowledgeBase, observations, assumptions } = defineProps<{
   previewFeatures: boolean
   knowledgeBase: KnowledgeBase
   observations: Literal[]
   assumptions: Literal[]
+  activeTab: Tab
 }>()
 
 const emit = defineEmits<{
   'update:atomIdsToHighlight': [atomIdsToHighlight: Id[]]
   'update:observations': [observations: Literal[]]
   'update:assumptions': [assumptions: Literal[]]
+  'update:activeTab': [activeTab: Tab]
+  'update:sequenceExplanations': [sequenceExplanations?: SequenceExplanationReply]
 }>()
 
 const atoms = computed(() => [...knowledgeBase.atoms.values()])
@@ -227,19 +231,11 @@ const atomsToShowConclusionFor = computed(() => {
 const selectedAtomToShowExplanationFor = ref<Id | null>(null)
 
 watchEffect(() => {
-  const atomsToShowConclusionForValue = atomsToShowConclusionFor.value
-  if (atomsToShowConclusionForValue.length === 1) {
-    selectedAtomToShowExplanationFor.value = atomsToShowConclusionForValue[0] ?? null
-  }
-
   const selectedAtom = selectedAtomToShowExplanationFor.value
-  if (selectedAtom == null) {
+  if (selectedAtom !== null && knowledgeBase.atoms.has(selectedAtom)) {
     return
   }
-  if (knowledgeBase.atoms.has(selectedAtom)) {
-    return
-  }
-  selectedAtomToShowExplanationFor.value = null
+  selectedAtomToShowExplanationFor.value = knowledgeBase.atoms.values().next().value?.id ?? null
 })
 
 function getAtomIdsToHighlight() {
@@ -290,6 +286,7 @@ const conclusionFilterExplanation = computed(() => {
 })
 
 const {
+  evaluationBlocker: explanationsEvaluationBlocker,
   evaluate: evaluateExplanations,
   abortEvaluation: abortExplanationEvaluation,
   isEvaluating: isEvaluatingExplanation,
@@ -305,6 +302,7 @@ const {
 )
 
 const {
+  evaluationBlocker: sequenceExplanationsEvaluationBlocker,
   evaluate: evaluateSequenceExplanations,
   abortEvaluation: abortSequenceExplanationEvaluation,
   isEvaluating: isEvaluatingSequenceExplanations,
@@ -318,12 +316,43 @@ const {
   computed(() => assumptions),
   conclusionFilterExplanation,
 )
+
+watchEffect(() => {
+  emit('update:sequenceExplanations', sequenceExplanationEvaluationResult.value ?? undefined)
+})
+
+const abortCombinedSequenceExplanationEvaluation = computed(() => {
+  if (
+    abortExplanationEvaluation.value === null &&
+    abortSequenceExplanationEvaluation.value === null
+  ) {
+    return null
+  }
+  return () => {
+    abortExplanationEvaluation.value?.()
+    abortSequenceExplanationEvaluation.value?.()
+  }
+})
+const evaluateCombinedSequenceExplanations = computed(() => {
+  if (evaluateExplanations.value === null && evaluateSequenceExplanations.value === null) {
+    return null
+  }
+  return () => {
+    evaluateExplanations.value?.()
+    evaluateSequenceExplanations.value?.()
+  }
+})
+const combinedExplanationsEvaluationBlocker = computed(() => {
+  return explanationsEvaluationBlocker.value ?? sequenceExplanationsEvaluationBlocker.value
+})
 </script>
 
 <template>
   <div class="evaluation-console p-5">
+    <h3 class="title is-3">Evaluation</h3>
     <div class="columns">
       <div class="column is-full">
+        <h5 class="title is-5">Inputs</h5>
         <form>
           <div class="field">
             <label class="label">Assumptions (modeled)</label>
@@ -395,9 +424,9 @@ const {
         </form>
       </div>
     </div>
-    <hr />
     <div class="columns">
       <div class="column is-full">
+        <h5 class="title is-5">Conclusions</h5>
         <form
           @submit.prevent="
             () => {
@@ -449,7 +478,7 @@ const {
     <div class="columns">
       <div class="column is-full">
         <article v-if="isEvaluatingConclusions" class="message">
-          <div class="message-body is-size-6">Evaluating...</div>
+          <div class="message-body is-size-6">Computing conclusions...</div>
         </article>
         <article v-if="conclusionsEvaluationBlocker !== null" class="message is-warning">
           <div class="message-body is-size-6">
@@ -476,14 +505,15 @@ const {
         </article>
       </div>
     </div>
-    <div v-if="conclusionsEvaluationResult !== null">
-      <hr />
+    <div>
       <div class="columns">
         <div class="column is-full">
+          <h5 class="title is-5">Explanations</h5>
           <form
             @submit.prevent="
               () => {
-                if (evaluateExplanations !== null) evaluateExplanations()
+                if (evaluateCombinedSequenceExplanations !== null)
+                  evaluateCombinedSequenceExplanations()
               }
             "
           >
@@ -492,12 +522,13 @@ const {
                 <div class="control">
                   <button
                     :disabled="
-                      evaluateExplanations === null || selectedAtomToShowExplanationFor === null
+                      evaluateCombinedSequenceExplanations === null ||
+                      selectedAtomToShowExplanationFor === null
                     "
                     type="submit"
                     class="button is-primary"
                   >
-                    Explain
+                    Evaluate
                   </button>
                 </div>
                 <div class="control is-flex-grow-1">
@@ -505,9 +536,7 @@ const {
                     <select
                       class="is-fullwidt"
                       v-model="selectedAtomToShowExplanationFor"
-                      :disabled="
-                        evaluateExplanations === null || atomsToShowConclusionFor.length === 1
-                      "
+                      :disabled="evaluateExplanations === null"
                     >
                       <option v-for="atom in atoms" :key="atom.id" :value="atom.id">
                         {{ getDisplayName(atom, false) }}
@@ -517,10 +546,10 @@ const {
                 </div>
                 <div class="control">
                   <button
-                    v-if="abortExplanationEvaluation !== null"
+                    v-if="abortCombinedSequenceExplanationEvaluation !== null"
                     type="button"
                     class="button"
-                    @click="abortExplanationEvaluation()"
+                    @click="abortCombinedSequenceExplanationEvaluation()"
                   >
                     Abort
                   </button>
@@ -551,77 +580,39 @@ const {
           </article>
         </div>
       </div>
-      <div v-if="previewFeatures" class="columns">
+      <div class="columns">
         <div class="column is-full">
-          <form
-            @submit.prevent="
-              () => {
-                if (evaluateSequenceExplanations !== null) evaluateSequenceExplanations()
-              }
-            "
-          >
-            <div class="field is-grouped is-gapless">
-              <div class="field has-addons is-flex-grow-1">
-                <div class="control">
-                  <button
-                    :disabled="
-                      evaluateSequenceExplanations === null ||
-                      selectedAtomToShowExplanationFor === null
-                    "
-                    type="submit"
-                    class="button is-primary"
-                  >
-                    Explain (Sequence)
-                  </button>
-                </div>
-                <div class="control is-flex-grow-1">
-                  <div class="select is-fullwidth">
-                    <select
-                      class="is-fullwidt"
-                      v-model="selectedAtomToShowExplanationFor"
-                      :disabled="
-                        evaluateSequenceExplanations === null ||
-                        atomsToShowConclusionFor.length === 1
-                      "
-                    >
-                      <option v-for="atom in atoms" :key="atom.id" :value="atom.id">
-                        {{ getDisplayName(atom, false) }}
-                      </option>
-                    </select>
-                  </div>
-                </div>
-                <div class="control">
-                  <button
-                    v-if="abortSequenceExplanationEvaluation !== null"
-                    type="button"
-                    class="button"
-                    @click="abortSequenceExplanationEvaluation()"
-                  >
-                    Abort
-                  </button>
-                </div>
-              </div>
+          <article v-if="combinedExplanationsEvaluationBlocker !== null" class="message is-warning">
+            <div class="message-body is-size-6">
+              <EvaluationBlockerText
+                :atoms="knowledgeBase.atoms"
+                :blocker="combinedExplanationsEvaluationBlocker"
+              />
             </div>
-          </form>
-        </div>
-      </div>
-      <div class="columns" v-if="selectedAtomToShowExplanationFor !== null">
-        <div class="column is-full">
-          <article v-if="isEvaluatingSequenceExplanations" class="message">
-            <div class="message-body is-size-6">Computing explanation...</div>
+          </article>
+          <article
+            v-if="!isEvaluatingExplanation && isEvaluatingSequenceExplanations"
+            class="message"
+          >
+            <div class="message-body is-size-6">Computing sequence explanations...</div>
           </article>
           <article v-if="sequenceExplanationEvaluationError !== null" class="message is-danger">
             <div class="message-body is-size-6">
               {{ sequenceExplanationEvaluationError }}
             </div>
           </article>
-          <article v-if="sequenceExplanationEvaluationResult !== null" class="message is-dark">
+          <article
+            v-if="
+              sequenceExplanationEvaluationResult !== null && activeTab !== SEQUENCE_EXPLANATION_TAB
+            "
+            class="message is-link"
+          >
             <div class="message-body is-size-6">
-              <SequenceExplanationText
-                :atoms="knowledgeBase.atoms"
-                :sequence-explanation-reply="sequenceExplanationEvaluationResult"
-                :requesed-atom-for-explanation="selectedAtomToShowExplanationFor"
-              />
+              Navigate to the
+              <a @click="emit('update:activeTab', SEQUENCE_EXPLANATION_TAB)"
+                >sequence explanation tab</a
+              >
+              to explore the sequence explanations.
             </div>
           </article>
         </div>

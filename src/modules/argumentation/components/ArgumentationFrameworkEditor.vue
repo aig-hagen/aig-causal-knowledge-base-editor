@@ -57,7 +57,7 @@ import {
   ARGUMENT_WIDTH_IN_PX,
 } from '@/modules/argumentation/consts'
 
-const { argumentationFramework, readonly = false } = defineProps<{
+const { argumentationFramework, readonly } = defineProps<{
   argumentationFramework: ArgumentationFramework
   readonly?: boolean
 }>()

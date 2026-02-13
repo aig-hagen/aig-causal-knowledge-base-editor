@@ -8233,7 +8233,6 @@ For rectangular nodes: {shape: 'rect', width: number, height: number, cornerRadi
       const j = Rh(a.value);
       if (j === null)
         return;
-      console.log(g, x, _, M);
       const Q = j.yMin - g, X = j.yMax + _, Be = j.xMin - M, gt = j.xMax + x, jt = X - Q, mt = gt - Be, vr = m / jt, br = f / mt;
       let wt, En, Sn;
       vr < br ? (wt = vr, En = Q, Sn = Be - (f / wt - mt) / 2) : (wt = br, En = Q - (m / wt - jt) / 2, Sn = Be), n.value.select("svg").call(y.transform, nr.scale(wt).translate(-Sn, -En));

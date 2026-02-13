@@ -126,7 +126,6 @@ function getReadableArgument(argumentId: string): string {
 <template>
   <div>
     <div v-if="argumentationFramework !== null">
-      <!-- TODO Continue here: Handle empty argumentationFramework specially and explain, when argumentation graph can be empty. -->
       <ArgumentationFrameworkEditor
         :argumentationFramework="argumentationFramework"
         :readonly="true"

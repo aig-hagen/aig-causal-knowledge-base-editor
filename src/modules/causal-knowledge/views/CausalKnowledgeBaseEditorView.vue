@@ -36,10 +36,12 @@ import {
   SEQUENCE_EXPLANATION_TAB,
   type Tab,
 } from '../tabs'
+import type { SequenceExplanationReply } from '../composables/useEvaluationRequest'
 
 const knowledgeBase = useKnowledgeBase()
 const observations = ref<Literal[]>([])
 const assumptions = ref<Literal[]>([])
+const sequenceExplanations = ref<SequenceExplanationReply | undefined>(undefined)
 
 const activeTab = ref<Tab>(CAUSAL_MODAL_TAB)
 
@@ -129,7 +131,7 @@ const isSequenceExplnationTabActive = computed(() => activeTab.value === SEQUENC
     </template>
     <template v-slot:editor>
       <div>
-        <div class="tabs mb-0">
+        <div class="tabs mb-0" :style="{ width: 'max-content' }">
           <ul>
             <li
               :class="{ 'is-active': activeTab === CAUSAL_MODAL_TAB }"
@@ -166,7 +168,8 @@ const isSequenceExplnationTabActive = computed(() => activeTab.value === SEQUENC
         <SequenceExplanationTab
           v-show="isSequenceExplnationTabActive"
           :is-active="isSequenceExplnationTabActive"
-          :observations="observations"
+          :sequenceExplanations="sequenceExplanations"
+          :knowledge-base="knowledgeBase"
         />
       </div>
     </template>
@@ -177,7 +180,8 @@ const isSequenceExplnationTabActive = computed(() => activeTab.value === SEQUENC
         v-model:observations="observations"
         v-model:assumptions="assumptions"
         :knowledge-base="knowledgeBase"
-        :active-tab="activeTab"
+        v-model:active-tab="activeTab"
+        @update:sequence-explanations="($event) => (sequenceExplanations = $event)"
       />
     </template>
   </EditorLayout>
