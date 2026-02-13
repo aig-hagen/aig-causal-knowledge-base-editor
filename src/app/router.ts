@@ -37,7 +37,6 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: CausalKnowledgeBaseEditorView,
-      props: { previewFeatures: false },
       meta: {
         [TITLE_KEY]: CAUSAL_KNOWLEDGE_BASE_EDITOR_TITLE,
         [NAV_MORE_NAME_KEY]: CAUSAL_KNOWLEDGE_BASE_EDITOR_TITLE,
@@ -50,17 +49,6 @@ const router = createRouter({
       component: ThirdPartyLicensesView,
       meta: {
         [TITLE_KEY]: 'Third-Party Licenses',
-      },
-    },
-    {
-      path: '/causal-knowledge-base-preview',
-      name: 'causal-knowledge-base-preview',
-      component: CausalKnowledgeBaseEditorView,
-      props: { previewFeatures: true },
-      meta: {
-        [TITLE_KEY]: CAUSAL_KNOWLEDGE_BASE_EDITOR_TITLE,
-        [NAV_MORE_NAME_KEY]: `${CAUSAL_KNOWLEDGE_BASE_EDITOR_TITLE} (with preview features)`,
-        [NAV_SHOW_USERGUIDE_KEY]: true,
       },
     },
     {

@@ -45,10 +45,6 @@ const sequenceExplanations = ref<SequenceExplanationReply | undefined>(undefined
 
 const activeTab = ref<Tab>(CAUSAL_MODAL_TAB)
 
-const { previewFeatures } = defineProps<{
-  previewFeatures: boolean
-}>()
-
 const editorRef = useTemplateRef('editor')
 
 function getEditorRefValueOrFail() {
@@ -175,7 +171,6 @@ const isSequenceExplnationTabActive = computed(() => activeTab.value === SEQUENC
     </template>
     <template v-slot:sidebarRight>
       <TheEvaluationConsole
-        :preview-features="previewFeatures"
         v-model:atomIdsToHighlight="atomIdsToHighlightIndependentOnOpenEvaluationConsole"
         v-model:observations="observations"
         v-model:assumptions="assumptions"

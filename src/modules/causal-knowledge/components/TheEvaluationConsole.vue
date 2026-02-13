@@ -42,7 +42,6 @@ import ExplanationText from '@/modules/causal-knowledge/components/ExplanationTe
 import { SEQUENCE_EXPLANATION_TAB, type Tab } from '../tabs'
 
 const { knowledgeBase, observations, assumptions } = defineProps<{
-  previewFeatures: boolean
   knowledgeBase: KnowledgeBase
   observations: Literal[]
   assumptions: Literal[]
