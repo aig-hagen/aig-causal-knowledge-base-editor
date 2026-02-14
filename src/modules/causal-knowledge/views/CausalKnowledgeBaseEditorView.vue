@@ -145,7 +145,7 @@ const isSequenceExplnationTabActive = computed(() => activeTab.value === SEQUENC
               :class="{ 'is-active': activeTab === SEQUENCE_EXPLANATION_TAB }"
               @click="activeTab = SEQUENCE_EXPLANATION_TAB"
             >
-              <a>Sequence Explanation</a>
+              <a>Sequence Explanations</a>
             </li>
           </ul>
         </div>

@@ -16,15 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import type { Argument } from '@/modules/argumentation/argumentationFramework'
+import type { ArgumentId } from '@/modules/argumentation/argumentationFramework'
 import type { Literal } from '@/modules/causal-knowledge/composables/useEvaluationRequestPayload'
-import type { Atom } from '@/modules/causal-knowledge/graphicalCausalKnowledgeBase'
+import type { Atom, Id } from '@/modules/causal-knowledge/graphicalCausalKnowledgeBase'
 import { getDisplayName } from '@/modules/causal-knowledge/stores/knowledgeBase'
-
-export interface CausalArgument extends Argument {
-  premises: Literal[]
-  conlusion: Literal
-}
 
 export function parsePremisesAndConlusions(causalArgumentId: string) {
   const causalArgumentRegex = /^\(\[((?:!?\d(?:, !?\d)*)?)\] -> (!?\d)\)$/
@@ -61,16 +56,26 @@ function convertToLiteral(literalString: string) {
   }
 }
 
-export function getCausalArgumentData(argumentId: string, atoms: Map<number, Atom>) {
+export interface CausalArgumentData {
+  id: ArgumentId
+  name: string
+  premises: Literal[]
+  conclusion: Literal
+}
+
+export function getCausalArgumentData(
+  argumentId: string,
+  atoms: Map<Id, Atom>,
+): CausalArgumentData {
   const { premises, conclusion } = parsePremisesAndConlusions(argumentId)
 
   let name = ''
   if (premises.length > 0) {
-    name += premises.map((premis) => getName(premis, atoms)).join(', ')
+    name += premises.map((premis) => getLiteralName(premis, atoms)).join(', ')
     name += ' '
   }
   name += '→ '
-  name += getName(conclusion, atoms)
+  name += getLiteralName(conclusion, atoms)
 
   return {
     id: argumentId,
@@ -80,7 +85,7 @@ export function getCausalArgumentData(argumentId: string, atoms: Map<number, Ato
   }
 }
 
-function getName(literal: Literal, atoms: Map<number, Atom>) {
+export function getLiteralName(literal: Literal, atoms: Map<Id, Atom>) {
   const atom = atoms.get(literal.atomId)
   if (atom === undefined) {
     throw new Error(`Atom with ID ${String(literal.atomId)} not found.`)

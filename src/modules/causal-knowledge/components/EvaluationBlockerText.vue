@@ -28,7 +28,7 @@ import { getDisplayName } from '@/modules/causal-knowledge/stores/knowledgeBase'
 import { computed } from 'vue'
 
 const props = defineProps<{
-  atoms: Map<number, Atom>
+  atoms: Map<Id, Atom>
   blocker: NonEvaluableKnowledgebaseError
 }>()
 

@@ -24,6 +24,7 @@ import type {
   Connection,
   ConnectionId,
   GraphicalCausalKnowledgeBase,
+  Id,
 } from '@/modules/causal-knowledge/graphicalCausalKnowledgeBase'
 import schema from '@/modules/causal-knowledge/graphical-causal-knowledge-base-v1.schema.json' assert { type: 'json' }
 
@@ -36,7 +37,7 @@ import {
   type ImportError,
 } from '@/modules/common/serialization'
 
-function atomIdToMessageString(atomId: number): string {
+function atomIdToMessageString(atomId: Id): string {
   return `\`${atomId.toString()}\``
 }
 
@@ -47,8 +48,8 @@ export function getConnectionKey(connnectionId: ConnectionId): string {
 const validate = ajv.compile<GraphicalCausalKnowledgeBase>(schema)
 
 export const useKnowledgeBase = defineStore('knowledgeBase', () => {
-  const atoms = ref(new Map<number, Atom>())
-  const operators = ref(new Map<number, Conjunction>())
+  const atoms = ref(new Map<Id, Atom>())
+  const operators = ref(new Map<Id, Conjunction>())
   const connections = ref(new Map<string, Connection>())
   const knowledgeBaseExport: ComputedRef<GraphicalCausalKnowledgeBase> = computed(() => ({
     apiVersion: 'graphical/v1',

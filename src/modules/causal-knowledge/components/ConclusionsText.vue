@@ -24,7 +24,7 @@ import { computed } from 'vue'
 import { hasOneEntry } from '@/modules/common/types'
 
 const props = defineProps<{
-  atoms: Map<number, Atom>
+  atoms: Map<Id, Atom>
   observations: Literal[]
   conclusions: Literal[]
   requesedAtomsForConclusion: Id[]

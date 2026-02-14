@@ -23,7 +23,7 @@ import ConclusionsText from '@/modules/causal-knowledge/components/ConclusionsTe
 import type { Atom, Id } from '@/modules/causal-knowledge/graphicalCausalKnowledgeBase'
 import type { Literal } from '@/modules/causal-knowledge/composables/useEvaluationRequestPayload'
 
-const atoms = new Map<number, Atom>()
+const atoms = new Map<Id, Atom>()
 atoms.set(1, {
   id: 1,
   name: 'a',

@@ -19,14 +19,14 @@
 import { test, expect } from 'vitest'
 import { mount, VueWrapper } from '@vue/test-utils'
 import EvaluationBlockerText from '@/modules/causal-knowledge/components/EvaluationBlockerText.vue'
-import type { Atom } from '@/modules/causal-knowledge/graphicalCausalKnowledgeBase'
+import type { Atom, Id } from '@/modules/causal-knowledge/graphicalCausalKnowledgeBase'
 import {
   ConjunctionIsNotTargetedError,
   CycleError,
   EmptyKnowlegeBaseError,
 } from '@/modules/causal-knowledge/composables/useEvaluationRequestPayload'
 
-const atoms = new Map<number, Atom>()
+const atoms = new Map<Id, Atom>()
 atoms.set(1, {
   id: 1,
   name: 'a',
