@@ -31,7 +31,7 @@ import EvaluationBlockerText from '@/modules/argumentation/components/Evaluation
 import SequenceExplanationText from '@/modules/sequence-explanation/components/SequenceExplanationText.vue'
 
 const { argumentationFramework } = defineProps<{
-  argumentationFramework: ArgumentationFramework
+  argumentationFramework: ArgumentationFramework<Argument>
 }>()
 
 function getDisplayName(argument: Argument): string {

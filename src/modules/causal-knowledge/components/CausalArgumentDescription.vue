@@ -17,13 +17,12 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import type { Argument } from '@/modules/argumentation/argumentationFramework'
-import { getLiteralName } from '../causalArgument'
+import { getLiteralName, type CausalArgument } from '../causalArgument'
 import type { Atom, Id } from '../graphicalCausalKnowledgeBase'
 import { hasOneEntry } from '@/modules/common/types'
 
 const { argument, atoms } = defineProps<{
-  argument: Argument
+  argument: CausalArgument
   atoms: Map<Id, Atom>
 }>()
 </script>

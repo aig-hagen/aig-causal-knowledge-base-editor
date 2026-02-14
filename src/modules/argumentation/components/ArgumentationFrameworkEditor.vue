@@ -58,7 +58,7 @@ import {
 } from '@/modules/argumentation/consts'
 
 const { argumentationFramework, readonly } = defineProps<{
-  argumentationFramework: ArgumentationFramework
+  argumentationFramework: ArgumentationFramework<Argument>
   readonly?: boolean
 }>()
 

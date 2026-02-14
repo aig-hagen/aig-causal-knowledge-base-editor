@@ -25,14 +25,14 @@ import {
   type ArgumentationFramework,
 } from '../argumentation/argumentationFramework'
 import type { AttackDTO } from '../sequence-explanation/composables/useSequenceExplanationRequest'
-import { getCausalArgumentData } from './causalArgument'
+import { getCausalArgumentData, type CausalArgument } from './causalArgument'
 import type { Atom, Id } from './graphicalCausalKnowledgeBase'
 
 export function argumentationFrameworkFromCausalArguments(
   attacks: AttackDTO[],
   atoms: Map<Id, Atom>,
-): ArgumentationFramework {
-  const argumentationFramework = createArgumentationFramework()
+): ArgumentationFramework<CausalArgument> {
+  const argumentationFramework = createArgumentationFramework<CausalArgument>()
   for (const attack of attacks) {
     const { attacker: attackerId, attacked: attackedId } = attack
     if (!hasArgument(argumentationFramework, attackerId)) {

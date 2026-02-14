@@ -26,6 +26,7 @@ import EvaluationBlockerText from '@/modules/causal-knowledge/components/Evaluat
 import { layout } from '@/modules/argumentation/layout'
 import { argumentationFrameworkFromCausalArguments } from '../argumentation'
 import CausalArgumentDescription from './CausalArgumentDescription.vue'
+import type { CausalArgument } from '../causalArgument'
 
 const knowledgeBase = useKnowledgeBase()
 
@@ -82,7 +83,9 @@ const argumentationFramework = computed(() => {
         :argumentationFramework="argumentationFramework"
         :readonly="true"
         ><template #argumentMenu="{ argument }"
-          ><CausalArgumentDescription :argument="argument" :atoms="knowledgeBase.atoms" /></template
+          ><CausalArgumentDescription
+            :argument="argument as CausalArgument"
+            :atoms="knowledgeBase.atoms" /></template
       ></ArgumentationFrameworkEditor>
     </div>
     <div v-else class="container is-max-tablet pt-6">

@@ -22,6 +22,7 @@ import {
   addArgument,
   addAttack,
   createArgumentationFramework,
+  type Argument,
   type ArgumentationFramework,
 } from '@/modules/argumentation/argumentationFramework'
 
@@ -83,7 +84,7 @@ type AfXrayExample = z.infer<typeof AfXrayExample>
 
 export interface LazyArgumentationFrameworkDataset {
   name: string
-  load(): ArgumentationFramework
+  load(): ArgumentationFramework<Argument>
 }
 
 const datasets: LazyArgumentationFrameworkDataset[] = afXrayExampleSources.map(

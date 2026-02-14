@@ -21,6 +21,7 @@ import { computed, type MaybeRef, ref, type Ref, unref, watchEffect } from 'vue'
 import { TWEETY_API_URL, USER_ID } from '@/modules/common/server'
 import {
   getAttacks,
+  type Argument,
   type ArgumentationFramework,
   type ArgumentId,
 } from '@/modules/argumentation/argumentationFramework'
@@ -61,7 +62,7 @@ export interface AttackDTO {
 type ArgumentSerialized = string
 
 export function useSequenceExplanationRequest(
-  argumentationFramework: MaybeRef<ArgumentationFramework>,
+  argumentationFramework: MaybeRef<ArgumentationFramework<Argument>>,
   argumentFilter: MaybeRef<ArgumentId[] | null>,
 ) {
   const payload = computed<SequenceExplanationPost | SequenceExplanationRequestBlockingError>(

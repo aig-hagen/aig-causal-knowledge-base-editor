@@ -19,6 +19,7 @@
 import {
   getArguments,
   getAttacks,
+  type Argument,
   type ArgumentationFramework,
   type ArgumentId,
   type Position,
@@ -33,7 +34,9 @@ import {
 
 const graphviz = await Graphviz.load()
 
-export function layout(argumentationFramework: ArgumentationFramework) {
+export function layout<ArgumentT extends Argument>(
+  argumentationFramework: ArgumentationFramework<ArgumentT>,
+) {
   const nodePositions = getNodePositions(argumentationFramework)
   for (const argument of getArguments(argumentationFramework)) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -52,7 +55,7 @@ interface DotJson {
 }
 
 function getNodePositions(
-  argumentationFramework: ArgumentationFramework,
+  argumentationFramework: ArgumentationFramework<Argument>,
 ): Map<ArgumentId, Position> {
   // The argument ID can be an arbitrary string, which might break the generated dot source.
   // Instead of escaping (and forgetting to consider special cases), we used the indieces as IDs.
@@ -117,7 +120,7 @@ function convertPositionsForArgumentEditor(
 }
 
 function argumentationFrameworkToDotSource(
-  argumentationFramework: ArgumentationFramework,
+  argumentationFramework: ArgumentationFramework<Argument>,
   argumentIdToSafeId: Map<string, string>,
 ) {
   // The final dot will look like:

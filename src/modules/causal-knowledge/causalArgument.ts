@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import type { ArgumentId } from '@/modules/argumentation/argumentationFramework'
+import type { Argument, ArgumentId } from '@/modules/argumentation/argumentationFramework'
 import type { Literal } from '@/modules/causal-knowledge/composables/useEvaluationRequestPayload'
 import type { Atom, Id } from '@/modules/causal-knowledge/graphicalCausalKnowledgeBase'
 import { getDisplayName } from '@/modules/causal-knowledge/stores/knowledgeBase'
@@ -62,6 +62,8 @@ export interface CausalArgumentData {
   premises: Literal[]
   conclusion: Literal
 }
+
+export type CausalArgument = Argument & CausalArgumentData
 
 export function getCausalArgumentData(
   argumentId: string,

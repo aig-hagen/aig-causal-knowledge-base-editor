@@ -21,6 +21,7 @@ import { computed, ref, type Ref } from 'vue'
 import SequenceExplanation from '@/modules/sequence-explanation/components/SequenceExplanation.vue'
 import {
   getArgument,
+  type Argument,
   type ArgumentationFramework,
   type ArgumentId,
 } from '@/modules/argumentation/argumentationFramework'
@@ -28,7 +29,7 @@ import type { GetSequenceExplanationsResult } from '@/modules/sequence-explanati
 import type { DialectialSequenceExplanationDTO } from '@/modules/sequence-explanation/DialectialSequenceExplanationDTO'
 
 const props = defineProps<{
-  argumentationFramework: ArgumentationFramework
+  argumentationFramework: ArgumentationFramework<Argument>
   sequenceExplanationResult: GetSequenceExplanationsResult
 }>()
 

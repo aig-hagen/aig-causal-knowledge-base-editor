@@ -50,44 +50,53 @@ export interface Argument {
   graphicalData: GraphicalData
 }
 
-export interface ArgumentationFramework {
-  graph: DirectedGraph<Argument, ArgumentId>
+export interface ArgumentationFramework<ArgumentT extends Argument> {
+  graph: DirectedGraph<ArgumentT, ArgumentId>
 }
 
-export function createArgumentationFramework(): ArgumentationFramework {
+export function createArgumentationFramework<
+  ArgumentT extends Argument,
+>(): ArgumentationFramework<ArgumentT> {
   return {
-    graph: createDirectedGraph<Argument, ArgumentId>((argument) => argument.id),
+    graph: createDirectedGraph<ArgumentT, ArgumentId>((argument) => argument.id),
   }
 }
 
-export function hasArgument(
-  argumentationFramework: ArgumentationFramework,
+export function hasArgument<ArgumentT extends Argument>(
+  argumentationFramework: ArgumentationFramework<ArgumentT>,
   argumentId: ArgumentId,
 ) {
   return hasNode(argumentationFramework.graph, argumentId)
 }
 
-export function getArgument(
-  argumentationFramework: ArgumentationFramework,
+export function getArgument<ArgumentT extends Argument>(
+  argumentationFramework: ArgumentationFramework<ArgumentT>,
   argumentId: ArgumentId,
 ) {
   return getNode(argumentationFramework.graph, argumentId)
 }
 
-export function getArguments(argumentationFramework: ArgumentationFramework) {
+export function getArguments<ArgumentT extends Argument>(
+  argumentationFramework: ArgumentationFramework<ArgumentT>,
+) {
   return getNodes(argumentationFramework.graph)
 }
 
-export function getArgumentIds(argumentationFramework: ArgumentationFramework) {
+export function getArgumentIds<ArgumentT extends Argument>(
+  argumentationFramework: ArgumentationFramework<ArgumentT>,
+) {
   return getNodeIds(argumentationFramework.graph)
 }
 
-export function addArgument(argumentationFramework: ArgumentationFramework, argument: Argument) {
+export function addArgument<ArgumentT extends Argument>(
+  argumentationFramework: ArgumentationFramework<ArgumentT>,
+  argument: ArgumentT,
+) {
   addNode(argumentationFramework.graph, argument)
 }
 
-export function removeArgument(
-  argumentationFramework: ArgumentationFramework,
+export function removeArgument<ArgumentT extends Argument>(
+  argumentationFramework: ArgumentationFramework<ArgumentT>,
   argumentId: ArgumentId,
 ) {
   removeNode(argumentationFramework.graph, argumentId)
@@ -95,20 +104,22 @@ export function removeArgument(
 
 export type Attack = [ArgumentId, ArgumentId]
 
-export function getAttacks(argumentationFramework: ArgumentationFramework): Attack[] {
+export function getAttacks<ArgumentT extends Argument>(
+  argumentationFramework: ArgumentationFramework<ArgumentT>,
+): Attack[] {
   return getEdges(argumentationFramework.graph)
 }
 
-export function addAttack(
-  argumentationFramework: ArgumentationFramework,
+export function addAttack<ArgumentT extends Argument>(
+  argumentationFramework: ArgumentationFramework<ArgumentT>,
   attackerId: ArgumentId,
   attackedId: ArgumentId,
 ) {
   addEdge(argumentationFramework.graph, attackerId, attackedId)
 }
 
-export function removeAttack(
-  argumentationFramework: ArgumentationFramework,
+export function removeAttack<ArgumentT extends Argument>(
+  argumentationFramework: ArgumentationFramework<ArgumentT>,
   attackerId: ArgumentId,
   attackedId: ArgumentId,
 ) {

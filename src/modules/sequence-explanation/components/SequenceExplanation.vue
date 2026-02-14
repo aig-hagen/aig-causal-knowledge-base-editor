@@ -40,12 +40,13 @@ import {
 import {
   getArgument,
   getAttacks,
+  type Argument,
   type ArgumentationFramework,
 } from '@/modules/argumentation/argumentationFramework'
 
 const { explanation, argumentationFramework } = defineProps<{
   explanation: DialectialSequenceExplanationDTO
-  argumentationFramework: ArgumentationFramework
+  argumentationFramework: ArgumentationFramework<Argument>
 }>()
 
 const ARGUMENT_WIDTH_IN_PX = 174

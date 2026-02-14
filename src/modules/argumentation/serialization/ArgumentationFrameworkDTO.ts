@@ -23,6 +23,7 @@ import {
   createArgumentationFramework,
   getArguments,
   getAttacks,
+  type Argument,
   type ArgumentationFramework,
 } from '../argumentationFramework'
 import {
@@ -148,7 +149,7 @@ const ArgumentationFrameworkDTO = z
 type ArgumentationFrameworkDTO = z.infer<typeof ArgumentationFrameworkDTO>
 
 export function serializeToDto(
-  argumentationFramework: ArgumentationFramework,
+  argumentationFramework: ArgumentationFramework<Argument>,
 ): ArgumentationFrameworkDTO {
   const allAguments = getArguments(argumentationFramework)
   const attacks = getAttacks(argumentationFramework)
@@ -178,7 +179,7 @@ export function serializeToDto(
 export function deserializeFromDtoString(
   dtoString: string,
   fileName: string,
-): DeserializationResult<ArgumentationFramework> {
+): DeserializationResult<ArgumentationFramework<Argument>> {
   let unvalidatedData: unknown
   try {
     unvalidatedData = JSON.parse(dtoString)

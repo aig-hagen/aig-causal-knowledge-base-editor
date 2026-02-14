@@ -18,8 +18,9 @@
  */
 import type { ArgumentationFramework } from '../argumentation/argumentationFramework'
 import type { DialectialSequenceExplanationDTO } from '../sequence-explanation/DialectialSequenceExplanationDTO'
+import type { CausalArgument } from './causalArgument'
 
 export interface SequenceExplanations {
-  argumentationFramework: ArgumentationFramework
+  argumentationFramework: ArgumentationFramework<CausalArgument>
   explanations: DialectialSequenceExplanationDTO[]
 }
