@@ -28,7 +28,7 @@ import {
 } from '@/modules/argumentation/argumentationFramework'
 import { useSequenceExplanationRequest } from '@/modules/sequence-explanation/composables/useSequenceExplanationRequest'
 import EvaluationBlockerText from '@/modules/argumentation/components/EvaluationBlockerText.vue'
-import SequenceExplanationText2 from '@/modules/sequence-explanation/components/SequenceExplanationText2.vue'
+import SequenceExplanationText from '@/modules/sequence-explanation/components/SequenceExplanationText.vue'
 
 const { argumentationFramework } = defineProps<{
   argumentationFramework: ArgumentationFramework
@@ -141,7 +141,7 @@ const {
         </article>
         <article v-if="evaluationResult !== null" class="message is-dark">
           <div class="message-body is-size-6">
-            <SequenceExplanationText2
+            <SequenceExplanationText
               :argumentation-framework="argumentationFramework"
               :sequence-explanation-result="evaluationResult"
             />

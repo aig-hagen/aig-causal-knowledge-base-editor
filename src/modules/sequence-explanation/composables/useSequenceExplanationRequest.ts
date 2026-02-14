@@ -92,12 +92,6 @@ export function useSequenceExplanationRequest(
   return useEvaluationRequest(payload, handleSequenceExplanationReply)
 }
 
-export interface DialectialSequenceExplanationDTO {
-  argument: ArgumentSerialized
-  supporters: ArgumentSerialized[][]
-  defeated: ArgumentSerialized[][]
-}
-
 function handleSequenceExplanationReply(
   reply: object,
 ): ResultOrError<GetSequenceExplanationsResult> {

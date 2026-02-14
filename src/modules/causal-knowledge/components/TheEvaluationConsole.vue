@@ -35,11 +35,12 @@ import {
   useConclusionEvaluationRequest,
   useExplanationEvaluationRequest,
   useSequenceExplanationEvaluationRequest,
-  type SequenceExplanationReply,
 } from '@/modules/causal-knowledge/composables/useEvaluationRequest'
 import EvaluationBlockerText from '@/modules/causal-knowledge/components/EvaluationBlockerText.vue'
 import ExplanationText from '@/modules/causal-knowledge/components/ExplanationText.vue'
 import { SEQUENCE_EXPLANATION_TAB, type Tab } from '../tabs'
+import type { SequenceExplanations } from '../sequenceExplanation'
+import { argumentationFrameworkFromCausalArguments } from '../argumentation'
 
 const { knowledgeBase, observations, assumptions } = defineProps<{
   knowledgeBase: KnowledgeBase
@@ -53,7 +54,7 @@ const emit = defineEmits<{
   'update:observations': [observations: Literal[]]
   'update:assumptions': [assumptions: Literal[]]
   'update:activeTab': [activeTab: Tab]
-  'update:sequenceExplanations': [sequenceExplanations?: SequenceExplanationReply]
+  'update:sequenceExplanations': [sequenceExplanations?: SequenceExplanations]
 }>()
 
 const atoms = computed(() => [...knowledgeBase.atoms.values()])
@@ -316,8 +317,29 @@ const {
   conclusionFilterExplanation,
 )
 
+const sequenceExplanations = computed<SequenceExplanations | undefined>(() => {
+  if (sequenceExplanationEvaluationResult.value === null) {
+    return undefined
+  }
+
+  const attacks = sequenceExplanationEvaluationResult.value.attacks
+  const argumentationFramework = argumentationFrameworkFromCausalArguments(
+    attacks,
+    knowledgeBase.atoms,
+  )
+
+  const explanations = Object.values(
+    sequenceExplanationEvaluationResult.value.perAtomSequenceExplanations,
+  ).flatMap((explanations) => explanations)
+
+  return {
+    argumentationFramework: argumentationFramework,
+    explanations: explanations,
+  }
+})
+
 watchEffect(() => {
-  emit('update:sequenceExplanations', sequenceExplanationEvaluationResult.value ?? undefined)
+  emit('update:sequenceExplanations', sequenceExplanations.value)
 })
 
 const abortCombinedSequenceExplanationEvaluation = computed(() => {

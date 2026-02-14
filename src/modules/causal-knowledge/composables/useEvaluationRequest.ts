@@ -27,10 +27,8 @@ import { useFetch } from '@vueuse/core'
 import { computed, type MaybeRef, ref, type Ref, unref, watch } from 'vue'
 import { ajv } from '@/modules/shared/ajvInstance'
 import { TWEETY_API_URL } from '@/modules/common/server'
-import type {
-  AttackDTO,
-  DialectialSequenceExplanationDTO,
-} from '@/modules/sequence-explanation/composables/useSequenceExplanationRequest'
+import type { AttackDTO } from '@/modules/sequence-explanation/composables/useSequenceExplanationRequest'
+import type { DialectialSequenceExplanationDTO } from '@/modules/sequence-explanation/DialectialSequenceExplanationDTO'
 
 export function useConclusionEvaluationRequest(
   atoms: MaybeRef<Set<number>>,

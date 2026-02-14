@@ -240,7 +240,7 @@ export function getDisplayName(atom: Atom, negated: boolean): string {
   const displayName = atom.name.length == 0 ? `unnamed[id=${idString}]` : atom.name
 
   if (negated) {
-    return `not ${displayName}`
+    return `not\u00A0${displayName}`
   } else {
     return displayName
   }

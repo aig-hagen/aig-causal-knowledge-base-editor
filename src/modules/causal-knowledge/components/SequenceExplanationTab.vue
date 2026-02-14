@@ -18,23 +18,19 @@
 -->
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import type { SequenceExplanationReply } from '../composables/useEvaluationRequest'
 import SequenceExplanation from '@/modules/sequence-explanation/components/SequenceExplanation.vue'
-import { getDisplayName, type KnowledgeBase } from '../stores/knowledgeBase'
+import type { SequenceExplanations } from '../sequenceExplanation'
 
-const { isActive, sequenceExplanations, knowledgeBase } = defineProps<{
+const { isActive, sequenceExplanations } = defineProps<{
   isActive: boolean
-  sequenceExplanations?: SequenceExplanationReply
-  knowledgeBase: KnowledgeBase
+  sequenceExplanations?: SequenceExplanations
 }>()
 
 const explanations = computed(() => {
   if (sequenceExplanations === undefined) {
     return []
   }
-  return Object.values(sequenceExplanations.perAtomSequenceExplanations).flatMap(
-    (explanations) => explanations,
-  )
+  return sequenceExplanations.explanations
 })
 
 const selectedExplanationIndex = ref<number>(0)
@@ -46,14 +42,6 @@ const selectedExplanationKey = ref(0)
 watch(selectedExplanation, () => {
   selectedExplanationKey.value = selectedExplanationKey.value + 1
 })
-
-function getReadableArgument(argument: string): string {
-  // TODO (https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/399) check if this always works out as expected
-  for (const [atomId, atom] of knowledgeBase.atoms) {
-    argument = argument.replace(new RegExp(atomId.toString(), 'g'), getDisplayName(atom, false))
-  }
-  return argument
-}
 </script>
 
 <template>
@@ -89,9 +77,8 @@ function getReadableArgument(argument: string): string {
     <SequenceExplanation
       v-if="selectedExplanation !== undefined"
       :key="selectedExplanationKey"
-      :attacks="sequenceExplanations.attacks"
+      :argumentationFramework="sequenceExplanations.argumentationFramework"
       :explanation="selectedExplanation"
-      :getReadableArgument="getReadableArgument"
     ></SequenceExplanation>
   </div>
 </template>

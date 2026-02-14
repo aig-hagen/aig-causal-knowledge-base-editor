@@ -17,32 +17,36 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import type { Atom, Id } from '@/modules/causal-knowledge/graphicalCausalKnowledgeBase'
-import { getDisplayName } from '@/modules/causal-knowledge/stores/knowledgeBase'
 import { computed, ref, type Ref } from 'vue'
-import type { SequenceExplanationReply } from '@/modules/causal-knowledge/composables/useEvaluationRequest'
 import SequenceExplanation from '@/modules/sequence-explanation/components/SequenceExplanation.vue'
+import {
+  getArgument,
+  type ArgumentationFramework,
+  type ArgumentId,
+} from '@/modules/argumentation/argumentationFramework'
+import type { GetSequenceExplanationsResult } from '@/modules/sequence-explanation/GetSequenceExplanationsResult'
 import type { DialectialSequenceExplanationDTO } from '@/modules/sequence-explanation/DialectialSequenceExplanationDTO'
 
 const props = defineProps<{
-  atoms: Map<number, Atom>
-  sequenceExplanationReply: SequenceExplanationReply
-  requesedAtomForExplanation: Id
+  argumentationFramework: ArgumentationFramework
+  sequenceExplanationResult: GetSequenceExplanationsResult
 }>()
 
 const explanations = computed(() => {
-  return (
-    props.sequenceExplanationReply.perAtomSequenceExplanations[props.requesedAtomForExplanation] ??
-    []
+  const sequenceExplanations = Object.values(
+    props.sequenceExplanationResult.perArgumentSequenceExplanations,
   )
+  return sequenceExplanations.flatMap((sequenceExplanations) => sequenceExplanations)
 })
 
-function getReadableArgument(argument: string): string {
-  // TODO (https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/399) check if this always works out as expected
-  for (const [atomId, atom] of props.atoms) {
-    argument = argument.replace(new RegExp(atomId.toString(), 'g'), getDisplayName(atom, false))
+function getReadableArgument(argumentId: ArgumentId): string {
+  const argument = getArgument(props.argumentationFramework, argumentId)
+
+  if (argument === undefined) {
+    throw new Error('Argument not found.')
   }
-  return argument
+
+  return argument.name
 }
 
 const selectedExplanation: Ref<DialectialSequenceExplanationDTO | null> = ref(null)
@@ -58,7 +62,7 @@ const selectedExplanation: Ref<DialectialSequenceExplanationDTO | null> = ref(nu
         >
       </li>
     </ul>
-    <!-- TODO (https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/399) Improve modals:
+    <!-- TODO(https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/399) Improve modals:
      - extract modal into component
      - deduplicate generic modal functionality with the controls modal
      - ensure ESC key works on modals -->
@@ -72,9 +76,8 @@ const selectedExplanation: Ref<DialectialSequenceExplanationDTO | null> = ref(nu
       <div class="modal-content" style="height: 768px; width: 1280px">
         <div class="box" style="height: 100%; width: 100%">
           <SequenceExplanation
-            :attacks="sequenceExplanationReply.attacks"
+            :argumentationFramework="argumentationFramework"
             :explanation="selectedExplanation"
-            :getReadableArgument="getReadableArgument"
           ></SequenceExplanation>
         </div>
       </div>

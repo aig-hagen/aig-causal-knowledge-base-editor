@@ -30,7 +30,7 @@ const cases: [string[], string][] = [
   [['z'], ''],
 ]
 
-test.for(cases)(`${getNextName.name}(%o)-> %o`, ([givenNames, expectedNextName]) => {
+test.for(cases)(`${getNextName.name}(%o)-> %s`, ([givenNames, expectedNextName]) => {
   const nextName = getNextName(givenNames)
   expect(nextName).toBe(expectedNextName)
 })

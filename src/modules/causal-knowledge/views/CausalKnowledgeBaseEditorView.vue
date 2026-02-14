@@ -36,12 +36,12 @@ import {
   SEQUENCE_EXPLANATION_TAB,
   type Tab,
 } from '../tabs'
-import type { SequenceExplanationReply } from '../composables/useEvaluationRequest'
+import type { SequenceExplanations } from '../sequenceExplanation'
 
 const knowledgeBase = useKnowledgeBase()
 const observations = ref<Literal[]>([])
 const assumptions = ref<Literal[]>([])
-const sequenceExplanations = ref<SequenceExplanationReply | undefined>(undefined)
+const sequenceExplanations = ref<SequenceExplanations | undefined>(undefined)
 
 const activeTab = ref<Tab>(CAUSAL_MODAL_TAB)
 

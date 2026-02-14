@@ -17,20 +17,14 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { getDisplayName, useKnowledgeBase } from '@/modules/causal-knowledge/stores/knowledgeBase'
+import { useKnowledgeBase } from '@/modules/causal-knowledge/stores/knowledgeBase'
 import { computed, watchEffect } from 'vue'
 import ArgumentationFrameworkEditor from '@/modules/argumentation/components/ArgumentationFrameworkEditor.vue'
 import { type Literal } from '@/modules/causal-knowledge/composables/useEvaluationRequestPayload'
 import { useArgumentionFrameworkRequest } from '@/modules/causal-knowledge/composables/useEvaluationRequest'
 import EvaluationBlockerText from '@/modules/causal-knowledge/components/EvaluationBlockerText.vue'
-import {
-  addArgument,
-  addAttack,
-  createArgumentationFramework,
-  hasArgument,
-  type Argument,
-} from '@/modules/argumentation/argumentationFramework'
 import { layout } from '@/modules/argumentation/layout'
+import { argumentationFrameworkFromCausalArguments } from '../argumentation'
 
 const knowledgeBase = useKnowledgeBase()
 
@@ -39,8 +33,6 @@ const { isActive, observations, assumptions } = defineProps<{
   observations: Literal[]
   assumptions: Literal[]
 }>()
-
-const atoms = computed(() => [...knowledgeBase.atoms.values()])
 
 const { evaluationBlocker, evaluate, isEvaluating, evaluationError, evaluationResult } =
   useArgumentionFrameworkRequest(
@@ -72,55 +64,14 @@ const argumentationFramework = computed(() => {
   if (evaluationResult.value === null) {
     return null
   }
-  const argumentationFrameworkReply = evaluationResult.value
-  const argumentationFramework = createArgumentationFramework()
-  for (const attack of argumentationFrameworkReply.attacks) {
-    const { attacker: attackerId, attacked: attackedId } = attack
-    if (!hasArgument(argumentationFramework, attackerId)) {
-      const attackerArgument: Argument = {
-        id: attackerId,
-        name: getReadableArgument(attackerId),
-        graphicalData: {
-          shape: 'rectangle',
-          position: {
-            x: 0,
-            y: 0,
-          },
-        },
-      }
-      addArgument(argumentationFramework, attackerArgument)
-    }
-    if (!hasArgument(argumentationFramework, attackedId)) {
-      const attackedArgument: Argument = {
-        id: attackedId,
-        name: getReadableArgument(attackedId),
-        graphicalData: {
-          shape: 'rectangle',
-          position: {
-            x: 0,
-            y: 0,
-          },
-        },
-      }
-      addArgument(argumentationFramework, attackedArgument)
-    }
-    addAttack(argumentationFramework, attackerId, attackedId)
-  }
+  const attacks = evaluationResult.value.attacks
+  const argumentationFramework = argumentationFrameworkFromCausalArguments(
+    attacks,
+    knowledgeBase.atoms,
+  )
   layout(argumentationFramework)
   return argumentationFramework
 })
-
-function getReadableArgument(argumentId: string): string {
-  // TODO (https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/399) check if this always works out as expected
-  let argumentName = argumentId
-  for (const atom of atoms.value) {
-    argumentName = argumentName.replace(
-      new RegExp(atom.id.toString(), 'g'),
-      getDisplayName(atom, false),
-    )
-  }
-  return argumentName
-}
 </script>
 
 <template>

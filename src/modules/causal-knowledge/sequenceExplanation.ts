@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import type { Atom, Connection, Id } from '@/modules/causal-knowledge/graphicalCausalKnowledgeBase'
+import type { ArgumentationFramework } from '../argumentation/argumentationFramework'
+import type { DialectialSequenceExplanationDTO } from '../sequence-explanation/DialectialSequenceExplanationDTO'
 
-export interface KnowledgeBase {
-  perIdAtoms: Map<Id, Atom>[]
-  perIdOperators: Map<Id, Atom>[]
-  perSourceIdPerTargetIdConnections: Map<Id, Map<Id, Connection>>
+export interface SequenceExplanations {
+  argumentationFramework: ArgumentationFramework
+  explanations: DialectialSequenceExplanationDTO[]
 }

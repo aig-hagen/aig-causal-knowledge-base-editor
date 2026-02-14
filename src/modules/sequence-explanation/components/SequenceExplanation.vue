@@ -29,7 +29,6 @@ import { onMounted, ref, useTemplateRef } from 'vue'
 import * as Colors from '@/modules/common/colors'
 import { useMutationObserver } from '@vueuse/core'
 import type { DialectialSequenceExplanationDTO } from '@/modules/sequence-explanation/DialectialSequenceExplanationDTO'
-import type { AttackDTO } from '@/modules/sequence-explanation/composables/useSequenceExplanationRequest'
 import {
   addEdge,
   addNode,
@@ -38,11 +37,15 @@ import {
   hasEdge,
   hasNode,
 } from '@/modules/graph/graph'
+import {
+  getArgument,
+  getAttacks,
+  type ArgumentationFramework,
+} from '@/modules/argumentation/argumentationFramework'
 
-const { explanation, attacks, getReadableArgument } = defineProps<{
+const { explanation, argumentationFramework } = defineProps<{
   explanation: DialectialSequenceExplanationDTO
-  attacks: AttackDTO[]
-  getReadableArgument(argument: string): string
+  argumentationFramework: ArgumentationFramework
 }>()
 
 const ARGUMENT_WIDTH_IN_PX = 174
@@ -162,7 +165,7 @@ function drawExplanation(graphInstance: GraphComponent) {
       addNode(directedGraph, argument)
     }
   }
-  for (const { attacker, attacked } of attacks) {
+  for (const [attacker, attacked] of getAttacks(argumentationFramework)) {
     const atteckerInNodes = hasNode(directedGraph, attacker)
     if (!atteckerInNodes) {
       continue
@@ -244,7 +247,8 @@ function drawExplanation(graphInstance: GraphComponent) {
       nodes.push({
         id: nodeId,
         props: createArgumentProps(),
-        label: getReadableArgument(argument),
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        label: getArgument(argumentationFramework, argument)!.name,
         x: columnIdx * (ARGUMENT_WIDTH_IN_PX + X_SPACING) + X_OFFSET,
         y: rowIdx * (ARGUMENT_HEIGHT_IN_PX + Y_SPACING) + Y_OFFSET,
         color: getArgumentColor(isSupporters),
