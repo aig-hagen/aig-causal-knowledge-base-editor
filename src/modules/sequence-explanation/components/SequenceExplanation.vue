@@ -196,7 +196,9 @@ function drawExplanation(graphInstance: GraphComponent) {
       column.push(argument)
     }
   }
-  // Iterate to avoid some nodes overlapping links
+  // This avoids nodes overlaping horizonatal links.
+  // This was the most notable issue until now with sequence explanations.
+  // NOTE More elaborate layouting dealing with even more problematic layouting cases would be nice but is out of scope.
   for (let rowIdx = 0; ; rowIdx++) {
     let noMoreRows = true
     for (const column of columns) {
