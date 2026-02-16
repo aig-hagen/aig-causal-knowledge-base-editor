@@ -1185,7 +1185,6 @@ const graphComponentId = 'g' + crypto.randomUUID()
         </div>
       </div>
     </div>
-    <!-- TODO an orange overlay is to gaudy -->
     <div
       class="overlay"
       v-if="loadingData"

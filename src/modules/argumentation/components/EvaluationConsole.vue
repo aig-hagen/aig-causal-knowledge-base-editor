@@ -146,7 +146,6 @@ watchEffect(() => {
         </form>
       </div>
     </div>
-    <!-- TODO Check if one or many .columns are needed. -->
     <div class="columns">
       <div class="column is-full">
         <article v-if="isEvaluating" class="message">
