@@ -20,10 +20,14 @@
 import { computed, ref, watch } from 'vue'
 import SequenceExplanation from '@/modules/sequence-explanation/components/SequenceExplanation.vue'
 import type { SequenceExplanations } from '../sequenceExplanation'
+import type { CausalArgument } from '../causalArgument'
+import type { KnowledgeBase } from '../stores/knowledgeBase'
+import CausalArgumentDescription from './CausalArgumentDescription.vue'
 
 const { isActive, sequenceExplanations } = defineProps<{
   isActive: boolean
   sequenceExplanations?: SequenceExplanations
+  knowledgeBase: KnowledgeBase
 }>()
 
 const explanations = computed(() => {
@@ -79,6 +83,11 @@ watch(selectedExplanation, () => {
       :key="selectedExplanationKey"
       :argumentationFramework="sequenceExplanations.argumentationFramework"
       :explanation="selectedExplanation"
+    >
+      <template #argumentMenu="{ argument }"
+        ><CausalArgumentDescription
+          :argument="argument as CausalArgument"
+          :atoms="knowledgeBase.atoms" /></template
     ></SequenceExplanation>
   </div>
 </template>

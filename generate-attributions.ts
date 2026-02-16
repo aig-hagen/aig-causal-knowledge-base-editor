@@ -63,7 +63,7 @@ async function attributionsForNonNpmPackages(): Promise<Attribution[]> {
     },
     {
       name: 'Argumentation Framework eXplanation, Reasoning, and AnalYsis',
-      version: GRAPH_COMPONENT_VERSION,
+      version: XAI_CA_VERSION,
       license: 'MIT',
       repository: 'https://github.com/xai-ca/xray',
       publisher: 'University of Illinois Urbana-Champaign',

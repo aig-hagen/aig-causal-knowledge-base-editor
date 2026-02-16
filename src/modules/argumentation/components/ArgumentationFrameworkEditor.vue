@@ -57,10 +57,43 @@ import {
   ARGUMENT_WIDTH_IN_PX,
 } from '@/modules/argumentation/consts'
 
-const { argumentationFramework, readonly } = defineProps<{
+interface NodeType {
+  name: string
+  color: string
+}
+
+const COLOR_ATTACK = Colors.LINK_BLACK
+const COLOR_ARGUMENT = Colors.NODE_BLUE
+const COLOR_HIGHLIGHT_SELECTED = Colors.HIGHLIGHT_BLUE
+
+const LABEL_EDITABLE = false
+
+const DEFAULT_NODE_TYPES = [
+  {
+    name: 'Argument',
+    color: COLOR_ARGUMENT,
+  },
+]
+
+const {
+  argumentationFramework,
+  readonly,
+  nodeColorFn = () => undefined,
+  hideLegend,
+  disableSelection,
+  nodeTypes,
+} = defineProps<{
   argumentationFramework: ArgumentationFramework<Argument>
   readonly?: boolean
+  nodeColorFn?(argumentId: ArgumentId): string | undefined
+  hideLegend?: boolean
+  disableSelection?: boolean
+  nodeTypes?: NodeType[]
 }>()
+
+function getNodeColorForArgument(argumentId: ArgumentId) {
+  return nodeColorFn(argumentId) ?? COLOR_ARGUMENT
+}
 
 // XXX After initially setting whether the argumentation framework is editable, changing the related prop will have no effect.
 // It could be implemented but is currently not needed.
@@ -138,12 +171,6 @@ function createArgumentProps(shape: Shape): NodeProps {
       }
   }
 }
-
-const COLOR_ATTACK = Colors.LINK_BLACK
-const COLOR_ARGUMENT = Colors.NODE_BLUE
-const COLOR_HIGHLIGHT_SELECTED = Colors.HIGHLIGHT_BLUE
-
-const LABEL_EDITABLE = false
 
 const graphInstanceRef = ref<GraphComponent | null>(null)
 
@@ -234,7 +261,7 @@ function createInitialGraph(graphInstance: GraphComponent) {
       label: argument.name,
       x: argument.graphicalData.position.x,
       y: argument.graphicalData.position.y,
-      color: COLOR_ARGUMENT,
+      color: getNodeColorForArgument(argument.id),
     }
   })
   const links = getAttacks(argumentationFramework).map(([attacker, attacked]) => {
@@ -263,12 +290,16 @@ function createInitialGraph(graphInstance: GraphComponent) {
     addToMappedIds(internalId, publicId)
   }
   const margin = ARGUMENT_HEIGHT_IN_PX
-  graphInstance.centerView({
-    marginTop: margin,
-    marginRight: margin,
-    marginBottom: margin,
-    marginLeft: margin,
-  })
+  graphInstance.centerView(
+    {
+      marginTop: margin,
+      marginRight: margin,
+      marginBottom: margin,
+      marginLeft: margin,
+    },
+    undefined,
+    1,
+  )
 }
 
 function onNodeCreated(event: CustomEvent<NodeCreatedDetail>) {
@@ -304,7 +335,7 @@ function onNodeCreated(event: CustomEvent<NodeCreatedDetail>) {
   void nextTick(() => {
     const graphInstance = ensureGraphInstance()
     graphInstance.setLabel(argument.name, internalId)
-    graphInstance.setColor(COLOR_ARGUMENT, internalId)
+    graphInstance.setColor(getNodeColorForArgument(argument.id), internalId)
   })
 }
 
@@ -362,6 +393,9 @@ function onLinkDeleted(event: CustomEvent<LinkDeletedDetail>) {
 }
 
 function onNodeClicked(event: CustomEvent<NodeClickedDetail>) {
+  if (disableSelection) {
+    return
+  }
   const detail = event.detail
   if (detail.button !== LEFT_MOUSE_BUTTON) return
   const internalId = detail.node.id
@@ -456,6 +490,12 @@ function updatePositionsInArgumentationFramework() {
   }
 }
 
+watchEffect(() => {
+  if (disableSelection) {
+    selectArgument(null)
+  }
+})
+
 // IDs starting with numbers break the graph component code
 // because they are used without escaping in CSS selectors
 const graphComponentId = 'g' + crypto.randomUUID()
@@ -467,25 +507,15 @@ const graphComponentId = 'g' + crypto.randomUUID()
     ref="graph-component"
     :id="graphComponentId"
   ></graph-component>
-  <div class="menu menu-left">
+  <div v-if="!hideLegend" class="menu menu-left">
     <div class="node-selection p-2">
-      <div class="type p-2">
-        <div class="node-type-legend" :style="{ backgroundColor: COLOR_ARGUMENT }"></div>
-        Argument
-      </div>
-      <div class="type p-2">
-        <div
-          class="node-type-legend"
-          :style="{
-            background: COLOR_ARGUMENT,
-            // Generated with https://css-tricks.com/more-control-over-css-borders-with-background-image/
-            backgroundImage: `repeating-linear-gradient(0deg, ${COLOR_HIGHLIGHT_SELECTED}, ${COLOR_HIGHLIGHT_SELECTED} 5px, transparent 5px, transparent 8px, ${COLOR_HIGHLIGHT_SELECTED} 8px), repeating-linear-gradient(90deg, ${COLOR_HIGHLIGHT_SELECTED}, ${COLOR_HIGHLIGHT_SELECTED} 5px, transparent 5px, transparent 8px, ${COLOR_HIGHLIGHT_SELECTED} 8px), repeating-linear-gradient(180deg, ${COLOR_HIGHLIGHT_SELECTED}, ${COLOR_HIGHLIGHT_SELECTED} 5px, transparent 5px, transparent 8px, ${COLOR_HIGHLIGHT_SELECTED} 8px), repeating-linear-gradient(270deg, ${COLOR_HIGHLIGHT_SELECTED}, ${COLOR_HIGHLIGHT_SELECTED} 5px, transparent 5px, transparent 8px, ${COLOR_HIGHLIGHT_SELECTED} 8px)`,
-            backgroundSize: `3px 100%, 100% 3px, 3px 100% , 100% 3px`,
-            backgroundPosition: '0 0, 0 0, 100% 0, 0 100%',
-            backgroundRepeat: 'no-repeat',
-          }"
-        ></div>
-        Selected Argument
+      <div
+        v-for="nodeType of nodeTypes ?? DEFAULT_NODE_TYPES"
+        :key="nodeType.name"
+        class="type p-2"
+      >
+        <div class="node-type-legend" :style="{ backgroundColor: nodeType.color }"></div>
+        {{ nodeType.name }}
       </div>
       <div class="type p-2">
         <div class="link-type-legend" :style="{ color: COLOR_ATTACK }">&#8594;</div>

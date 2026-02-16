@@ -17,17 +17,8 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import {
-  NodeShape,
-  SideType,
-  type GraphComponent,
-  type jsonLink,
-  type jsonNode,
-  type NodeProps,
-} from '@/modules/common/graphComponentTypes'
-import { onMounted, ref, useTemplateRef } from 'vue'
+import { computed } from 'vue'
 import * as Colors from '@/modules/common/colors'
-import { useMutationObserver } from '@vueuse/core'
 import type { DialectialSequenceExplanationDTO } from '@/modules/sequence-explanation/DialectialSequenceExplanationDTO'
 import {
   addEdge,
@@ -38,37 +29,28 @@ import {
   hasNode,
 } from '@/modules/graph/graph'
 import {
+  addArgument,
+  addAttack,
+  createArgumentationFramework,
   getArgument,
   getAttacks,
   type Argument,
   type ArgumentationFramework,
+  type ArgumentId,
 } from '@/modules/argumentation/argumentationFramework'
+import ArgumentationFrameworkEditor from '@/modules/argumentation/components/ArgumentationFrameworkEditor.vue'
 
 const { explanation, argumentationFramework } = defineProps<{
   explanation: DialectialSequenceExplanationDTO
   argumentationFramework: ArgumentationFramework<Argument>
 }>()
 
-const ARGUMENT_WIDTH_IN_PX = 174
-const ARGUMENT_HEIGHT_IN_PX = 56
+const supporters = computed(() => {
+  return new Set(explanation.supporters.flatMap((supporters) => supporters))
+})
 
-const Y_OFFSET = ARGUMENT_HEIGHT_IN_PX * 1.5
-const X_OFFSET = Y_OFFSET
-
-const Y_SPACING = 64
-const X_SPACING = Y_SPACING
-
-function createArgumentProps(): NodeProps {
-  return {
-    shape: NodeShape.RECTANGLE,
-    width: ARGUMENT_WIDTH_IN_PX,
-    height: ARGUMENT_HEIGHT_IN_PX,
-    cornerRadius: 4,
-    // The generall direction is from left to right.
-    // Most edges start at the right side of the left node and end on the left side of the right node.
-    // Therefore reflecitve edges should also start on the right side of nodes.
-    reflexiveEdgeStart: SideType.RIGHT,
-  }
+function nodeColorFn(argumentId: ArgumentId) {
+  return getArgumentColor(supporters.value.has(argumentId))
 }
 
 function getArgumentColor(isSupport: boolean) {
@@ -82,78 +64,7 @@ function getArgumentColor(isSupport: boolean) {
   }
 }
 
-const graphComponentElementRef = useTemplateRef<HTMLElement>('graph-component')
-const graphInstanceRef = ref<GraphComponent | null>(null)
-
-onMounted(() => {
-  const graphComponentElement = graphComponentElementRef.value
-  if (graphComponentElement === null) {
-    throw new Error('Graph component element not available.')
-  }
-
-  if (graphComponentElement.childNodes.length === 0) {
-    throw new Error('Graph component element empty.')
-  }
-
-  const graphHost = graphComponentElement.getElementsByClassName(
-    'graph-controller__graph-host',
-  )[0] as HTMLElement
-
-  function isInitialised() {
-    return !graphHost.classList.contains('uninitialised')
-  }
-
-  function initGraphInstance(graphComponentElement: HTMLElement) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const graphInstance = (graphComponentElement as any)._instance.exposed as GraphComponent
-    graphInstanceRef.value = graphInstance
-    graphInstance.toggleNodePhysics(false)
-    graphInstance.toggleZoom(true)
-    graphInstance.setDefaults({ nodeAutoGrowToLabelSize: false, nodeProps: createArgumentProps() })
-    drawExplanation(graphInstance)
-    graphInstance.setEditability(
-      {
-        fixedPosition: {
-          x: false,
-          y: false,
-        },
-        deletable: false,
-        labelEditable: false,
-        allowIncomingLinks: false,
-        allowOutgoingLinks: false,
-      },
-      undefined,
-    )
-    const margin = ARGUMENT_HEIGHT_IN_PX
-    graphInstance.centerView({
-      marginTop: margin,
-      marginRight: margin,
-      marginBottom: margin,
-      marginLeft: margin,
-    })
-  }
-
-  if (isInitialised()) {
-    initGraphInstance(graphComponentElement)
-  }
-
-  const stopObserver = useMutationObserver(
-    graphHost,
-    (mutations) => {
-      for (const mutation of mutations) {
-        if (mutation.attributeName === 'class') {
-          if (isInitialised()) {
-            initGraphInstance(graphComponentElement)
-            stopObserver.stop()
-          }
-        }
-      }
-    },
-    { attributes: true, attributeFilter: ['class'] },
-  )
-})
-
-function drawExplanation(graphInstance: GraphComponent) {
+const sequenceExplanationGraph = computed(() => {
   // Create directed graph for lookup
   const directedGraph = createDirectedGraph<string, string>((argumentId) => argumentId)
   for (const [...defeated] of explanation.defeated) {
@@ -171,8 +82,8 @@ function drawExplanation(graphInstance: GraphComponent) {
     if (!atteckerInNodes) {
       continue
     }
-    const atteckedInNodes = hasNode(directedGraph, attacked)
-    if (!atteckedInNodes) {
+    const attackedInNodes = hasNode(directedGraph, attacked)
+    if (!attackedInNodes) {
       continue
     }
     addEdge(directedGraph, attacker, attacked)
@@ -237,47 +148,68 @@ function drawExplanation(graphInstance: GraphComponent) {
     }
   }
 
-  // Create and pass graph to graph component
-  const nodes: jsonNode[] = []
+  const layoutedArgumentationFramework = createArgumentationFramework()
   columns.forEach((column, columnIdx) => {
-    const isSupporters = columnIdx % 2 === 0
     for (let rowIdx = 0; rowIdx < column.length; rowIdx++) {
-      const argument = column[rowIdx]
-      if (argument === undefined) {
+      const argumentId = column[rowIdx]
+      if (argumentId === undefined) {
         continue
       }
-      const nodeId = argument
-      nodes.push({
-        id: nodeId,
-        props: createArgumentProps(),
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        label: getArgument(argumentationFramework, argument)!.name,
-        x: columnIdx * (ARGUMENT_WIDTH_IN_PX + X_SPACING) + X_OFFSET,
-        y: rowIdx * (ARGUMENT_HEIGHT_IN_PX + Y_SPACING) + Y_OFFSET,
-        color: getArgumentColor(isSupporters),
-      })
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const originalArgument = getArgument(argumentationFramework, argumentId)!
+      const argument: Argument = {
+        ...originalArgument,
+        graphicalData: {
+          shape: 'rectangle',
+          position: {
+            x: columnIdx * (ARGUMENT_WIDTH_IN_PX + X_SPACING) + X_OFFSET,
+            y: rowIdx * (ARGUMENT_HEIGHT_IN_PX + Y_SPACING) + Y_OFFSET,
+          },
+        },
+      }
+      addArgument(layoutedArgumentationFramework, argument)
     }
   })
-  const links: jsonLink[] = []
-  for (const [attacker, attacked] of getEdges(directedGraph)) {
-    links.push({
-      sourceId: attacker,
-      targetId: attacked,
-    })
-  }
-  const graph = { nodes, links }
-  graphInstance.setGraph(graph)
-}
 
-// IDs starting with numbers break the graph component code
-// because they are used without escaping in CSS selectors
-const graphComponentId = 'g' + crypto.randomUUID()
+  for (const [attacker, attacked] of getEdges(directedGraph)) {
+    addAttack(layoutedArgumentationFramework, attacker, attacked)
+  }
+  return layoutedArgumentationFramework
+})
+
+const ARGUMENT_WIDTH_IN_PX = 174
+const ARGUMENT_HEIGHT_IN_PX = 56
+
+const Y_OFFSET = ARGUMENT_HEIGHT_IN_PX * 1.5
+const X_OFFSET = Y_OFFSET
+
+const Y_SPACING = 64
+const X_SPACING = Y_SPACING
+
+const NODE_TYPES = [
+  {
+    name: 'Supporter',
+    color: getArgumentColor(true),
+  },
+  {
+    name: 'Defeated',
+    color: getArgumentColor(false),
+  },
+]
 </script>
 
 <template>
-  <div class="sequence-explantion">
-    <graph-component ref="graph-component" :id="graphComponentId"></graph-component>
-  </div>
+  <ArgumentationFrameworkEditor
+    :argumentationFramework="sequenceExplanationGraph"
+    :readonly="true"
+    :disableSelection="!$slots.argumentMenu"
+    :nodeColorFn="nodeColorFn"
+    :nodeTypes="NODE_TYPES"
+  >
+    <template v-if="$slots.argumentMenu" #argumentMenu="slotProps">
+      <slot name="argumentMenu" v-bind="slotProps" />
+    </template>
+  </ArgumentationFrameworkEditor>
 </template>
 
 <style scoped></style>
