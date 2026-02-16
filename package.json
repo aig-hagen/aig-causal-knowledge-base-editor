@@ -36,7 +36,7 @@
     "@hpcc-js/wasm-graphviz": "1.21.0",
     "@vueform/multiselect": "2.6.11",
     "@vueuse/core": "14.2.1",
-    "ajv": "8.17.1",
+    "ajv": "8.18.0",
     "bulma": "1.0.4",
     "file-saver": "2.0.5",
     "pinia": "3.0.4",
