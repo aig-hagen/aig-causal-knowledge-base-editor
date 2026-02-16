@@ -28,10 +28,17 @@ import {
 } from '@/modules/argumentation/argumentationFramework'
 import { useSequenceExplanationRequest } from '@/modules/sequence-explanation/composables/useSequenceExplanationRequest'
 import EvaluationBlockerText from '@/modules/argumentation/components/EvaluationBlockerText.vue'
-import SequenceExplanationText from '@/modules/sequence-explanation/components/SequenceExplanationText.vue'
+import type { DialectialSequenceExplanationDTO } from '@/modules/sequence-explanation/DialectialSequenceExplanationDTO'
+import { SEQUENCE_EXPLANATION_TAB, type Tab } from '../tabs'
 
 const { argumentationFramework } = defineProps<{
   argumentationFramework: ArgumentationFramework<Argument>
+  activeTab: Tab
+}>()
+
+const emit = defineEmits<{
+  'update:sequenceExplanations': [sequenceExplanations?: DialectialSequenceExplanationDTO[]]
+  'update:activeTab': [activeTab: Tab]
 }>()
 
 function getDisplayName(argument: Argument): string {
@@ -69,6 +76,22 @@ const {
   evaluationError,
   evaluationResult,
 } = useSequenceExplanationRequest(argumentationFramework, argumentsToShowConclusionFor)
+
+const sequenceExplanations = computed<DialectialSequenceExplanationDTO[] | undefined>(() => {
+  if (evaluationResult.value === null) {
+    return undefined
+  }
+
+  const explanations = Object.values(
+    evaluationResult.value.perArgumentSequenceExplanations,
+  ).flatMap((explanations) => explanations)
+
+  return explanations
+})
+
+watchEffect(() => {
+  emit('update:sequenceExplanations', sequenceExplanations.value)
+})
 </script>
 
 <template>
@@ -139,12 +162,16 @@ const {
             {{ evaluationError }}
           </div>
         </article>
-        <article v-if="evaluationResult !== null" class="message is-dark">
+        <article
+          v-if="evaluationResult !== null && activeTab !== SEQUENCE_EXPLANATION_TAB"
+          class="message is-link"
+        >
           <div class="message-body is-size-6">
-            <SequenceExplanationText
-              :argumentation-framework="argumentationFramework"
-              :sequence-explanation-result="evaluationResult"
-            />
+            Navigate to the
+            <a @click="emit('update:activeTab', SEQUENCE_EXPLANATION_TAB)"
+              >sequence explanation tab</a
+            >
+            to explore the sequence explanations.
           </div>
         </article>
       </div>

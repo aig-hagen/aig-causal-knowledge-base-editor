@@ -17,29 +17,39 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { createArgumentationFramework } from '@/modules/argumentation/argumentationFramework'
+import {
+  createArgumentationFramework,
+  type Argument,
+  type ArgumentationFramework,
+} from '@/modules/argumentation/argumentationFramework'
 import ArgumentationFrameworkEditor from '@/modules/argumentation/components/ArgumentationFrameworkEditor.vue'
 import EvaluationConsole from '@/modules/argumentation/components/EvaluationConsole.vue'
 import EditorLayout from '@/modules/causal-knowledge/components/EditorLayout.vue'
 import EditorNavbar, { type Dataset } from '@/modules/causal-knowledge/components/EditorNavbar.vue'
+import SequenceExplanationTab from '@/modules/argumentation/components/SequenceExplanationTab.vue'
 import TheNotifications from '@/modules/common/components/TheNotifications.vue'
-import { ref, useTemplateRef } from 'vue'
+import { computed, ref, useTemplateRef } from 'vue'
 import {
   deserializeFromDtoString,
   serializeToDto,
 } from '@/modules/argumentation/serialization/ArgumentationFrameworkDTO'
 import { useNotifications } from '@/modules/common/stores/notifications'
 import datasets from '@/modules/argumentation/examples'
+import type { DialectialSequenceExplanationDTO } from '@/modules/sequence-explanation/DialectialSequenceExplanationDTO'
+import { ARGUMENTATION_GRAPH_TAB, SEQUENCE_EXPLANATION_TAB, type Tab } from '../tabs'
 const { addSuccessNotification, addErrorNotification, clearNotifications } = useNotifications()
+
+const activeTab = ref<Tab>(ARGUMENTATION_GRAPH_TAB)
+const isSequenceExplnationTabActive = computed(() => activeTab.value === SEQUENCE_EXPLANATION_TAB)
 
 const sampleDatasets: Dataset[] = datasets.map((dataset) => ({
   name: dataset.name,
   load() {
-    argumentationFrameworkKeyCounter.value = argumentationFrameworkKeyCounter.value + 1
-    argumentationFramework.value = dataset.load()
+    setNewArgumentationFramework(dataset.load())
   },
 }))
 const argumentationFramework = ref(createArgumentationFramework())
+const sequenceExplanations = ref<DialectialSequenceExplanationDTO[] | undefined>(undefined)
 
 // Key is used to render editor component and evaluation console from scratch after import.
 const argumentationFrameworkKeyCounter = ref(0)
@@ -69,8 +79,16 @@ async function loadArgumentationFramework(
     return
   }
   addSuccessNotification('Argumentation framework loaded successfully.')
+  setNewArgumentationFramework(result.data)
+}
+
+function setNewArgumentationFramework(newArgumentationFramework: ArgumentationFramework<Argument>) {
+  // Argumentation graph tab needs to be visible before setting argumentation graph,
+  // because the argumentation graph will be centered to view.
+  // HACK This is only a quick fix for it and should better handled directly inside ArgumentationFrameworkEditor.
+  activeTab.value = ARGUMENTATION_GRAPH_TAB
   argumentationFrameworkKeyCounter.value = argumentationFrameworkKeyCounter.value + 1
-  argumentationFramework.value = result.data
+  argumentationFramework.value = newArgumentationFramework
 }
 </script>
 
@@ -92,16 +110,44 @@ async function loadArgumentationFramework(
       />
     </template>
     <template v-slot:editor>
-      <ArgumentationFrameworkEditor
-        ref="editor"
-        :argumentationFramework="argumentationFramework"
-        :key="argumentationFrameworkKeyCounter"
-      ></ArgumentationFrameworkEditor>
+      <div>
+        <div class="tabs mb-0" :style="{ width: 'max-content' }">
+          <ul>
+            <li
+              :class="{ 'is-active': activeTab === ARGUMENTATION_GRAPH_TAB }"
+              @click="activeTab = ARGUMENTATION_GRAPH_TAB"
+            >
+              <a>Argumentation Graph</a>
+            </li>
+            <li
+              :class="{ 'is-active': activeTab === SEQUENCE_EXPLANATION_TAB }"
+              @click="activeTab = SEQUENCE_EXPLANATION_TAB"
+            >
+              <a>Sequence Explanations</a>
+            </li>
+          </ul>
+        </div>
+        <ArgumentationFrameworkEditor
+          v-show="activeTab === ARGUMENTATION_GRAPH_TAB"
+          ref="editor"
+          :argumentationFramework="argumentationFramework"
+          :key="argumentationFrameworkKeyCounter"
+        ></ArgumentationFrameworkEditor>
+        <SequenceExplanationTab
+          v-show="isSequenceExplnationTabActive"
+          :is-active="isSequenceExplnationTabActive"
+          :argumentation-framework="argumentationFramework"
+          :sequenceExplanations="sequenceExplanations"
+        />
+      </div>
     </template>
     <template v-slot:sidebarRight>
       <EvaluationConsole
         :argumentationFramework="argumentationFramework"
         :key="argumentationFrameworkKeyCounter"
+        v-model:active-tab="activeTab"
+        :is-active="isSequenceExplnationTabActive"
+        @update:sequence-explanations="($event) => (sequenceExplanations = $event)"
       ></EvaluationConsole>
     </template>
   </EditorLayout>

@@ -502,81 +502,83 @@ const graphComponentId = 'g' + crypto.randomUUID()
 </script>
 
 <template>
-  <graph-component
-    @click="updateSelection($event.target)"
-    ref="graph-component"
-    :id="graphComponentId"
-  ></graph-component>
-  <div v-if="!hideLegend" class="menu menu-left">
-    <div class="node-selection p-2">
-      <div
-        v-for="nodeType of nodeTypes ?? DEFAULT_NODE_TYPES"
-        :key="nodeType.name"
-        class="type p-2"
-      >
-        <div class="node-type-legend" :style="{ backgroundColor: nodeType.color }"></div>
-        {{ nodeType.name }}
-      </div>
-      <div class="type p-2">
-        <div class="link-type-legend" :style="{ color: COLOR_ATTACK }">&#8594;</div>
-        Attack
+  <div>
+    <graph-component
+      @click="updateSelection($event.target)"
+      ref="graph-component"
+      :id="graphComponentId"
+    ></graph-component>
+    <div v-if="!hideLegend" class="menu menu-left">
+      <div class="node-selection p-2">
+        <div
+          v-for="nodeType of nodeTypes ?? DEFAULT_NODE_TYPES"
+          :key="nodeType.name"
+          class="type p-2"
+        >
+          <div class="node-type-legend" :style="{ backgroundColor: nodeType.color }"></div>
+          {{ nodeType.name }}
+        </div>
+        <div class="type p-2">
+          <div class="link-type-legend" :style="{ color: COLOR_ATTACK }">&#8594;</div>
+          Attack
+        </div>
       </div>
     </div>
-  </div>
-  <div
-    v-if="selectedArgumentRef !== null"
-    class="menu menu-right p-2"
-    @keydown.esc="selectArgument(null)"
-  >
-    <slot name="argumentMenu" :argument="selectedArgumentRef">
-      <div class="title is-5"><h1>Argument properties</h1></div>
+    <div
+      v-if="selectedArgumentRef !== null"
+      class="menu menu-right p-2"
+      @keydown.esc="selectArgument(null)"
+    >
+      <slot name="argumentMenu" :argument="selectedArgumentRef">
+        <div class="title is-5"><h1>Argument properties</h1></div>
 
-      <div class="field">
-        <label class="label">Name</label>
-        <div class="control">
-          <input
-            v-focus
-            :key="selectedArgumentRef.id"
-            :value="selectedArgumentRef.name"
-            :readonly="readonlyStatic"
-            @input="
-              (event) => {
-                const target = (event as InputEvent).target as HTMLInputElement
-                processNameInput(target.value)
-              }
-            "
-            class="input"
-            type="text"
-            placeholder="Name"
-          />
-        </div>
-      </div>
-      <div class="field">
-        <label class="label">Shape</label>
-        <div class="control">
-          <label class="radio is-block">
+        <div class="field">
+          <label class="label">Name</label>
+          <div class="control">
             <input
-              type="radio"
-              name="shape"
-              :disabled="readonlyStatic"
-              :checked="selectedArgumentRef.graphicalData.shape === 'circle'"
-              @change="processShapeInput(selectedArgumentRef, 'circle')"
+              v-focus
+              :key="selectedArgumentRef.id"
+              :value="selectedArgumentRef.name"
+              :readonly="readonlyStatic"
+              @input="
+                (event) => {
+                  const target = (event as InputEvent).target as HTMLInputElement
+                  processNameInput(target.value)
+                }
+              "
+              class="input"
+              type="text"
+              placeholder="Name"
             />
-            Circle
-          </label>
-          <label class="radio is-block">
-            <input
-              type="radio"
-              name="shape"
-              :disabled="readonlyStatic"
-              :checked="selectedArgumentRef.graphicalData.shape === 'rectangle'"
-              @change="processShapeInput(selectedArgumentRef, 'rectangle')"
-            />
-            Rectangle
-          </label>
+          </div>
         </div>
-      </div>
-    </slot>
+        <div class="field">
+          <label class="label">Shape</label>
+          <div class="control">
+            <label class="radio is-block">
+              <input
+                type="radio"
+                name="shape"
+                :disabled="readonlyStatic"
+                :checked="selectedArgumentRef.graphicalData.shape === 'circle'"
+                @change="processShapeInput(selectedArgumentRef, 'circle')"
+              />
+              Circle
+            </label>
+            <label class="radio is-block">
+              <input
+                type="radio"
+                name="shape"
+                :disabled="readonlyStatic"
+                :checked="selectedArgumentRef.graphicalData.shape === 'rectangle'"
+                @change="processShapeInput(selectedArgumentRef, 'rectangle')"
+              />
+              Rectangle
+            </label>
+          </div>
+        </div>
+      </slot>
+    </div>
   </div>
 </template>
 
