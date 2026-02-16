@@ -39,6 +39,11 @@ import {
   type ArgumentId,
 } from '@/modules/argumentation/argumentationFramework'
 import ArgumentationFrameworkEditor from '@/modules/argumentation/components/ArgumentationFrameworkEditor.vue'
+import {
+  ARGUMENT_HEIGHT_IN_PX,
+  ARGUMENT_RADIUS_IN_PX,
+  ARGUMENT_WIDTH_IN_PX,
+} from '@/modules/argumentation/consts'
 
 const { explanation, argumentationFramework } = defineProps<{
   explanation: DialectialSequenceExplanationDTO
@@ -107,6 +112,7 @@ const sequenceExplanationGraph = computed(() => {
       column.push(argument)
     }
   }
+
   // This avoids nodes overlaping horizonatal links.
   // This was the most notable issue until now with sequence explanations.
   // NOTE More elaborate layouting dealing with even more problematic layouting cases would be nice but is out of scope.
@@ -148,7 +154,8 @@ const sequenceExplanationGraph = computed(() => {
     }
   }
 
-  const layoutedArgumentationFramework = createArgumentationFramework()
+  const perColumnIdxWidht: number[] = []
+  const perRowIdxHeight: number[] = []
   columns.forEach((column, columnIdx) => {
     for (let rowIdx = 0; rowIdx < column.length; rowIdx++) {
       const argumentId = column[rowIdx]
@@ -156,18 +163,57 @@ const sequenceExplanationGraph = computed(() => {
         continue
       }
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const originalArgument = getArgument(argumentationFramework, argumentId)!
-      const argument: Argument = {
-        ...originalArgument,
-        graphicalData: {
-          shape: 'rectangle',
-          position: {
-            x: columnIdx * (ARGUMENT_WIDTH_IN_PX + X_SPACING) + X_OFFSET,
-            y: rowIdx * (ARGUMENT_HEIGHT_IN_PX + Y_SPACING) + Y_OFFSET,
-          },
-        },
+      const argument = getArgument(argumentationFramework, argumentId)!
+
+      let width = X_SPACING
+      if (argument.graphicalData.shape === 'rectangle') {
+        width += ARGUMENT_WIDTH_IN_PX
+      } else {
+        width += ARGUMENT_RADIUS_IN_PX * 2
       }
-      addArgument(layoutedArgumentationFramework, argument)
+
+      const maxWidth = perColumnIdxWidht[columnIdx] ?? 0
+      perColumnIdxWidht[columnIdx] = Math.max(maxWidth, width)
+
+      let height = Y_SPACING
+      if (argument.graphicalData.shape === 'rectangle') {
+        height += ARGUMENT_HEIGHT_IN_PX
+      } else {
+        height += ARGUMENT_RADIUS_IN_PX * 2
+      }
+
+      const maxHeight = perRowIdxHeight[rowIdx] ?? 0
+      perRowIdxHeight[rowIdx] = Math.max(maxHeight, height)
+    }
+  })
+
+  const layoutedArgumentationFramework = createArgumentationFramework()
+  let x = 0
+  columns.forEach((column, columnIdx) => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const columnWidht = perColumnIdxWidht[columnIdx]!
+    x += columnWidht
+    let y = 0
+    for (let rowIdx = 0; rowIdx < column.length; rowIdx++) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const rowHeight = perRowIdxHeight[rowIdx]!
+      y += rowHeight
+      const argumentId = column[rowIdx]
+      if (argumentId !== undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const originalArgument = getArgument(argumentationFramework, argumentId)!
+        const argument: Argument = {
+          ...originalArgument,
+          graphicalData: {
+            shape: originalArgument.graphicalData.shape,
+            position: {
+              x: x - columnWidht / 2,
+              y: y - rowHeight / 2,
+            },
+          },
+        }
+        addArgument(layoutedArgumentationFramework, argument)
+      }
     }
   })
 
@@ -176,12 +222,6 @@ const sequenceExplanationGraph = computed(() => {
   }
   return layoutedArgumentationFramework
 })
-
-const ARGUMENT_WIDTH_IN_PX = 174
-const ARGUMENT_HEIGHT_IN_PX = 56
-
-const Y_OFFSET = ARGUMENT_HEIGHT_IN_PX * 1.5
-const X_OFFSET = Y_OFFSET
 
 const Y_SPACING = 64
 const X_SPACING = Y_SPACING
