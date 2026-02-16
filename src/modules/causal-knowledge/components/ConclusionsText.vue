@@ -57,7 +57,7 @@ function getName(atomId: Id, negated: boolean): string {
 
 <template>
   <div>
-    <p>
+    <div>
       Given the assumptions and the causal model,
       <template v-if="observations.length === 0">from no observations </template>
       <template v-else-if="hasOneEntry(observations)"
@@ -132,8 +132,8 @@ function getName(atomId: Id, negated: boolean): string {
           </li>
         </ul>
       </template>
-    </p>
-    <p v-if="showNoFurtherConclusions">For other atoms, no conclusions can be made.</p>
+    </div>
+    <div v-if="showNoFurtherConclusions">For other atoms, no conclusions can be made.</div>
   </div>
 </template>
 

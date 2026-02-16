@@ -48,7 +48,7 @@ function getName(atomId: Id): string {
 
 <template>
   <div>
-    <p>
+    <div>
       The conclusion for
       <span class="is-underlined">{{ getName(props.requesedAtomForExplanation) }}</span>
       <template v-if="significantAtomIds.length === 0">
@@ -79,7 +79,7 @@ function getName(atomId: Id): string {
           </li>
         </ul>
       </template>
-    </p>
+    </div>
   </div>
 </template>
 

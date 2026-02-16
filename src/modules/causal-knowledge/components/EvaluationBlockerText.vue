@@ -62,7 +62,7 @@ const isEmptyKnowlegeBase = computed(() => props.blocker instanceof EmptyKnowleg
 Evaluation is therefore not possible.
 <template>
   <div class="is-size-6">
-    <p>
+    <div>
       <template v-if="connectionIdWithNotTargetedConjunction !== null">
         A conjunction targeting
         <span class="is-underlined">{{
@@ -85,8 +85,8 @@ Evaluation is therefore not possible.
         </template>
       </template>
       <template v-if="isEmptyKnowlegeBase">The causal model has no atoms.</template>
-    </p>
-    <p>Evaluation is therefore not possible.</p>
+    </div>
+    <div>Evaluation is therefore not possible.</div>
   </div>
 </template>
 
