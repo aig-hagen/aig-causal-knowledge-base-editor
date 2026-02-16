@@ -30,7 +30,7 @@ const { argument, atoms } = defineProps<{
   <div class="title is-5"><h1>Argument description</h1></div>
   <template v-if="argument.premises.length === 0">
     <span class="is-underlined">{{ getLiteralName(argument.conclusion, atoms) }} </span> always
-    holds.
+    holds <br />given the assumptions.
   </template>
   <template v-else>
     <template v-if="hasOneEntry(argument.premises)"

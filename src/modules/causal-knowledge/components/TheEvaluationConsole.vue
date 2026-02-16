@@ -326,6 +326,7 @@ const sequenceExplanations = computed<SequenceExplanations | undefined>(() => {
   const argumentationFramework = argumentationFrameworkFromCausalArguments(
     attacks,
     knowledgeBase.atoms,
+    [],
   )
 
   const explanations = Object.values(

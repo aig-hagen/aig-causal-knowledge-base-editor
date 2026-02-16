@@ -59,7 +59,7 @@ export interface AttackDTO {
   attacked: ArgumentSerialized
 }
 
-type ArgumentSerialized = string
+export type ArgumentSerialized = string
 
 export function useSequenceExplanationRequest(
   argumentationFramework: MaybeRef<ArgumentationFramework<Argument>>,

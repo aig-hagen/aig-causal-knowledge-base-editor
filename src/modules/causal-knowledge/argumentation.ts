@@ -24,6 +24,7 @@ import {
   type Argument,
   type ArgumentationFramework,
 } from '../argumentation/argumentationFramework'
+import type { ArgumentSerialized } from '../sequence-explanation/ArgumentSerialized'
 import type { AttackDTO } from '../sequence-explanation/composables/useSequenceExplanationRequest'
 import { getCausalArgumentData, type CausalArgument } from './causalArgument'
 import type { Atom, Id } from './graphicalCausalKnowledgeBase'
@@ -31,13 +32,16 @@ import type { Atom, Id } from './graphicalCausalKnowledgeBase'
 export function argumentationFrameworkFromCausalArguments(
   attacks: AttackDTO[],
   atoms: Map<Id, Atom>,
+  aditionalArguments: ArgumentSerialized[],
 ): ArgumentationFramework<CausalArgument> {
+  const argumentFromAttacks = attacks.flatMap(({ attacker, attacked }) => [attacker, attacked])
+  const allArgumentIds = [...aditionalArguments, ...argumentFromAttacks]
+
   const argumentationFramework = createArgumentationFramework<CausalArgument>()
-  for (const attack of attacks) {
-    const { attacker: attackerId, attacked: attackedId } = attack
-    if (!hasArgument(argumentationFramework, attackerId)) {
+  for (const argumentId of allArgumentIds) {
+    if (!hasArgument(argumentationFramework, argumentId)) {
       const attackerArgument: Argument = {
-        ...getCausalArgumentData(attackerId, atoms),
+        ...getCausalArgumentData(argumentId, atoms),
         graphicalData: {
           shape: 'rectangle',
           position: {
@@ -48,19 +52,9 @@ export function argumentationFrameworkFromCausalArguments(
       }
       addArgument(argumentationFramework, attackerArgument)
     }
-    if (!hasArgument(argumentationFramework, attackedId)) {
-      const attackedArgument: Argument = {
-        ...getCausalArgumentData(attackedId, atoms),
-        graphicalData: {
-          shape: 'rectangle',
-          position: {
-            x: 0,
-            y: 0,
-          },
-        },
-      }
-      addArgument(argumentationFramework, attackedArgument)
-    }
+  }
+
+  for (const { attacker: attackerId, attacked: attackedId } of attacks) {
     addAttack(argumentationFramework, attackerId, attackedId)
   }
   return argumentationFramework

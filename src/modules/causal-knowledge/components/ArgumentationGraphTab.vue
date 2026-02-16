@@ -66,10 +66,12 @@ const argumentationFramework = computed(() => {
   if (evaluationResult.value === null) {
     return null
   }
+  const aditionalArguments = evaluationResult.value.arguments
   const attacks = evaluationResult.value.attacks
   const argumentationFramework = argumentationFrameworkFromCausalArguments(
     attacks,
     knowledgeBase.atoms,
+    aditionalArguments,
   )
   layout(argumentationFramework)
   return argumentationFramework
