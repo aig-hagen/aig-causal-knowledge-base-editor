@@ -64,7 +64,7 @@
     "@vuepress/plugin-markdown-hint": "2.0.0-rc.123",
     "@vuepress/plugin-markdown-image": "2.0.0-rc.123",
     "@vuepress/theme-default": "2.0.0-rc.123",
-    "eslint": "10.0.0",
+    "eslint": "10.0.1",
     "eslint-plugin-playwright": "2.7.0",
     "eslint-plugin-vue": "10.8.0",
     "jiti": "2.6.1",
