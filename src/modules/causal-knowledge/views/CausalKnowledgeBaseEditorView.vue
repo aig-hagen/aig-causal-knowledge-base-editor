@@ -126,8 +126,8 @@ const isSequenceExplnationTabActive = computed(() => activeTab.value === SEQUENC
       />
     </template>
     <template v-slot:editor>
-      <div>
-        <div class="tabs mb-0" :style="{ width: 'max-content' }">
+      <div class="view">
+        <div class="view-tabs tabs mb-0" :style="{ width: 'max-content' }">
           <ul>
             <li
               :class="{ 'is-active': activeTab === CAUSAL_MODAL_TAB }"
@@ -149,24 +149,26 @@ const isSequenceExplnationTabActive = computed(() => activeTab.value === SEQUENC
             </li>
           </ul>
         </div>
-        <EditorTab
-          v-show="activeTab === CAUSAL_MODAL_TAB"
-          ref="editor"
-          :atom-ids-to-highlight="atomIdsToHighlight"
-          :knowledge-base="knowledgeBase"
-        />
-        <ArgumentationGraphTab
-          v-show="isArgumentationGraphTabActive"
-          :is-active="isArgumentationGraphTabActive"
-          :observations="observations"
-          :assumptions="assumptions"
-        />
-        <SequenceExplanationTab
-          v-show="isSequenceExplnationTabActive"
-          :is-active="isSequenceExplnationTabActive"
-          :sequenceExplanations="sequenceExplanations"
-          :knowledge-base="knowledgeBase"
-        />
+        <div class="view-editor">
+          <EditorTab
+            v-show="activeTab === CAUSAL_MODAL_TAB"
+            ref="editor"
+            :atom-ids-to-highlight="atomIdsToHighlight"
+            :knowledge-base="knowledgeBase"
+          />
+          <ArgumentationGraphTab
+            v-show="isArgumentationGraphTabActive"
+            :is-active="isArgumentationGraphTabActive"
+            :observations="observations"
+            :assumptions="assumptions"
+          />
+          <SequenceExplanationTab
+            v-show="isSequenceExplnationTabActive"
+            :is-active="isSequenceExplnationTabActive"
+            :sequenceExplanations="sequenceExplanations"
+            :knowledge-base="knowledgeBase"
+          />
+        </div>
       </div>
     </template>
     <template v-slot:sidebarRight>
@@ -183,4 +185,15 @@ const isSequenceExplnationTabActive = computed(() => activeTab.value === SEQUENC
   <TheNotifications />
 </template>
 
-<style scoped></style>
+<style scoped>
+.view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.view-editor {
+  flex: 1;
+  position: relative;
+}
+</style>

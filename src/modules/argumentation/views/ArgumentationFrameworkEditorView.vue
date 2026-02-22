@@ -110,7 +110,7 @@ function setNewArgumentationFramework(newArgumentationFramework: ArgumentationFr
       />
     </template>
     <template v-slot:editor>
-      <div>
+      <div class="view">
         <div class="tabs mb-0" :style="{ width: 'max-content' }">
           <ul>
             <li
@@ -127,18 +127,20 @@ function setNewArgumentationFramework(newArgumentationFramework: ArgumentationFr
             </li>
           </ul>
         </div>
-        <ArgumentationFrameworkEditor
-          v-show="activeTab === ARGUMENTATION_GRAPH_TAB"
-          ref="editor"
-          :argumentationFramework="argumentationFramework"
-          :key="argumentationFrameworkKeyCounter"
-        ></ArgumentationFrameworkEditor>
-        <SequenceExplanationTab
-          v-show="isSequenceExplnationTabActive"
-          :is-active="isSequenceExplnationTabActive"
-          :argumentation-framework="argumentationFramework"
-          :sequenceExplanations="sequenceExplanations"
-        />
+        <div class="view-editor">
+          <ArgumentationFrameworkEditor
+            v-show="activeTab === ARGUMENTATION_GRAPH_TAB"
+            ref="editor"
+            :argumentationFramework="argumentationFramework"
+            :key="argumentationFrameworkKeyCounter"
+          ></ArgumentationFrameworkEditor>
+          <SequenceExplanationTab
+            v-show="isSequenceExplnationTabActive"
+            :is-active="isSequenceExplnationTabActive"
+            :argumentation-framework="argumentationFramework"
+            :sequenceExplanations="sequenceExplanations"
+          />
+        </div>
       </div>
     </template>
     <template v-slot:sidebarRight>
@@ -154,4 +156,15 @@ function setNewArgumentationFramework(newArgumentationFramework: ArgumentationFr
   <TheNotifications />
 </template>
 
-<style scoped></style>
+<style scoped>
+.view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.view-editor {
+  flex: 1;
+  position: relative;
+}
+</style>
