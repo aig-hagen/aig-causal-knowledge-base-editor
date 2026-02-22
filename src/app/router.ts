@@ -64,7 +64,7 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((to, from) => {
+router.beforeEach((to) => {
   let title = to.meta[TITLE_KEY]
   if (typeof title !== 'string') {
     title = CAUSAL_KNOWLEDGE_BASE_EDITOR_TITLE

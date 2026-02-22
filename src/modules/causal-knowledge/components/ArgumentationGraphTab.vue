@@ -21,12 +21,16 @@ import { useKnowledgeBase } from '@/modules/causal-knowledge/stores/knowledgeBas
 import { computed, watchEffect } from 'vue'
 import ArgumentationFrameworkEditor from '@/modules/argumentation/components/ArgumentationFrameworkEditor.vue'
 import { type Literal } from '@/modules/causal-knowledge/composables/useEvaluationRequestPayload'
-import { useArgumentionFrameworkRequest } from '@/modules/causal-knowledge/composables/useEvaluationRequest'
+import {
+  useArgumentionFrameworkRequest,
+  type ArgumentionFrameworkReply,
+} from '@/modules/causal-knowledge/composables/useEvaluationRequest'
 import EvaluationBlockerText from '@/modules/causal-knowledge/components/EvaluationBlockerText.vue'
 import { layout } from '@/modules/argumentation/layout'
 import { argumentationFrameworkFromCausalArguments } from '../argumentation'
 import CausalArgumentDescription from './CausalArgumentDescription.vue'
 import type { CausalArgument } from '../causalArgument'
+import { computedIfActive } from '@/modules/common/computedIfActive'
 
 const knowledgeBase = useKnowledgeBase()
 
@@ -62,28 +66,39 @@ watchEffect(() => {
   evaluate.value?.()
 })
 
-const argumentationFramework = computed(() => {
-  if (evaluationResult.value === null) {
-    return null
-  }
-  const aditionalArguments = evaluationResult.value.arguments
-  const attacks = evaluationResult.value.attacks
+function createGraphToShow(evaluationResult: ArgumentionFrameworkReply) {
+  const aditionalArguments = evaluationResult.arguments
+  const attacks = evaluationResult.attacks
   const argumentationFramework = argumentationFrameworkFromCausalArguments(
     attacks,
     knowledgeBase.atoms,
     aditionalArguments,
   )
   layout(argumentationFramework)
-  return argumentationFramework
-})
+  return {
+    graph: argumentationFramework,
+    key: crypto.randomUUID(),
+  }
+}
+
+const graphToShow = computedIfActive(
+  () => isActive,
+  () => {
+    if (evaluationResult.value === null) {
+      return null
+    }
+    return createGraphToShow(evaluationResult.value)
+  },
+)
 </script>
 
 <template>
   <div>
-    <div v-if="argumentationFramework !== null">
+    <div v-if="graphToShow !== null">
       <ArgumentationFrameworkEditor
-        :argumentationFramework="argumentationFramework"
+        :argumentationFramework="graphToShow.graph"
         :readonly="true"
+        :key="graphToShow.key"
         ><template #argumentMenu="{ argument }"
           ><CausalArgumentDescription
             :argument="argument as CausalArgument"
