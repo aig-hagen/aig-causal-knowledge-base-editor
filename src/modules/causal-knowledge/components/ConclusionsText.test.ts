@@ -96,9 +96,9 @@ test('renders negated observation', () => {
   })
 
   expect(wrapper.text()).toContain(
-    'Given the assumptions and the causal model, from the observation not a follow no conclusions.',
+    'Given the assumptions and the causal model, from the observation not\xa0a follow no conclusions.',
   )
-  expect(getCleanHtml(wrapper)).toContain(`<span class="is-underlined">not a</span>`)
+  expect(getCleanHtml(wrapper)).toContain(`<span class="is-underlined">not&nbsp;a</span>`)
 })
 
 test('renders multiple observation', () => {
@@ -175,9 +175,9 @@ test('renders multiple conclusion', () => {
   )
   expect(getCleanHtml(wrapper)).toContain(
     `<ul>
-    <li><span><span class="is-underlined">a</span></span></li>
-    <li><span><span class="is-underlined">b</span>.</span></li>
-  </ul>`,
+      <li><span><span class="is-underlined">a</span></span></li>
+      <li><span><span class="is-underlined">b</span>.</span></li>
+    </ul>`,
   )
 })
 
