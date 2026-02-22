@@ -64,13 +64,13 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, from) => {
   let title = to.meta[TITLE_KEY]
   if (typeof title !== 'string') {
     title = CAUSAL_KNOWLEDGE_BASE_EDITOR_TITLE
   }
   document.title = title as string
-  next()
+  return true
 })
 
 export default router
