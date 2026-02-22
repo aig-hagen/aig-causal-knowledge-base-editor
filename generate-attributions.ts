@@ -215,7 +215,7 @@ async function fetchLicense(
     url = `https://raw.githubusercontent.com/lddubeau/saxes/refs/tags/v${version}/LICENSE`
   } else if (packageName.startsWith('sirv@3')) {
     url = `https://raw.githubusercontent.com/lukeed/sirv/refs/tags/v${version}/license`
-  } else if (packageName === 'spdx-license-ids@3.0.22') {
+  } else if (packageName === 'spdx-license-ids@3.0.23') {
     url = 'https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt'
   } else if (packageName === 'stackback@0.0.2') {
     return null
