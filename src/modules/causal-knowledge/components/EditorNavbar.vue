@@ -147,8 +147,8 @@ const routesForMore = router.options.routes.filter(
           alt="Artificial Intelligence Group of the Faculty of Mathematics and Computer Science"
         />
       </div>
-      <div class="navbar-item pt-0">
-        <span class="title is-3 has-text-weight-bold"> {{ title }}</span>
+      <div class="navbar-item">
+        <span class="title is-4 has-text-weight-bold"> {{ title }}</span>
       </div>
 
       <a
@@ -295,7 +295,7 @@ const routesForMore = router.options.routes.filter(
   border-right: 2px solid black;
 }
 
-@media (max-width: 1279px) {
+@media (max-width: 1536px) {
   .navbar {
     border-bottom-right-radius: 0;
     border-right: none;

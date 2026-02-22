@@ -371,7 +371,7 @@ const combinedExplanationsEvaluationBlocker = computed(() => {
 
 <template>
   <div class="evaluation-console p-5">
-    <h3 class="title is-3">Evaluation</h3>
+    <h4 class="title is-4">Evaluation</h4>
     <div class="columns">
       <div class="column is-full">
         <h5 class="title is-5">Inputs</h5>

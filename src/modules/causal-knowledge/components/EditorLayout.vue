@@ -81,7 +81,7 @@ const isSidebarRightActive = computed(() => {
   border-left: 2px solid black;
 }
 
-@media (max-width: 1279px) {
+@media (max-width: 1536px) {
   .editor-layout-navbar {
     position: static;
     grid-column: 1 / span 2;
