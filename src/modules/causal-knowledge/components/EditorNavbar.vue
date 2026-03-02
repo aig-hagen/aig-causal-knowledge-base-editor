@@ -231,7 +231,7 @@ const routesForMore = router.options.routes.filter(
               rel="noopener"
               href="/docs/user-guide.html"
             >
-              User guide &#8599;</a
+              User Guide &#8599;</a
             >
             <hr
               v-if="editorVersion !== undefined || editorCommit !== undefined"
