@@ -51,7 +51,7 @@
     "@types/jsdom": "28.0.1",
     "@types/license-checker": "25.0.6",
     "@types/node": "24.12.2",
-    "@vitejs/plugin-vue": "6.0.5",
+    "@vitejs/plugin-vue": "6.0.6",
     "@vitejs/plugin-vue-jsx": "5.1.5",
     "@vitest/browser": "4.1.4",
     "@vitest/eslint-plugin": "1.6.16",
