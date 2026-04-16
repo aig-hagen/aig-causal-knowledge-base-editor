@@ -18,7 +18,7 @@ const options: InitOpts = {
   start: '.',
   excludePrivatePackages: true,
   onlyAllow:
-    'MIT;BSD-3-Clause;Apache-2.0;ISC;Python-2.0;CC-BY-4.0;BSD-2-Clause;BlueOak-1.0.0;Unlicense;CC0-1.0;CC-BY-3.0;0BSD',
+    'MIT;BSD-3-Clause;Apache-2.0;ISC;Python-2.0;CC-BY-4.0;BSD-2-Clause;BlueOak-1.0.0;Unlicense;CC0-1.0;CC-BY-3.0;0BSD;MPL-2.0',
 }
 checker.init(options, (err, packages) => {
   if (err) {
@@ -183,7 +183,7 @@ async function fetchLicense(
     url = `https://raw.githubusercontent.com/vuejs/devtools-v6/refs/tags/v${version}/LICENSE`
   } else if (packageName.startsWith('@bufbuild/protobuf@')) {
     url = `https://raw.githubusercontent.com/bufbuild/protobuf-es/refs/tags/v${version}/LICENSE`
-  } else if (packageName.startsWith('@esbuild/linux-x64@')) {
+  } else if (packageName.startsWith('@esbuild/linux-')) {
     url = `https://raw.githubusercontent.com/evanw/esbuild/refs/tags/v${version}/LICENSE.md`
   } else if (packageName.startsWith('@inquirer/ansi@')) {
     url = `https://raw.githubusercontent.com/SBoudrias/Inquirer.js/refs/tags/v${version}/LICENSE-MIT`
@@ -191,8 +191,10 @@ async function fetchLicense(
     return null
   } else if (packageName.startsWith('@polka/url@')) {
     url = `https://raw.githubusercontent.com/lukeed/polka/refs/tags/v${version}/license`
-  } else if (packageName.startsWith('@rollup/rollup-linux-x64-')) {
+  } else if (packageName.startsWith('@rollup/rollup-linux-')) {
     url = `https://raw.githubusercontent.com/rollup/rollup/refs/tags/v${version}/LICENSE.md`
+  } else if (packageName.startsWith('@rolldown/binding-linux-')) {
+    url = `https://raw.githubusercontent.com/rolldown/rolldown/refs/tags/v${version}/LICENSE`
   } else if (packageName === 'boolbase@1.0.0') {
     url = `https://raw.githubusercontent.com/fb55/boolbase/refs/heads/master/LICENSE`
   } else if (packageName === 'eastasianwidth@0.2.0') {
@@ -223,7 +225,7 @@ async function fetchLicense(
     return null
   } else if (packageName === 'varint@6.0.0') {
     return null
-  } else if (packageName === 'vitest-browser-vue@2.0.2') {
+  } else if (packageName === 'vitest-browser-vue@2.1.0') {
     return null
   } else {
     throw new Error(`No license file for ${packageName} with ${JSON.stringify(info)}`)
