@@ -102,11 +102,12 @@ function setNewArgumentationFramework(newArgumentationFramework: ArgumentationFr
         :datasets="sampleDatasets"
         sidebarRightName="evaluation console"
         :controlElementNames="{
-          source: 'atom',
-          target: 'port',
-          link: 'relation',
+          source: 'argument',
+          target: 'argument',
+          link: 'attack',
         }"
         v-model:show-sidebar-right="showEvaluationConsole"
+        :show-hints="false"
       />
     </template>
     <template v-slot:editor>
