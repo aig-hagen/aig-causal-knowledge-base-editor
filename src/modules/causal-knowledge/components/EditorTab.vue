@@ -32,6 +32,7 @@ import { useDebounceFn, useMutationObserver } from '@vueuse/core'
 import { computed, nextTick, onMounted, ref, useTemplateRef, watchEffect } from 'vue'
 import * as Colors from '@/modules/common/colors'
 import { vFocus } from '@/modules/common/vFocus'
+import ControlsExplanationTable from '@/modules/causal-knowledge/components/ControlsExplanationTable.vue'
 
 import {
   hasProgrammaticCause,
@@ -48,6 +49,7 @@ import {
   type NodeSizeRect,
 } from '@/modules/common/graphComponentTypes'
 import { LEFT_MOUSE_BUTTON } from '@/modules/common/button'
+import { controlElementNames } from '../controls'
 
 defineExpose({
   getExportedData,
@@ -984,7 +986,15 @@ const graphComponentId = 'g' + crypto.randomUUID()
       ref="graph-component"
       :id="graphComponentId"
     ></graph-component>
-
+    <div class="controls-overlay" v-if="knowledgeBase.atoms.size === 0">
+      <div style="width: fit-content; margin: auto">
+        <ControlsExplanationTable
+          :source-name="controlElementNames.source"
+          :target-name="controlElementNames.target"
+          :link-name="controlElementNames.link"
+        />
+      </div>
+    </div>
     <div class="menu menu-left">
       <div class="node-selection p-2">
         <div class="title is-5 m-0"><h1>Atoms</h1></div>
@@ -1207,6 +1217,18 @@ const graphComponentId = 'g' + crypto.randomUUID()
   width: 100%;
   height: 100%;
   z-index: 1000;
+}
+
+.controls-overlay {
+  pointer-events: none;
+  opacity: 0.5;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
 }
 
 .overlay-content {

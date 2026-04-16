@@ -18,7 +18,7 @@
 -->
 <script setup lang="ts">
 import { computed, ref, useTemplateRef } from 'vue'
-import ControlsExplanation from '@/modules/causal-knowledge/components/ControlsExplanation.vue'
+import ControlsExplanationModal from '@/modules/causal-knowledge/components/ControlsExplanationModal.vue'
 import { hasOneEntry } from '@/modules/common/types'
 import saveAs from 'file-saver'
 import { useRouter } from 'vue-router'
@@ -310,7 +310,7 @@ const burgerMenuItemRef = useTemplateRef('burger')
           v-if="isAbove1024 && doShowHints"
           :reference="docsMenuItemRef"
           :offset-y="128 + 64"
-          >{{ textDocs }}.</EditorNavbarHint
+          >{{ textDocs }}</EditorNavbarHint
         >
         <EditorNavbarBurgerMenuHint
           v-if="isNavbarBurgerActive && !isAbove1024 && doShowHints"
@@ -338,7 +338,7 @@ const burgerMenuItemRef = useTemplateRef('burger')
       </div>
     </div>
   </nav>
-  <ControlsExplanation
+  <ControlsExplanationModal
     v-model:show="isShowControlExplanationModal"
     :source-name="controlElementNames.source"
     :target-name="controlElementNames.target"

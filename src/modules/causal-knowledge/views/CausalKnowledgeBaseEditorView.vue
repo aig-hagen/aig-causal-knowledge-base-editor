@@ -37,6 +37,7 @@ import {
   type Tab,
 } from '../tabs'
 import type { SequenceExplanations } from '../sequenceExplanation'
+import { controlElementNames } from '../controls'
 
 const knowledgeBase = useKnowledgeBase()
 const observations = ref<Literal[]>([])
@@ -117,11 +118,7 @@ const isSequenceExplnationTabActive = computed(() => activeTab.value === SEQUENC
         :load-from-file-data="loadKnowledgeBase"
         :datasets="sampleDatasets"
         sidebarRightName="evaluation console"
-        :controlElementNames="{
-          source: 'atom',
-          target: 'port',
-          link: 'relation',
-        }"
+        :controlElementNames="controlElementNames"
         v-model:show-sidebar-right="showEvaluationConsole"
         :showHints="knowledgeBase.atoms.size === 0"
       />
