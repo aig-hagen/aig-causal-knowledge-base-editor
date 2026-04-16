@@ -22,7 +22,10 @@ import ControlsExplanation from '@/modules/causal-knowledge/components/ControlsE
 import { hasOneEntry } from '@/modules/common/types'
 import saveAs from 'file-saver'
 import { useRouter } from 'vue-router'
-import { NAV_MORE_NAME_KEY, NAV_SHOW_USERGUIDE_KEY } from '@/app/router'
+import { NAV_MORE_NAME_KEY, NAV_SHOW_HINTS, NAV_SHOW_USERGUIDE_KEY } from '@/app/router'
+import EditorNavbarHint from './EditorNavbarHint.vue'
+import { useMediaQuery } from '@vueuse/core'
+import EditorNavbarBurgerMenuHint from './EditorNavbarBurgerMenuHint.vue'
 
 export interface Dataset {
   name: string
@@ -37,6 +40,7 @@ const {
   showSidebarRight,
   sidebarRightName,
   controlElementNames,
+  showHints,
 } = defineProps<{
   title: string
   getExportedData?(): { data: unknown; fileNamePart: string }
@@ -49,7 +53,13 @@ const {
     target: string
     link: string
   }
+  showHints: boolean
 }>()
+
+const isAbove1024 = useMediaQuery('(min-width: 1024px)')
+const textExamples = 'Open one of the examples to get started quickly.'
+const textDocs = 'Find out more about features in the user guide.'
+const textDocsWithConjunction = 'Or find out more about features in the user guide.'
 
 const emit = defineEmits<{
   'update:showSidebarRight': [showSidebarRight: boolean]
@@ -132,14 +142,22 @@ const router = useRouter()
 const showUserGuide = computed(() => {
   return router.currentRoute.value.meta[NAV_SHOW_USERGUIDE_KEY] === true
 })
+const doShowHints = computed(() => {
+  return showHints && router.currentRoute.value.meta[NAV_SHOW_HINTS] === true
+})
 
 const routesForMore = computed(() => {
   return router.options.routes.filter(
     (route) =>
       typeof route.meta?.[NAV_MORE_NAME_KEY] === 'string' &&
       router.currentRoute.value.name !== route.name,
-)
+  )
 })
+
+const examplesMenuItemRef = useTemplateRef('examples')
+const docsMenuItemRef = useTemplateRef('docs')
+const userGuideMenuItemRef = useTemplateRef('userGuide')
+const burgerMenuItemRef = useTemplateRef('burger')
 </script>
 
 <template>
@@ -149,6 +167,7 @@ const routesForMore = computed(() => {
         <img
           src="@/app/logoaig2025_transparent.png"
           alt="Artificial Intelligence Group of the Faculty of Mathematics and Computer Science"
+          width="60px"
         />
       </div>
       <div class="navbar-item">
@@ -156,6 +175,7 @@ const routesForMore = computed(() => {
       </div>
 
       <a
+        ref="burger"
         role="button"
         class="navbar-burger"
         :class="{ 'is-active': isNavbarBurgerActive }"
@@ -169,6 +189,13 @@ const routesForMore = computed(() => {
         <span aria-hidden="true"></span>
         <span aria-hidden="true"></span>
       </a>
+
+      <EditorNavbarHint
+        v-if="doShowHints && !isNavbarBurgerActive && !isAbove1024"
+        :reference="burgerMenuItemRef"
+        :offset-y="64"
+        >{{ textExamples }}<br />{{ textDocsWithConjunction }}</EditorNavbarHint
+      >
     </div>
 
     <div id="navbarEditor" class="navbar-menu" :class="{ 'is-active': isNavbarBurgerActive }">
@@ -194,7 +221,7 @@ const routesForMore = computed(() => {
         </div>
 
         <div class="navbar-item has-dropdown is-hoverable" v-if="datasets.length > 0">
-          <a class="navbar-link">Example</a>
+          <a class="navbar-link"><span ref="examples">Example</span></a>
           <div class="navbar-dropdown">
             <input
               ref="file-input"
@@ -214,6 +241,20 @@ const routesForMore = computed(() => {
             >
           </div>
         </div>
+
+        <EditorNavbarHint
+          v-if="isAbove1024 && doShowHints"
+          :reference="examplesMenuItemRef"
+          :offset-y="128"
+          >{{ textExamples }}</EditorNavbarHint
+        >
+        <EditorNavbarBurgerMenuHint
+          v-if="isNavbarBurgerActive && !isAbove1024 && doShowHints"
+          :reference="examplesMenuItemRef"
+          :offset-x="64"
+          >{{ textExamples }}</EditorNavbarBurgerMenuHint
+        >
+
         <div class="navbar-item has-dropdown is-hoverable" v-if="sidebarRightName !== undefined">
           <a class="navbar-link">View</a>
 
@@ -224,7 +265,7 @@ const routesForMore = computed(() => {
           </div>
         </div>
         <div class="navbar-item has-dropdown is-hoverable">
-          <a class="navbar-link">Docs</a>
+          <a class="navbar-link"><span ref="docs">Docs</span></a>
 
           <div class="navbar-dropdown">
             <a class="navbar-item" @click="isShowControlExplanationModal = true"> Controls </a>
@@ -235,7 +276,7 @@ const routesForMore = computed(() => {
               rel="noopener"
               href="/docs/user-guide.html"
             >
-              User Guide &#8599;</a
+              <span ref="userGuide">User Guide &#8599;</span></a
             >
             <hr
               v-if="editorVersion !== undefined || editorCommit !== undefined"
@@ -265,6 +306,19 @@ const routesForMore = computed(() => {
             </a>
           </div>
         </div>
+        <EditorNavbarHint
+          v-if="isAbove1024 && doShowHints"
+          :reference="docsMenuItemRef"
+          :offset-y="128 + 64"
+          >{{ textDocs }}.</EditorNavbarHint
+        >
+        <EditorNavbarBurgerMenuHint
+          v-if="isNavbarBurgerActive && !isAbove1024 && doShowHints"
+          :reference="userGuideMenuItemRef"
+          :offset-x="64"
+        >
+          {{ textDocs }}</EditorNavbarBurgerMenuHint
+        >
         <div class="navbar-item has-dropdown is-hoverable">
           <a class="navbar-link">More</a>
 
@@ -293,6 +347,12 @@ const routesForMore = computed(() => {
 </template>
 
 <style>
+.navbar-brand,
+.navbar-menu {
+  max-width: 100vw;
+  box-sizing: content-box;
+}
+
 .navbar {
   border-bottom-right-radius: 4px;
   border-bottom: 2px solid black;

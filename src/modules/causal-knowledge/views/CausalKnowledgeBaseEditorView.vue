@@ -123,6 +123,7 @@ const isSequenceExplnationTabActive = computed(() => activeTab.value === SEQUENC
           link: 'relation',
         }"
         v-model:show-sidebar-right="showEvaluationConsole"
+        :showHints="knowledgeBase.atoms.size === 0"
       />
     </template>
     <template v-slot:editor>

@@ -24,6 +24,7 @@ import ThirdPartyLicensesView from '@/modules/third-party-licenses/views/ThirdPa
 const TITLE_KEY = 'title'
 
 export const NAV_SHOW_USERGUIDE_KEY = 'navShowUserGuide'
+export const NAV_SHOW_HINTS = 'navShowHints'
 export const EDITOR_TYPE_CAUSAL = 'causal'
 
 export const NAV_MORE_NAME_KEY = 'navMoreName'
@@ -41,6 +42,7 @@ const router = createRouter({
         [TITLE_KEY]: CAUSAL_KNOWLEDGE_BASE_EDITOR_TITLE,
         [NAV_MORE_NAME_KEY]: CAUSAL_KNOWLEDGE_BASE_EDITOR_TITLE,
         [NAV_SHOW_USERGUIDE_KEY]: true,
+        [NAV_SHOW_HINTS]: true,
       },
     },
     {
