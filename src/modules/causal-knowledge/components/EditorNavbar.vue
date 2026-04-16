@@ -133,9 +133,13 @@ const showUserGuide = computed(() => {
   return router.currentRoute.value.meta[NAV_SHOW_USERGUIDE_KEY] === true
 })
 
-const routesForMore = router.options.routes.filter(
-  (route) => typeof route.meta?.[NAV_MORE_NAME_KEY] === 'string',
+const routesForMore = computed(() => {
+  return router.options.routes.filter(
+    (route) =>
+      typeof route.meta?.[NAV_MORE_NAME_KEY] === 'string' &&
+      router.currentRoute.value.name !== route.name,
 )
+})
 </script>
 
 <template>
