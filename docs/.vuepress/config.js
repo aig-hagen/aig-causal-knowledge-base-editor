@@ -7,6 +7,31 @@ import { redirectPlugin } from '@vuepress/plugin-redirect'
 
 const base = '/docs/'
 
+function rewriteContributorName(name) {
+  if (name === "larsbengel") {
+    return "Lars Bengel"
+  }
+  return name
+}
+
+
+// Plugin for transforming contributor names
+// If someone does not commmit with a full name,
+// but we want to show the full name,
+// the full name can be added using this.
+const contributorTransformPlugin = {
+  name: 'vuepress-plugin-contributor-transform',
+  extendsPage(page) {
+    const gitData = page.data.git
+    if (gitData?.contributors) {
+      gitData.contributors = gitData.contributors.map((contributor) => ({
+        ...contributor,
+        name: rewriteContributorName(contributor.name)
+      }))
+    }
+  },
+}
+
 export default defineUserConfig({
   lang: 'en-US',
   title: 'Causal Knowledge Base Editor',
@@ -40,6 +65,7 @@ export default defineUserConfig({
     }),
     markdownExtPlugin({
       footnote: true,
-    })
+    }),
+    contributorTransformPlugin,
   ],
 })
