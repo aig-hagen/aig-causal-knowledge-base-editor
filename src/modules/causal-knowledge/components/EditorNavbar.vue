@@ -309,7 +309,7 @@ const burgerMenuItemRef = useTemplateRef('burger')
         <EditorNavbarHint
           v-if="isAbove1024 && doShowHints"
           :reference="docsMenuItemRef"
-          :offset-y="128 + 64"
+          :offset-y="224"
           >{{ textDocs }}</EditorNavbarHint
         >
         <EditorNavbarBurgerMenuHint
