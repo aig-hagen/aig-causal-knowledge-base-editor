@@ -4,7 +4,7 @@
     {
       "id": 0,
       "name": "giant-wave",
-      "description": "",
+      "description": "The victim has encountered a giant wave.",
       "assumption": 3,
       "position": {
         "x": 272,
@@ -14,7 +14,7 @@
     {
       "id": 2,
       "name": "strong-current",
-      "description": "",
+      "description": "The victim has encountered a strong current.",
       "assumption": 3,
       "position": {
         "x": 431,
@@ -24,7 +24,7 @@
     {
       "id": 4,
       "name": "jellyfish",
-      "description": "",
+      "description": "The victim has been stung by a jellyfish.",
       "assumption": 3,
       "position": {
         "x": 585,
@@ -34,7 +34,7 @@
     {
       "id": 6,
       "name": "broken-board",
-      "description": "",
+      "description": "The victim's surfboard has been broken.",
       "position": {
         "x": 249,
         "y": 424
@@ -43,7 +43,7 @@
     {
       "id": 8,
       "name": "submersion",
-      "description": "",
+      "description": "The victim has been submerged in water.",
       "position": {
         "x": 397,
         "y": 428
@@ -52,7 +52,7 @@
     {
       "id": 10,
       "name": "cramp",
-      "description": "",
+      "description": "The victim has had a cramp.",
       "position": {
         "x": 575,
         "y": 422
@@ -61,7 +61,7 @@
     {
       "id": 12,
       "name": "drowning",
-      "description": "",
+      "description": "The victim has drowned.",
       "position": {
         "x": 492,
         "y": 588

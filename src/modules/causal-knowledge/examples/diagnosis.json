@@ -4,7 +4,7 @@
     {
       "id": 0,
       "name": "at-risk",
-      "description": "",
+      "description": "The patient has been at risk for respiratory illness.",
       "assumption": 3,
       "position": {
         "x": 320,
@@ -14,7 +14,7 @@
     {
       "id": 2,
       "name": "corona",
-      "description": "",
+      "description": "The patient has been infected by the coronavirus.",
       "assumption": 3,
       "position": {
         "x": 521,
@@ -24,7 +24,7 @@
     {
       "id": 4,
       "name": "influenza",
-      "description": "",
+      "description": "The patient has been infected by the influenza virus.",
       "assumption": 3,
       "position": {
         "x": 782,
@@ -34,7 +34,7 @@
     {
       "id": 6,
       "name": "covid",
-      "description": "",
+      "description": "The patient has developed COVID.",
       "position": {
         "x": 552,
         "y": 639
@@ -43,7 +43,7 @@
     {
       "id": 8,
       "name": "flu",
-      "description": "",
+      "description": "The patient has developed the flu.",
       "position": {
         "x": 742,
         "y": 643
@@ -52,7 +52,7 @@
     {
       "id": 10,
       "name": "fever",
-      "description": "",
+      "description": "The patient has had a fever.",
       "position": {
         "x": 663,
         "y": 881
@@ -61,7 +61,7 @@
     {
       "id": 12,
       "name": "chills",
-      "description": "",
+      "description": "The patient has experienced chills.",
       "position": {
         "x": 618,
         "y": 1076
@@ -70,7 +70,7 @@
     {
       "id": 14,
       "name": "short-of-breath",
-      "description": "",
+      "description": "The patient has been short of breath.",
       "position": {
         "x": 318,
         "y": 1023
