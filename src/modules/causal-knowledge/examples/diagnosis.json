@@ -7,278 +7,278 @@
       "description": "The patient has been at risk for respiratory illness.",
       "assumption": 3,
       "position": {
-        "x": 320,
-        "y": 387
+        "x": 300,
+        "y": 100
       }
     },
     {
-      "id": 2,
+      "id": 1,
       "name": "corona",
       "description": "The patient has been infected by the coronavirus.",
       "assumption": 3,
       "position": {
-        "x": 521,
-        "y": 392
+        "x": 500,
+        "y": 100
       }
     },
     {
-      "id": 4,
+      "id": 2,
       "name": "influenza",
       "description": "The patient has been infected by the influenza virus.",
       "assumption": 3,
       "position": {
-        "x": 782,
-        "y": 385
+        "x": 700,
+        "y": 100
+      }
+    },
+    {
+      "id": 3,
+      "name": "covid",
+      "description": "The patient has developed COVID.",
+      "position": {
+        "x": 500,
+        "y": 300
+      }
+    },
+    {
+      "id": 4,
+      "name": "flu",
+      "description": "The patient has developed the flu.",
+      "position": {
+        "x": 700,
+        "y": 300
+      }
+    },
+    {
+      "id": 5,
+      "name": "fever",
+      "description": "The patient has had a fever.",
+      "position": {
+        "x": 632,
+        "y": 500
       }
     },
     {
       "id": 6,
-      "name": "covid",
-      "description": "The patient has developed COVID.",
-      "position": {
-        "x": 552,
-        "y": 639
-      }
-    },
-    {
-      "id": 8,
-      "name": "flu",
-      "description": "The patient has developed the flu.",
-      "position": {
-        "x": 742,
-        "y": 643
-      }
-    },
-    {
-      "id": 10,
-      "name": "fever",
-      "description": "The patient has had a fever.",
-      "position": {
-        "x": 663,
-        "y": 881
-      }
-    },
-    {
-      "id": 12,
       "name": "chills",
       "description": "The patient has experienced chills.",
       "position": {
-        "x": 618,
-        "y": 1076
+        "x": 600,
+        "y": 700
       }
     },
     {
-      "id": 14,
+      "id": 7,
       "name": "short-of-breath",
       "description": "The patient has been short of breath.",
       "position": {
-        "x": 318,
-        "y": 1023
+        "x": 300,
+        "y": 500
       }
     }
   ],
   "operators": [
     {
-      "id": 1,
+      "id": 8,
       "type": "conjunction",
       "position": {
-        "x": 320,
-        "y": 359
-      }
-    },
-    {
-      "id": 3,
-      "type": "conjunction",
-      "position": {
-        "x": 521,
-        "y": 364
-      }
-    },
-    {
-      "id": 5,
-      "type": "conjunction",
-      "position": {
-        "x": 782,
-        "y": 357
-      }
-    },
-    {
-      "id": 7,
-      "type": "conjunction",
-      "position": {
-        "x": 520,
-        "y": 611
+        "x": 300,
+        "y": 72
       }
     },
     {
       "id": 9,
       "type": "conjunction",
       "position": {
-        "x": 710,
-        "y": 615
+        "x": 500,
+        "y": 72
+      }
+    },
+    {
+      "id": 10,
+      "type": "conjunction",
+      "position": {
+        "x": 700,
+        "y": 72
       }
     },
     {
       "id": 11,
       "type": "conjunction",
       "position": {
-        "x": 599,
-        "y": 853
+        "x": 468,
+        "y": 272
+      }
+    },
+    {
+      "id": 12,
+      "type": "conjunction",
+      "position": {
+        "x": 668,
+        "y": 272
       }
     },
     {
       "id": 13,
       "type": "conjunction",
       "position": {
-        "x": 586,
-        "y": 1048
+        "x": 568,
+        "y": 472
+      }
+    },
+    {
+      "id": 14,
+      "type": "conjunction",
+      "position": {
+        "x": 568,
+        "y": 672
       }
     },
     {
       "id": 15,
       "type": "conjunction",
       "position": {
-        "x": 286,
-        "y": 995
+        "x": 268,
+        "y": 472
       }
     },
     {
       "id": 16,
       "type": "conjunction",
       "position": {
-        "x": 650,
-        "y": 1048
+        "x": 632,
+        "y": 672
       }
     },
     {
       "id": 17,
       "type": "conjunction",
       "position": {
-        "x": 663,
-        "y": 853
+        "x": 632,
+        "y": 472
       }
     },
     {
       "id": 18,
       "type": "conjunction",
       "position": {
-        "x": 727,
-        "y": 853
+        "x": 696,
+        "y": 472
       }
     },
     {
       "id": 19,
       "type": "conjunction",
       "position": {
-        "x": 774,
-        "y": 615
+        "x": 732,
+        "y": 272
       }
     },
     {
       "id": 20,
       "type": "conjunction",
       "position": {
-        "x": 584,
-        "y": 611
+        "x": 532,
+        "y": 272
       }
     },
     {
       "id": 21,
       "type": "conjunction",
       "position": {
-        "x": 350,
-        "y": 995
+        "x": 332,
+        "y": 472
       }
     }
   ],
   "connections": [
     {
       "id": {
-        "sourceId": 1,
+        "sourceId": 8,
         "targetId": 0
       },
       "negated": false
     },
     {
       "id": {
-        "sourceId": 3,
-        "targetId": 2
-      },
-      "negated": false
-    },
-    {
-      "id": {
-        "sourceId": 5,
-        "targetId": 4
-      },
-      "negated": false
-    },
-    {
-      "id": {
-        "sourceId": 7,
-        "targetId": 6
-      },
-      "negated": false
-    },
-    {
-      "id": {
         "sourceId": 9,
-        "targetId": 8
-      },
-      "negated": false
-    },
-    {
-      "id": {
-        "sourceId": 11,
-        "targetId": 10
-      },
-      "negated": false
-    },
-    {
-      "id": {
-        "sourceId": 13,
-        "targetId": 12
-      },
-      "negated": false
-    },
-    {
-      "id": {
-        "sourceId": 15,
-        "targetId": 14
+        "targetId": 1
       },
       "negated": false
     },
     {
       "id": {
         "sourceId": 10,
-        "targetId": 13
+        "targetId": 2
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 11,
+        "targetId": 3
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 12,
+        "targetId": 4
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 13,
+        "targetId": 5
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 14,
+        "targetId": 6
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 15,
+        "targetId": 7
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 5,
+        "targetId": 14
       },
       "negated": false
     },
     {
       "id": {
         "sourceId": 16,
-        "targetId": 12
+        "targetId": 6
       },
       "negated": false
     },
     {
       "id": {
-        "sourceId": 6,
-        "targetId": 11
+        "sourceId": 3,
+        "targetId": 13
       },
       "negated": false
     },
     {
       "id": {
         "sourceId": 17,
-        "targetId": 10
+        "targetId": 5
       },
       "negated": false
     },
     {
       "id": {
-        "sourceId": 8,
+        "sourceId": 4,
         "targetId": 17
       },
       "negated": false
@@ -286,41 +286,41 @@
     {
       "id": {
         "sourceId": 18,
-        "targetId": 10
-      },
-      "negated": false
-    },
-    {
-      "id": {
-        "sourceId": 4,
-        "targetId": 9
-      },
-      "negated": false
-    },
-    {
-      "id": {
-        "sourceId": 19,
-        "targetId": 8
+        "targetId": 5
       },
       "negated": false
     },
     {
       "id": {
         "sourceId": 2,
-        "targetId": 7
+        "targetId": 12
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 19,
+        "targetId": 4
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 1,
+        "targetId": 11
       },
       "negated": false
     },
     {
       "id": {
         "sourceId": 20,
-        "targetId": 6
+        "targetId": 3
       },
       "negated": false
     },
     {
       "id": {
-        "sourceId": 6,
+        "sourceId": 3,
         "targetId": 15
       },
       "negated": false
@@ -328,7 +328,7 @@
     {
       "id": {
         "sourceId": 21,
-        "targetId": 14
+        "targetId": 7
       },
       "negated": false
     },

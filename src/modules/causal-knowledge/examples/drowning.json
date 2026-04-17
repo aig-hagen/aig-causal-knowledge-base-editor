@@ -7,226 +7,226 @@
       "description": "The victim has encountered a giant wave.",
       "assumption": 3,
       "position": {
-        "x": 272,
-        "y": 263
+        "x": 400,
+        "y": 100
       }
     },
     {
-      "id": 2,
+      "id": 1,
       "name": "strong-current",
       "description": "The victim has encountered a strong current.",
       "assumption": 3,
       "position": {
-        "x": 431,
-        "y": 270
+        "x": 600,
+        "y": 100
       }
     },
     {
-      "id": 4,
+      "id": 2,
       "name": "jellyfish",
       "description": "The victim has been stung by a jellyfish.",
       "assumption": 3,
       "position": {
-        "x": 585,
-        "y": 270
+        "x": 800,
+        "y": 100
+      }
+    },
+    {
+      "id": 3,
+      "name": "broken-board",
+      "description": "The victim's surfboard has been broken.",
+      "position": {
+        "x": 300,
+        "y": 300
+      }
+    },
+    {
+      "id": 4,
+      "name": "submersion",
+      "description": "The victim has been submerged in water.",
+      "position": {
+        "x": 500,
+        "y": 300
+      }
+    },
+    {
+      "id": 5,
+      "name": "cramp",
+      "description": "The victim has had a cramp.",
+      "position": {
+        "x": 732,
+        "y": 300
       }
     },
     {
       "id": 6,
-      "name": "broken-board",
-      "description": "The victim's surfboard has been broken.",
-      "position": {
-        "x": 249,
-        "y": 424
-      }
-    },
-    {
-      "id": 8,
-      "name": "submersion",
-      "description": "The victim has been submerged in water.",
-      "position": {
-        "x": 397,
-        "y": 428
-      }
-    },
-    {
-      "id": 10,
-      "name": "cramp",
-      "description": "The victim has had a cramp.",
-      "position": {
-        "x": 575,
-        "y": 422
-      }
-    },
-    {
-      "id": 12,
       "name": "drowning",
       "description": "The victim has drowned.",
       "position": {
-        "x": 492,
-        "y": 588
+        "x": 632,
+        "y": 500
       }
     }
   ],
   "operators": [
     {
-      "id": 1,
-      "type": "conjunction",
-      "position": {
-        "x": 272,
-        "y": 235
-      }
-    },
-    {
-      "id": 3,
-      "type": "conjunction",
-      "position": {
-        "x": 431,
-        "y": 242
-      }
-    },
-    {
-      "id": 5,
-      "type": "conjunction",
-      "position": {
-        "x": 585,
-        "y": 242
-      }
-    },
-    {
       "id": 7,
       "type": "conjunction",
       "position": {
-        "x": 217,
-        "y": 396
+        "x": 400,
+        "y": 72
+      }
+    },
+    {
+      "id": 8,
+      "type": "conjunction",
+      "position": {
+        "x": 600,
+        "y": 72
       }
     },
     {
       "id": 9,
       "type": "conjunction",
       "position": {
-        "x": 365,
-        "y": 400
+        "x": 800,
+        "y": 72
+      }
+    },
+    {
+      "id": 10,
+      "type": "conjunction",
+      "position": {
+        "x": 268,
+        "y": 272
       }
     },
     {
       "id": 11,
       "type": "conjunction",
       "position": {
-        "x": 511,
-        "y": 394
+        "x": 468,
+        "y": 272
+      }
+    },
+    {
+      "id": 12,
+      "type": "conjunction",
+      "position": {
+        "x": 668,
+        "y": 272
       }
     },
     {
       "id": 13,
       "type": "conjunction",
       "position": {
-        "x": 428,
-        "y": 560
+        "x": 568,
+        "y": 472
       }
     },
     {
       "id": 14,
       "type": "conjunction",
       "position": {
-        "x": 492,
-        "y": 560
+        "x": 632,
+        "y": 472
       }
     },
     {
       "id": 15,
       "type": "conjunction",
       "position": {
-        "x": 556,
-        "y": 560
+        "x": 696,
+        "y": 472
       }
     },
     {
       "id": 16,
       "type": "conjunction",
       "position": {
-        "x": 281,
-        "y": 396
+        "x": 332,
+        "y": 272
       }
     },
     {
       "id": 17,
       "type": "conjunction",
       "position": {
-        "x": 429,
-        "y": 400
+        "x": 532,
+        "y": 272
       }
     },
     {
       "id": 18,
       "type": "conjunction",
       "position": {
-        "x": 575,
-        "y": 394
+        "x": 732,
+        "y": 272
       }
     },
     {
       "id": 19,
       "type": "conjunction",
       "position": {
-        "x": 639,
-        "y": 394
+        "x": 796,
+        "y": 272
       }
     }
   ],
   "connections": [
     {
       "id": {
-        "sourceId": 1,
+        "sourceId": 7,
         "targetId": 0
       },
       "negated": false
     },
     {
       "id": {
-        "sourceId": 3,
-        "targetId": 2
-      },
-      "negated": false
-    },
-    {
-      "id": {
-        "sourceId": 5,
-        "targetId": 4
-      },
-      "negated": false
-    },
-    {
-      "id": {
-        "sourceId": 7,
-        "targetId": 6
+        "sourceId": 8,
+        "targetId": 1
       },
       "negated": false
     },
     {
       "id": {
         "sourceId": 9,
-        "targetId": 8
+        "targetId": 2
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 10,
+        "targetId": 3
       },
       "negated": false
     },
     {
       "id": {
         "sourceId": 11,
-        "targetId": 10
+        "targetId": 4
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 12,
+        "targetId": 5
       },
       "negated": false
     },
     {
       "id": {
         "sourceId": 13,
-        "targetId": 12
+        "targetId": 6
       },
       "negated": false
     },
     {
       "id": {
-        "sourceId": 8,
+        "sourceId": 4,
         "targetId": 13
       },
       "negated": false
@@ -234,13 +234,13 @@
     {
       "id": {
         "sourceId": 14,
-        "targetId": 12
+        "targetId": 6
       },
       "negated": false
     },
     {
       "id": {
-        "sourceId": 10,
+        "sourceId": 5,
         "targetId": 14
       },
       "negated": false
@@ -248,20 +248,6 @@
     {
       "id": {
         "sourceId": 15,
-        "targetId": 12
-      },
-      "negated": false
-    },
-    {
-      "id": {
-        "sourceId": 0,
-        "targetId": 7
-      },
-      "negated": false
-    },
-    {
-      "id": {
-        "sourceId": 16,
         "targetId": 6
       },
       "negated": false
@@ -269,41 +255,55 @@
     {
       "id": {
         "sourceId": 0,
-        "targetId": 9
-      },
-      "negated": false
-    },
-    {
-      "id": {
-        "sourceId": 17,
-        "targetId": 8
-      },
-      "negated": false
-    },
-    {
-      "id": {
-        "sourceId": 2,
-        "targetId": 9
-      },
-      "negated": false
-    },
-    {
-      "id": {
-        "sourceId": 2,
-        "targetId": 11
-      },
-      "negated": false
-    },
-    {
-      "id": {
-        "sourceId": 18,
         "targetId": 10
       },
       "negated": false
     },
     {
       "id": {
-        "sourceId": 4,
+        "sourceId": 16,
+        "targetId": 3
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 0,
+        "targetId": 11
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 17,
+        "targetId": 4
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 1,
+        "targetId": 11
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 1,
+        "targetId": 12
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 18,
+        "targetId": 5
+      },
+      "negated": false
+    },
+    {
+      "id": {
+        "sourceId": 2,
         "targetId": 18
       },
       "negated": false
@@ -311,7 +311,7 @@
     {
       "id": {
         "sourceId": 19,
-        "targetId": 10
+        "targetId": 5
       },
       "negated": false
     }
