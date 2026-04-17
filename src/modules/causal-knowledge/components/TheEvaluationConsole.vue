@@ -322,16 +322,31 @@ const sequenceExplanations = computed<SequenceExplanations | undefined>(() => {
     return undefined
   }
 
+  const explanations = Object.values(
+    sequenceExplanationEvaluationResult.value.perAtomSequenceExplanations,
+  ).flatMap((explanations) => explanations)
+
+  const allArguments = new Set<string>()
+  for (const explanation of explanations) {
+    allArguments.add(explanation.argument)
+    explanation.supporters.forEach((supporter) => {
+      supporter.forEach((arg) => {
+        allArguments.add(arg)
+      })
+    })
+    explanation.defeated.forEach((defeated) => {
+      defeated.forEach((arg) => {
+        allArguments.add(arg)
+      })
+    })
+  }
+
   const attacks = sequenceExplanationEvaluationResult.value.attacks
   const argumentationFramework = argumentationFrameworkFromCausalArguments(
     attacks,
     knowledgeBase.atoms,
-    [],
+    [...allArguments],
   )
-
-  const explanations = Object.values(
-    sequenceExplanationEvaluationResult.value.perAtomSequenceExplanations,
-  ).flatMap((explanations) => explanations)
 
   return {
     argumentationFramework: argumentationFramework,
