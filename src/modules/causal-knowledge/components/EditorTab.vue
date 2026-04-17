@@ -541,7 +541,7 @@ function addHighlightShadowDefinition(graphComponentElement: HTMLElement) {
     `
     <defs>
     <filter id="${ID_DEF_COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION}" x="-50%" y="-50%" width="200%" height="200%">
-      <feDropShadow dx="0" dy="0" stdDeviation="8"  flood-opacity="1" flood-color="${COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION}"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="12"  flood-opacity="1" flood-color="${COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION}"/>
     </filter>
   </defs>
   `,
