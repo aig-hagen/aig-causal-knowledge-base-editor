@@ -156,18 +156,6 @@ function updateAtomHighlightingForExplanation(atomId: number) {
   }
 }
 
-function updateOperatorHighlightingForExplanation(operatorId: number) {
-  const nodeElement = document.getElementById(`${graphComponentId}-node-${operatorId.toString()}`)
-  if (nodeElement !== null) {
-    // TODO(https://github.com/aig-hagen/aig-causal-knowledge-base-editor/issues/317) Simplify logic
-    if (atomIdsToHighlight.length !== 0 && isNodeHighlighted(operatorId)) {
-      nodeElement.style.filter = `url(#${ID_DEF_COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION})`
-    } else {
-      nodeElement.style.filter = ''
-    }
-  }
-}
-
 function updateConnectionHighlightingForExplanation(connectionId: ConnectionId) {
   const linkElement = document.getElementById(`${graphComponentId}-link-${getLinkId(connectionId)}`)
   if (linkElement !== null) {
@@ -425,10 +413,6 @@ watchEffect(() => {
   for (const atom of knowledgeBase.atoms.values()) {
     updateAtomColor(atom)
   }
-  for (const operator of knowledgeBase.operators.values()) {
-    updateOperatorHighlightingForExplanation(operator.id)
-  }
-
   for (const connection of knowledgeBase.connections.values()) {
     const color = getColorLink(connection.negated)
     graphInstanceRef.value.setColor(color, getLinkId(connection.id))
@@ -540,7 +524,8 @@ function addHighlightShadowDefinition(graphComponentElement: HTMLElement) {
     'afterbegin',
     `
     <defs>
-    <filter id="${ID_DEF_COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION}" x="-50%" y="-50%" width="200%" height="200%">
+    <filter id="${ID_DEF_COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION}" x="-32px" y="-32px" width="calc(100% + 64px)" height="calc(100% + 64px)">
+      <feDropShadow dx="0" dy="0" stdDeviation="12"  flood-opacity="1" flood-color="${COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION}"/>
       <feDropShadow dx="0" dy="0" stdDeviation="12"  flood-opacity="1" flood-color="${COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION}"/>
     </filter>
   </defs>
