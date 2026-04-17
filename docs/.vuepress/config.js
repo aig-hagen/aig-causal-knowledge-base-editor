@@ -3,6 +3,7 @@ import { defaultTheme } from '@vuepress/theme-default'
 import { defineUserConfig } from 'vuepress'
 import { markdownImagePlugin } from '@vuepress/plugin-markdown-image'
 import { markdownExtPlugin } from '@vuepress/plugin-markdown-ext'
+import { redirectPlugin } from '@vuepress/plugin-redirect'
 
 const base = '/docs/'
 
@@ -13,6 +14,7 @@ export default defineUserConfig({
   dest: 'dist/docs',
   bundler: viteBundler(),
   theme: defaultTheme({
+    home: '/user-guide.html',
     logo: `/images/logoaig2025_transparent.png`,
     navbar: [
       {
@@ -31,6 +33,7 @@ export default defineUserConfig({
     ['link', { rel: 'icon', type: 'image/png', sizes:"192x192", href: `${base}/images/favicon-192x192.png` }],
   ],
   plugins: [
+    redirectPlugin(),
     markdownImagePlugin({
       // Enable figure
       figure: true,
