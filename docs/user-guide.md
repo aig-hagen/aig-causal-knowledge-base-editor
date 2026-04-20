@@ -149,16 +149,15 @@ You can switch freely between the causal model, the argumentation framework, and
 
 The graphically modeled knowledge in this tool corresponds to a simplified version of _causal models_ as described by J. Pearl[^1][^2].
 Together with them, we use an approach based on _formal argumentation_ as defined by P. M. Dung[^3][^4] for argumentation-based causal and counterfactual reasoning[^5].
-This approach appears promising, as it allows techniques from argumentation frameworks—such as sequence explanations[^6]—to be applied in explanation of reasoning with causal models.
+This approach appears promising, as it allows techniques from argumentation frameworks — such as sequence explanations[^6] — to be applied in explanation of reasoning with causal models.
 
-[^1]: [Jearl, J.: Causality: Models, Reasoning and Inference, vol. 29. Cambridge Univer-
-sity Press (2000)](https://dl.acm.org/doi/book/10.5555/331969)
+[^1]: [Pearl, J.: Causality: Models, Reasoning and Inference, vol. 29. Cambridge University Press (2000)](https://dl.acm.org/doi/book/10.5555/331969)
 [^2]: [Causal model - Wikipedia](https://en.wikipedia.org/wiki/Causal_model)
-[^3]: [Bengel, L., Blümel, L., Rienstra, T., Thimm, M.: Argumentation-based causal and
-counterfactual reasoning. In: 1st International Workshop on Argumentation for
-eXplainable AI, Cardiff. CEUR Workshop Proceedings, vol. 3209 (2022)](https://doi.org/10.1007/978-3-031-63536-6_13)
-[^4]: [Dung, P.M.: On the acceptability of arguments and its fundamental role in non-
+[^3]: [Dung, P.M.: On the acceptability of arguments and its fundamental role in non-
 monotonic reasoning, logic programming and n-person games. Artif. Intell. 77(2),
 321–358 (1995)](https://doi.org/10.1016/0004-3702(94)00041-X)
-[^5]: [Argumentation framework - Wikipedia](https://en.wikipedia.org/wiki/Argumentation_framework)
+[^4]: [Argumentation framework - Wikipedia](https://en.wikipedia.org/wiki/Argumentation_framework)
+[^5]: [Bengel, L., Blümel, L., Rienstra, T., Thimm, M.: Argumentation-based causal and
+counterfactual reasoning. In: 1st International Workshop on Argumentation for
+eXplainable AI, Cardiff. CEUR Workshop Proceedings, vol. 3209 (2022)](https://doi.org/10.1007/978-3-031-63536-6_13)
 [^6]: [Bengel, L., Thimm, M.: Sequence explanations for acceptance in abstract argumentation. In: Proceedings of the 22nd International Conference on Principles of Knowledge Representation and Reasoning, (2025)](https://www.mthimm.de/pub/2025/Bengel_2025c.pdf)
