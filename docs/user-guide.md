@@ -101,11 +101,13 @@ In contrast to that, `flu` and `covid` are connected to different ports of `feve
 
 ![Causal model demonstrating dependent and independent causal relations](/images/step_4_combination_of_relations.png)
 
-## Evaluating the Causal Model
+## Getting Conclusions
 
 On the right you have an evaluation console.
 
-At the top of the console you will see the *assumptions* about your background atoms. This is only a read-only overview. To edit the assumptions edit them by clicking on the atom in the model and edit the assumptions in the property dialog. Per default, all possible assumptions are included, representing the fact that we make no assumptions about the background atoms.
+At the top of the console you see a read-only overview of the *assumptions* about your background atoms.
+To change them, click the background atom in the model and edit its assumptions in the property dialog.
+If needed, you can choose to override the assumptions for the evaluation without editing your causal model.
 
 Next, you can select observations about your explainable atoms. By setting observations, you presume some statements to be either true or false. By evaluating with different observations, you can use this tool to explore alternative results for hypothetical realities (aka. counterfactual reasoning or "what if" questions).
 
@@ -121,29 +123,33 @@ A method for quantitative evaluation is still in development.
 
 ## Getting Explanations
 
-
-After running the evaluation, you can select to explain how the conclusion of an atom was drawn.
-This will give you a text about which other atoms influenced the conclusion about your selected atom.
-It will also highlight the atoms and connections in the model that contributed to its conclusion.
-
-::: info
-The current explanation is very rudimentary.
-We continue development to provide more insightful explanations.
-:::
+In addition to evaluating conclusions, you can explain how the conclusion of an atom was drawn.
 
 To get an explanation:
 
 * locate the button titled "Explain"
-* Select an atom in the dropdown next to it
+* select an atom in the dropdown next to it
 * click the button
 
-![Explanation of a selected atom](/images/step_6_explanation_results.png)
+First, the explanation shows which atoms influenced the conclusion and highlights them in the model.
 
+![Explanation for a selected atom](/images/step_6_explanation_results.png)
+
+Next, it computes a sequence explanation that can be opened and inspected in a separate view.
+
+![Sequence explanation for a selected atom](/images/step_7_explanation_results.png)
+
+Sequence explanations are calculated from the *argumentation framework* induced by the causal model.
+You can also inspect the underlying argumentation framework by switching views.
+You can switch freely between the causal model, the argumentation framework, and the sequence explanation views to see how they interrelate.
+
+![Argumentation framework induced by the causal model](/images/step_8_explanation_results.png)
 
 ## Theoretical Background
 
 The graphically modeled knowledge in this tool corresponds to a simplified version of _causal models_ as described by J. Pearl[^1][^2].
-Together with them, we use an approach based on _formal argumentation_ as defined by P. M. Dung[^3][^4] for argumentation-based causal and counterfactual reasoning[^5]. This approach appears promising, as it allows techniques from argumentation frameworks—such as sequence explanations[^6]—to be applied in explanation of reasoning with causal models.
+Together with them, we use an approach based on _formal argumentation_ as defined by P. M. Dung[^3][^4] for argumentation-based causal and counterfactual reasoning[^5].
+This approach appears promising, as it allows techniques from argumentation frameworks—such as sequence explanations[^6]—to be applied in explanation of reasoning with causal models.
 
 [^1]: [Jearl, J.: Causality: Models, Reasoning and Inference, vol. 29. Cambridge Univer-
 sity Press (2000)](https://dl.acm.org/doi/book/10.5555/331969)
