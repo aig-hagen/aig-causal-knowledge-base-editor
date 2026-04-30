@@ -65,10 +65,33 @@ const { addSuccessNotification, addErrorNotification, clearNotifications } = use
 
 const loadingData = ref(false)
 
+// See https://evilmartians.com/chronicles/how-to-detect-safari-and-ios-versions-with-ease
+const isWebkit = 'GestureEvent' in window
 const COLOR_HIGHLIGHT_SELECTED = Colors.HIGHLIGHT_BLUE
 const COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION = Colors.HIGHLIGHT_GREEN
-const ID_DEF_COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION = 'highlight-relevant-for-explanation'
-
+const ID_DEF_SVG_FILTER_HIGHLIGHT_RELEVANT_NODES_FOR_EXPLANATION =
+  'highlight-relevant-for-explanation'
+const ID_DEF_SVG_FILTER_HIGHLIGHT_RELEVANT_LINKS_FOR_EXPLANATION_WEBKIT =
+  'highlight-relevant-for-explanation-links'
+// Works in Firefox and Chrome but not Webkit
+const CSS_FILTER_HIGHLIGHT_RELEVANT_LINKS_FOR_EXPLANATION = `drop-shadow(0 0 12px ${COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION}) drop-shadow(0 0 12px ${COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION})`
+// Works in Webkit and Chrome but not Firefox
+const SVG_FILTER_HIGHLIGHT_RELEVANT_LINKS_FOR_EXPLANATION_WEBKIT = `
+    <defs>
+    <filter id="${ID_DEF_SVG_FILTER_HIGHLIGHT_RELEVANT_LINKS_FOR_EXPLANATION_WEBKIT}" filterUnits="userSpaceOnUse" x="0" y="0" width="100%" height="100%">
+      <feDropShadow dx="0" dy="0" stdDeviation="12"  flood-opacity="1" flood-color="${COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION}"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="12"  flood-opacity="1" flood-color="${COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION}"/>
+    </filter>
+  </defs>
+  `
+const SVG_FILTER_HIGHLIGHT_RELEVANT_NODES_FOR_EXPLANATION = `
+    <defs>
+    <filter id="${ID_DEF_SVG_FILTER_HIGHLIGHT_RELEVANT_NODES_FOR_EXPLANATION}" x="-100%" y="-100%" width="300%" height="300%">
+      <feDropShadow dx="0" dy="0" stdDeviation="12"  flood-opacity="1" flood-color="${COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION}"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="12"  flood-opacity="1" flood-color="${COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION}"/>
+    </filter>
+  </defs>
+  `
 const COLOR_BACKGROUND_ATOM = Colors.NODE_LIGHT_ORANGE
 const COLOR_EXPLAINABLE_ATOM = Colors.NODE_DARK_ORANGE
 const COLOR_CONJUNCTION = 'LightGray'
@@ -149,7 +172,7 @@ function updateAtomHighlightingForExplanation(atomId: number) {
   const nodeElement = document.getElementById(`${graphComponentId}-node-${atomId.toString()}`)
   if (nodeElement !== null) {
     if (isNodeHighlightedForExplanation(atomId)) {
-      nodeElement.style.filter = `url(#${ID_DEF_COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION})`
+      nodeElement.style.filter = `url(#${ID_DEF_SVG_FILTER_HIGHLIGHT_RELEVANT_NODES_FOR_EXPLANATION})`
     } else {
       nodeElement.style.filter = ''
     }
@@ -167,7 +190,12 @@ function updateConnectionHighlightingForExplanation(connectionId: ConnectionId) 
       (isNodeDirectlyHighlighted(connectionId.targetId) ||
         someDescendentHighlighed(connectionId.targetId))
     if (isHighlighted) {
-      linkElement.style.filter = `url(#${ID_DEF_COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION})`
+      // CSS filter does not work in Safari/WebKit
+      if (isWebkit) {
+        linkElement.style.filter = `url(#${ID_DEF_SVG_FILTER_HIGHLIGHT_RELEVANT_LINKS_FOR_EXPLANATION_WEBKIT})`
+      } else {
+        linkElement.style.filter = CSS_FILTER_HIGHLIGHT_RELEVANT_LINKS_FOR_EXPLANATION
+      }
     } else {
       linkElement.style.filter = ''
     }
@@ -522,15 +550,14 @@ function addHighlightShadowDefinition(graphComponentElement: HTMLElement) {
 
   mainContainer.insertAdjacentHTML(
     'afterbegin',
-    `
-    <defs>
-    <filter id="${ID_DEF_COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION}" x="-32px" y="-32px" width="calc(100% + 64px)" height="calc(100% + 64px)">
-      <feDropShadow dx="0" dy="0" stdDeviation="12"  flood-opacity="1" flood-color="${COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION}"/>
-      <feDropShadow dx="0" dy="0" stdDeviation="12"  flood-opacity="1" flood-color="${COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION}"/>
-    </filter>
-  </defs>
-  `,
+    SVG_FILTER_HIGHLIGHT_RELEVANT_NODES_FOR_EXPLANATION,
   )
+  if (isWebkit) {
+    mainContainer.insertAdjacentHTML(
+      'afterbegin',
+      SVG_FILTER_HIGHLIGHT_RELEVANT_LINKS_FOR_EXPLANATION_WEBKIT,
+    )
+  }
 }
 
 function selectAtom(atomId: number | null) {
