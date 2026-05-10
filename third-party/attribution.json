@@ -256,7 +256,7 @@
   {
     "scope": "babel",
     "name": "parser",
-    "version": "7.29.2",
+    "version": "7.29.3",
     "license": "MIT",
     "repository": "https://github.com/babel/babel",
     "home": "https://github.com/babel/babel",
@@ -576,7 +576,7 @@
   {
     "scope": "hpcc-js",
     "name": "wasm-graphviz",
-    "version": "1.21.2",
+    "version": "1.21.5",
     "license": "Apache-2.0",
     "repository": "https://github.com/hpcc-systems/hpcc-js-wasm",
     "home": "https://github.com/hpcc-systems/hpcc-js-wasm",
@@ -1684,7 +1684,7 @@
   {
     "scope": "vue",
     "name": "compiler-core",
-    "version": "3.5.32",
+    "version": "3.5.34",
     "license": "MIT",
     "repository": "https://github.com/vuejs/core",
     "home": "https://github.com/vuejs/core",
@@ -1694,7 +1694,7 @@
   {
     "scope": "vue",
     "name": "compiler-dom",
-    "version": "3.5.32",
+    "version": "3.5.34",
     "license": "MIT",
     "repository": "https://github.com/vuejs/core",
     "home": "https://github.com/vuejs/core",
@@ -1704,7 +1704,7 @@
   {
     "scope": "vue",
     "name": "compiler-sfc",
-    "version": "3.5.32",
+    "version": "3.5.34",
     "license": "MIT",
     "repository": "https://github.com/vuejs/core",
     "home": "https://github.com/vuejs/core",
@@ -1714,7 +1714,7 @@
   {
     "scope": "vue",
     "name": "compiler-ssr",
-    "version": "3.5.32",
+    "version": "3.5.34",
     "license": "MIT",
     "repository": "https://github.com/vuejs/core",
     "home": "https://github.com/vuejs/core",
@@ -1823,7 +1823,7 @@
   {
     "scope": "vue",
     "name": "reactivity",
-    "version": "3.5.32",
+    "version": "3.5.34",
     "license": "MIT",
     "repository": "https://github.com/vuejs/core",
     "home": "https://github.com/vuejs/core",
@@ -1833,7 +1833,7 @@
   {
     "scope": "vue",
     "name": "runtime-core",
-    "version": "3.5.32",
+    "version": "3.5.34",
     "license": "MIT",
     "repository": "https://github.com/vuejs/core",
     "home": "https://github.com/vuejs/core",
@@ -1843,7 +1843,7 @@
   {
     "scope": "vue",
     "name": "runtime-dom",
-    "version": "3.5.32",
+    "version": "3.5.34",
     "license": "MIT",
     "repository": "https://github.com/vuejs/core",
     "home": "https://github.com/vuejs/core",
@@ -1853,7 +1853,7 @@
   {
     "scope": "vue",
     "name": "server-renderer",
-    "version": "3.5.32",
+    "version": "3.5.34",
     "license": "MIT",
     "repository": "https://github.com/vuejs/core",
     "home": "https://github.com/vuejs/core",
@@ -1863,7 +1863,7 @@
   {
     "scope": "vue",
     "name": "shared",
-    "version": "3.5.32",
+    "version": "3.5.34",
     "license": "MIT",
     "repository": "https://github.com/vuejs/core",
     "home": "https://github.com/vuejs/core",
@@ -2255,7 +2255,7 @@
   },
   {
     "name": "ajv",
-    "version": "8.18.0",
+    "version": "8.20.0",
     "license": "MIT",
     "repository": "https://github.com/ajv-validator/ajv",
     "home": "https://github.com/ajv-validator/ajv",
@@ -3468,12 +3468,12 @@
   },
   {
     "name": "fast-uri",
-    "version": "3.1.0",
+    "version": "3.1.2",
     "license": "BSD-3-Clause",
     "repository": "https://github.com/fastify/fast-uri",
     "home": "https://github.com/fastify/fast-uri",
     "publisher": "Vincent Le Goff",
-    "licenseText": "Copyright (c) 2011-2021, Gary Court until https://github.com/garycourt/uri-js/commit/a1acf730b4bba3f1097c9f52e7d9d3aba8cdcaae\nCopyright (c) 2021-present The Fastify team\nAll rights reserved.\n\nThe Fastify team members are listed at https://github.com/fastify/fastify#team.\n\nRedistribution and use in source and binary forms, with or without\nmodification, are permitted provided that the following conditions are met:\n    * Redistributions of source code must retain the above copyright\n      notice, this list of conditions and the following disclaimer.\n    * Redistributions in binary form must reproduce the above copyright\n      notice, this list of conditions and the following disclaimer in the\n      documentation and/or other materials provided with the distribution.\n    * The names of any contributors may not be used to endorse or promote\n      products derived from this software without specific prior written\n      permission.\n\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\" AND\nANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED\nWARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE\nDISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS AND CONTRIBUTORS BE LIABLE FOR ANY\nDIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES\n(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;\nLOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND\nON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS\nSOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n\n                                  *   *   *\n\nThe complete list of contributors can be found at:\n- https://github.com/garycourt/uri-js/graphs/contributors"
+    "licenseText": "Copyright (c) 2011-2021, Gary Court until https://github.com/garycourt/uri-js/commit/a1acf730b4bba3f1097c9f52e7d9d3aba8cdcaae\nCopyright (c) 2021-present The Fastify team <https://github.com/fastify/fastify#team>\nAll rights reserved.\n\nRedistribution and use in source and binary forms, with or without\nmodification, are permitted provided that the following conditions are met:\n    * Redistributions of source code must retain the above copyright\n      notice, this list of conditions and the following disclaimer.\n    * Redistributions in binary form must reproduce the above copyright\n      notice, this list of conditions and the following disclaimer in the\n      documentation and/or other materials provided with the distribution.\n    * The names of any contributors may not be used to endorse or promote\n      products derived from this software without specific prior written\n      permission.\n\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\" AND\nANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED\nWARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE\nDISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS AND CONTRIBUTORS BE LIABLE FOR ANY\nDIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES\n(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;\nLOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND\nON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS\nSOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n\n                                  *   *   *\n\nThe complete list of contributors can be found at:\n- https://github.com/garycourt/uri-js/graphs/contributors"
   },
   {
     "name": "fastq",
@@ -5237,7 +5237,7 @@
   },
   {
     "name": "postcss",
-    "version": "8.5.10",
+    "version": "8.5.14",
     "license": "MIT",
     "repository": "https://github.com/postcss/postcss",
     "home": "https://github.com/postcss/postcss",
@@ -6578,7 +6578,7 @@
   },
   {
     "name": "vue",
-    "version": "3.5.32",
+    "version": "3.5.34",
     "license": "MIT",
     "repository": "https://github.com/vuejs/core",
     "home": "https://github.com/vuejs/core",
