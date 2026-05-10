@@ -15,8 +15,6 @@
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "test:unit": "vitest --project unit",
-    "test:browser": "vitest --project browser",
-    "test:e2e": "playwright test",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
     "generate": "json2ts src/modules/causal-knowledge/graphical-causal-knowledge-base-v1.schema.json src/modules/causal-knowledge/graphicalCausalKnowledgeBase.d.ts --bannerComment \"$(cat ./json2ts.banner.txt)\"",
@@ -46,7 +44,6 @@
     "zod": "4.3.6"
   },
   "devDependencies": {
-    "@playwright/test": "1.59.1",
     "@tsconfig/node24": "24.0.4",
     "@types/file-saver": "2.0.7",
     "@types/jsdom": "28.0.1",
@@ -67,7 +64,6 @@
     "@vuepress/plugin-redirect": "2.0.0-rc.128",
     "@vuepress/theme-default": "2.0.0-rc.128",
     "eslint": "10.2.0",
-    "eslint-plugin-playwright": "2.10.1",
     "eslint-plugin-vue": "10.8.0",
     "jiti": "2.6.1",
     "jsdom": "29.0.2",
@@ -76,7 +72,6 @@
     "license-checker": "25.0.1",
     "msw": "2.13.3",
     "npm-run-all2": "8.0.4",
-    "playwright": "1.59.1",
     "prettier": "3.8.3",
     "sass-embedded": "1.99.0",
     "typescript": "5.9.3",
