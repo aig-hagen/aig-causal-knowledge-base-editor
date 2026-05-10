@@ -16,20 +16,12 @@ Try it out at https://causal-knowledge-base-editor.aig.fernuni-hagen.de
 docker run -p 8080:8080 ghcr.io/aig-hagen/aig-causal-knowledge-base-editor:latest
 ```
 
-### Java Archive
-
-JARs are provided as Artifacts with each [release](https://github.com/aig-hagen/aig-causal-knowledge-base-editor/releases) and can be run with Java 17 or higher.
-
-```sh
-java -jar ./org.tweetyproject.web-with-causal-knowledge-base-editor-0.8.0.jar
-```
-
 <!-- // Keep updated with file:///./generate-acknowlegments.ts -->
 ## Acknowledgment
 
 ### [TweetyProject](https://tweetyproject.org/)
 
-It's web server is used for logical reasoning and explanation and is bundled with the [OCI Image](#oci-image) and [Java Archive](#java-archive).
+It's web server is used for logical reasoning and explanation and is bundled with the [OCI Image](#oci-image).
 
 Maintained by [Matthias Thimm](https://mthimm.de/), collaboratively developed by several contributors and [licensed (mostly) under the LGPL License version 3](https://github.com/TweetyProjectTeam/TweetyProject?tab=readme-ov-file#license).
 
@@ -47,11 +39,28 @@ It is developed by employees of the University of Illinois Urbana-Champaign and 
 
 ## Development
 
+### Cloning
+
+When cloning, also clone the used Git Submodules
+
+```sh
+git clone --recurse-submodules https://github.com/aig-hagen/aig-causal-knowledge-base-editor.git
+```
+
 ### Install Dependencies
 
 ```sh
 npm install-clean
 ```
+
+### Run backend locally
+
+The backend is expected to run on `http://localhost:8080`.
+
+You can achive this by:
+
+- running the provided [OCI Image](#oci-image)
+- building and running the web server from [TweetyProject](https://github.com/TweetyProjectTeam/TweetyProject)
 
 ### Run with Hot-Reload
 

@@ -45,7 +45,7 @@ async function attributionsForNonNpmPackages(): Promise<Attribution[]> {
       repository: 'https://github.com/TweetyProjectTeam/TweetyProject',
       publisher: 'Matthias Thimm and other contributors',
       licenseText: await readFile(
-        'third-party/TweetyProjectTeam/TweetyProject/230c69b/lgpl_license.txt',
+        'third-party/TweetyProjectTeam/TweetyProject/lgpl_license.txt',
         'utf8',
       ),
     },

@@ -1,0 +1,7 @@
+**
+
+!/deployment
+!/dist
+!/third-party/TweetyProjectTeam/TweetyProject/pom.xml
+!/third-party/TweetyProjectTeam/TweetyProject/org-tweetyproject*/src/**
+!/third-party/TweetyProjectTeam/TweetyProject/org-tweetyproject*/pom.xml

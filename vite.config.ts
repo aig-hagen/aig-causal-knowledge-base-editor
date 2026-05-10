@@ -33,4 +33,10 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  server: {
+    proxy: {
+      '/causal': 'http://localhost:8080',
+      '/sequence-explanation': 'http://localhost:8080'
+    }
+  }
 })

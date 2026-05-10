@@ -1,0 +1,17 @@
+{
+	auto_https disable_redirects
+	admin off
+}
+http://:8080 {
+	root * ./dist
+
+	@backend path /causal /sequence-explanation
+	handle @backend {
+		reverse_proxy http://localhost:8081
+	}
+
+	handle {
+		try_files {path} /index.html
+		file_server
+	}
+}
