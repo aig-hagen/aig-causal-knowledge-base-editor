@@ -40,7 +40,7 @@
     "file-saver": "2.0.5",
     "pinia": "3.0.4",
     "vue": "3.5.34",
-    "vue-router": "5.0.4",
+    "vue-router": "5.0.7",
     "zod": "4.3.6"
   },
   "devDependencies": {
