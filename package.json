@@ -48,7 +48,7 @@
     "@types/file-saver": "2.0.7",
     "@types/jsdom": "28.0.1",
     "@types/license-checker": "25.0.6",
-    "@types/node": "24.12.2",
+    "@types/node": "24.12.4",
     "@vitejs/plugin-vue": "6.0.6",
     "@vitejs/plugin-vue-jsx": "5.1.5",
     "@vitest/eslint-plugin": "1.6.16",
