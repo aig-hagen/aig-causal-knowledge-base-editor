@@ -34,7 +34,7 @@
     "@floating-ui/vue": "1.1.11",
     "@hpcc-js/wasm-graphviz": "1.21.5",
     "@vueform/multiselect": "2.6.11",
-    "@vueuse/core": "14.2.1",
+    "@vueuse/core": "14.3.0",
     "ajv": "8.20.0",
     "bulma": "1.0.4",
     "file-saver": "2.0.5",
