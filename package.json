@@ -54,7 +54,7 @@
     "@vitest/eslint-plugin": "1.6.16",
     "@vue/eslint-config-prettier": "10.2.0",
     "@vue/eslint-config-typescript": "14.7.0",
-    "@vue/test-utils": "2.4.6",
+    "@vue/test-utils": "2.4.10",
     "@vue/tsconfig": "0.9.1",
     "@vuepress/bundler-vite": "2.0.0-rc.28",
     "@vuepress/plugin-markdown-ext": "2.0.0-rc.128",
