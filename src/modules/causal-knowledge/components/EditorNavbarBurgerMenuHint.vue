@@ -18,7 +18,7 @@
 -->
 <script setup lang="ts">
 import { arrow, offset, useFloating, autoUpdate } from '@floating-ui/vue'
-import { computed, toRef, useTemplateRef } from 'vue'
+import { toRef, useTemplateRef } from 'vue'
 
 const { reference, offsetX } = defineProps<{
   reference: HTMLElement | null
@@ -45,7 +45,7 @@ const { floatingStyles, middlewareData } = useFloating(
 )
 </script>
 <template>
-  <div ref="floating" :style="floatingStyles" class="message is-info menu-hint">
+  <div ref="floating" :style="floatingStyles" class="message is-info">
     <div
       class="message-body"
       :style="{
@@ -84,9 +84,3 @@ const { floatingStyles, middlewareData } = useFloating(
     </div>
   </div>
 </template>
-
-<style>
-.menu-hint {
-  border-inline-start-color:;
-}
-</style>
