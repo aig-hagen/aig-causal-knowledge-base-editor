@@ -1,0 +1,20 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: [
+    "config:best-practices",
+    // Causes dependencies to be pinned in package.json
+    // For rational see https://docs.renovatebot.com/dependency-pinning/#should-you-pin-your-javascript-dependencies
+    "config:js-app",
+  ],
+  dependencyDashboardLabels: ["type/maintenance", "planning/next"],
+  dependencyDashboardAutoclose: true,
+  packageRules: [
+    {
+      matchDatasources: ["docker"],
+      matchPackageNames: ["ghcr.io/odzhychko/tweetyproject/tweetyproject-web-server"],
+      versioning: "semver"
+    }
+  ],
+  enabled: false,
+  dependencyDashboard: false
+}
