@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 
+import { execSync } from 'child_process';
 import checker, { type ModuleInfo, type InitOpts, type ModuleInfos } from 'license-checker'
 import { readFile, writeFile, readdir } from 'fs/promises'
 import { type Attribution } from './src/modules/third-party-licenses/types.ts'
 
+const TWEETY_VERSION = getVersionFromGit('third-party/TweetyProjectTeam/TweetyProject')
 const GRAPH_COMPONENT_VERSION = await getVersionFromDirName(
   'third-party/aig-hagen/aig_graph_component',
 )
@@ -41,6 +43,7 @@ async function attributionsForNonNpmPackages(): Promise<Attribution[]> {
   return [
     {
       name: 'TweetyProject',
+      version: TWEETY_VERSION,
       license: 'LGPL-3.0-only',
       repository: 'https://github.com/TweetyProjectTeam/TweetyProject',
       publisher: 'Matthias Thimm and other contributors',
@@ -70,6 +73,13 @@ async function attributionsForNonNpmPackages(): Promise<Attribution[]> {
       licenseText: await readFile(`third-party/xai-ca/xray/${XAI_CA_VERSION}/LICENSE`, 'utf8'),
     },
   ]
+}
+
+function getVersionFromGit(base: string) {
+  return execSync('git describe --always --dirty', {
+  cwd: base,
+  encoding: 'utf8',
+}).trim();
 }
 
 async function getVersionFromDirName(base: string) {
@@ -150,7 +160,6 @@ async function attributionsForNpmPackage(
     version: version,
     license: info.licenses,
     repository: repository,
-    home: repository,
     publisher: info.publisher,
     licenseText: licenseText,
   }
