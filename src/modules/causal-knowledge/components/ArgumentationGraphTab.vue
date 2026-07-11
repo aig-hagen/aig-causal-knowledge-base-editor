@@ -105,19 +105,13 @@ const graphToShow = computedIfActive(
             :atoms="knowledgeBase.atoms" /></template
       ></ArgumentationFrameworkEditor>
     </div>
-    <div v-else class="container is-max-tablet pt-6">
-      <div v-if="evaluationBlocker !== null" class="message is-warning">
-        <div class="message-body">
-          <EvaluationBlockerText :atoms="knowledgeBase.atoms" :blocker="evaluationBlocker" />
-        </div>
+    <div v-else class="max-w-3xl space-y-3 pt-6">
+      <div v-if="evaluationBlocker !== null" role="alert" class="alert alert-warning text-sm">
+        <EvaluationBlockerText :atoms="knowledgeBase.atoms" :blocker="evaluationBlocker" />
       </div>
-      <div v-if="isEvaluating" class="message">
-        <div class="message-body">Evaluating...</div>
-      </div>
-      <div v-if="evaluationError !== null" class="message is-danger">
-        <div class="message-body">
-          {{ evaluationError }}
-        </div>
+      <div v-if="isEvaluating" role="alert" class="alert text-sm">Evaluating...</div>
+      <div v-if="evaluationError !== null" role="alert" class="alert alert-error text-sm">
+        {{ evaluationError }}
       </div>
     </div>
   </div>

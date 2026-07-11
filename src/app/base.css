@@ -24,3 +24,29 @@ html {
 body {
   min-height: min-width;
 }
+
+:root {
+  /* Kept as an explicit token (rather than reading DaisyUI's internal theme
+     variables directly) so JS-driven inline styles aren't coupled to
+     DaisyUI's versioned custom-property naming. Matches the theme's info color. */
+  --hint-arrow-color: #007dae;
+}
+
+/* Palette-align @vueform/multiselect (its own theme, not part of DaisyUI) with the app theme. */
+.multiselect {
+  --ms-border-color: var(--color-base-300);
+  --ms-border-color-active: var(--color-primary);
+  --ms-ring-color: color-mix(in oklab, var(--color-primary) 25%, transparent);
+  --ms-radius: var(--radius-field);
+  --ms-tag-bg: var(--color-primary);
+  --ms-tag-color: var(--color-primary-content);
+  --ms-tag-radius: calc(var(--radius-field) * 0.75);
+  --ms-option-bg-selected: var(--color-primary);
+  --ms-option-color-selected: var(--color-primary-content);
+  --ms-option-bg-selected-pointed: color-mix(in oklab, var(--color-primary) 85%, black);
+  --ms-option-color-selected-pointed: var(--color-primary-content);
+  --ms-option-bg-pointed: var(--color-base-200);
+  --ms-spinner-color: var(--color-primary);
+  --ms-dropdown-border-color: var(--color-base-300);
+  --ms-dropdown-radius: var(--radius-field);
+}

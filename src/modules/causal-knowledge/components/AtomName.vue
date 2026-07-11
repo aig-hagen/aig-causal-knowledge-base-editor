@@ -17,27 +17,12 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import {
-  NoAttacksError,
-  type SequenceExplanationRequestBlockingError,
-} from '@/modules/sequence-explanation/composables/useSequenceExplanationRequest'
-import { computed } from 'vue'
-
-const props = defineProps<{
-  blocker: SequenceExplanationRequestBlockingError
+defineProps<{
+  name: string
+  negated: boolean
 }>()
-
-const hasNoAttacks = computed(() => props.blocker instanceof NoAttacksError)
 </script>
 
-Evaluation is therefore not possible.
 <template>
-  <div class="text-sm">
-    <p>
-      <template v-if="hasNoAttacks">The argumentation framework has no attacks.</template>
-    </p>
-    <p>Evaluation is therefore not possible.</p>
-  </div>
+  <span><span v-if="negated" class="text-base-content/55 italic">not&nbsp;</span>{{ name }}</span>
 </template>
-
-<style scoped></style>

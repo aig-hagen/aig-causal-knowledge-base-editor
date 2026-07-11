@@ -50,7 +50,7 @@ test('renders conjunction is not targeted error', () => {
     props: { atoms, blocker },
   })
   expect(wrapper.text()).toContain('A conjunction targeting a has no incomming edges.')
-  expect(getCleanHtml(wrapper)).toContain('<span class="is-underlined">a</span>')
+  expect(getCleanHtml(wrapper)).toContain('<span class="underline">a</span>')
   expect(wrapper.text()).toContain('Evaluation is therefore not possible.')
 })
 
@@ -60,7 +60,7 @@ test('renders cycle error with self-loop', () => {
     props: { atoms, blocker },
   })
   expect(wrapper.text()).toContain('It exists a self-loop for b.')
-  expect(getCleanHtml(wrapper)).toContain('<span class="is-underlined">b</span>')
+  expect(getCleanHtml(wrapper)).toContain('<span class="underline">b</span>')
   expect(wrapper.text()).toContain('Evaluation is therefore not possible.')
 })
 
@@ -70,8 +70,8 @@ test('renders cycle error with cycle', () => {
     props: { atoms, blocker },
   })
   expect(wrapper.text()).toContain('It exists the following cycle:')
-  expect(getCleanHtml(wrapper)).toContain('<span class="is-underlined">a</span>')
-  expect(getCleanHtml(wrapper)).toContain('<span class="is-underlined">b</span>')
+  expect(getCleanHtml(wrapper)).toContain('<span class="underline">a</span>')
+  expect(getCleanHtml(wrapper)).toContain('<span class="underline">b</span>')
   expect(wrapper.text()).toContain('Evaluation is therefore not possible.')
 })
 

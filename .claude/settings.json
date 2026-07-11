@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm view *)",
+      "Bash(npm install *)",
+      "Bash(npm uninstall *)",
+      "Bash(xargs -I{} sh -c 'echo \"== {} ==\"; cat {}')",
+      "Bash(timeout 60 npx vite build --mode development)",
+      "Bash(grep -iE \"^\\(menu|x|file|folder-open|download|upload|panel-right|panel-right-close|circle-help|external-link|chevron-down|more-horizontal|book-open|delete|save\\)\\\\.js$\")",
+      "Bash(npm run *)",
+      "Bash(curl -s http://localhost:5183/)",
+      "Bash(mkdir -p /tmp/claude-1000/-home-lars-GitHub-aig-causal-knowledge-base-editor/68cabd62-5460-4a41-b6ba-db52e39a81e6/scratchpad/shots)",
+      "Bash(chromium --headless --disable-gpu --no-sandbox --screenshot=navbar-desktop.png --window-size=1440,900 --virtual-time-budget=3000 \"http://localhost:5183/\")",
+      "Bash(chromium --headless --disable-gpu --no-sandbox --screenshot=navbar-mobile.png --window-size=390,844 --virtual-time-budget=3000 \"http://localhost:5183/\")",
+      "Bash(chromium --headless --disable-gpu --no-sandbox --screenshot=navbar-mobile2.png --window-size=390,844 --virtual-time-budget=3000 \"http://localhost:5183/\")",
+      "Bash(chromium --headless --disable-gpu --no-sandbox --dump-dom --window-size=390,844 --virtual-time-budget=3000 \"http://localhost:5183/\")",
+      "Bash(chromium --headless --disable-gpu --no-sandbox --screenshot=navbar-mobile3.png --window-size=390,844 --virtual-time-budget=3000 \"http://localhost:5183/\")",
+      "Bash(npx --no-install playwright install --dry-run chromium)",
+      "Read(//home/lars/.cache/ms-playwright/**)",
+      "Bash(node /tmp/claude-1000/-home-lars-GitHub-aig-causal-knowledge-base-editor/68cabd62-5460-4a41-b6ba-db52e39a81e6/scratchpad/shot.mjs /tmp/claude-1000/-home-lars-GitHub-aig-causal-knowledge-base-editor/68cabd62-5460-4a41-b6ba-db52e39a81e6/scratchpad/shots/navbar-burger-open.png)",
+      "Bash(npm root *)",
+      "Bash(find / -maxdepth 6 -iname \"playwright\" -type d)",
+      "Bash(npm init *)",
+      "Bash(node shot.mjs shots/navbar-burger-open.png)",
+      "Bash(node /tmp/claude-1000/-home-lars-GitHub-aig-causal-knowledge-base-editor/68cabd62-5460-4a41-b6ba-db52e39a81e6/scratchpad/shot2.mjs /tmp/claude-1000/-home-lars-GitHub-aig-causal-knowledge-base-editor/68cabd62-5460-4a41-b6ba-db52e39a81e6/scratchpad/shots/navbar-docs-open.png)",
+      "Bash(node /tmp/claude-1000/-home-lars-GitHub-aig-causal-knowledge-base-editor/68cabd62-5460-4a41-b6ba-db52e39a81e6/scratchpad/shot3.mjs /tmp/claude-1000/-home-lars-GitHub-aig-causal-knowledge-base-editor/68cabd62-5460-4a41-b6ba-db52e39a81e6/scratchpad/shots/modal-open.png)",
+      "Bash(node /tmp/claude-1000/-home-lars-GitHub-aig-causal-knowledge-base-editor/68cabd62-5460-4a41-b6ba-db52e39a81e6/scratchpad/shot4.mjs /tmp/claude-1000/-home-lars-GitHub-aig-causal-knowledge-base-editor/68cabd62-5460-4a41-b6ba-db52e39a81e6/scratchpad/shots/example-loaded.png)",
+      "Bash(pkill -f \"vite --port 5183\")",
+      "Bash(node /tmp/claude-1000/-home-lars-GitHub-aig-causal-knowledge-base-editor/68cabd62-5460-4a41-b6ba-db52e39a81e6/scratchpad/shot6.mjs /tmp/claude-1000/-home-lars-GitHub-aig-causal-knowledge-base-editor/68cabd62-5460-4a41-b6ba-db52e39a81e6/scratchpad/shots/sidebar-expanded.png /tmp/claude-1000/-home-lars-GitHub-aig-causal-knowledge-base-editor/68cabd62-5460-4a41-b6ba-db52e39a81e6/scratchpad/shots/sidebar-collapsed.png /tmp/claude-1000/-home-lars-GitHub-aig-causal-knowledge-base-editor/68cabd62-5460-4a41-b6ba-db52e39a81e6/scratchpad/shots/sidebar-reexpanded.png)",
+      "Bash(curl -s -o /dev/null -w \"root: %{http_code}\\\\n\" http://localhost:5184/)",
+      "Bash(curl -s -o /dev/null -w \"user-guide: %{http_code}\\\\n\" http://localhost:5184/docs/user-guide.html)",
+      "Bash(nohup npx vite preview --port 5184)",
+      "Bash(disown)",
+      "Bash(xargs grep -l 'renderSlot\\\\|$slots\\\\|useSlots')"
+    ]
+  }
+}

@@ -26,44 +26,47 @@ import { NAV_MORE_NAME_KEY, NAV_SHOW_HINTS, NAV_SHOW_USERGUIDE_KEY } from '@/app
 import EditorNavbarHint from './EditorNavbarHint.vue'
 import { useMediaQuery } from '@vueuse/core'
 import EditorNavbarBurgerMenuHint from './EditorNavbarBurgerMenuHint.vue'
+import {
+  Menu,
+  X,
+  ChevronDown,
+  FolderOpen,
+  Download,
+  Upload,
+  BookOpen,
+  FileText,
+  CircleQuestionMark,
+  Keyboard,
+  ExternalLink,
+  Tag,
+  GitCommitHorizontal,
+  Scale,
+  Ellipsis,
+} from '@lucide/vue'
 
 export interface Dataset {
   name: string
   load(): void
 }
 
-const {
-  title,
-  getExportedData,
-  loadFromFileData,
-  datasets,
-  showSidebarRight,
-  sidebarRightName,
-  controlElementNames,
-  showHints,
-} = defineProps<{
-  title: string
-  getExportedData?(): { data: unknown; fileNamePart: string }
-  loadFromFileData?(loadFileData: () => Promise<{ fileName: string; fileText: string }>): void
-  datasets: Dataset[]
-  showSidebarRight: boolean
-  sidebarRightName?: string
-  controlElementNames: {
-    source: string
-    target: string
-    link: string
-  }
-  showHints: boolean
-}>()
+const { title, getExportedData, loadFromFileData, datasets, controlElementNames, showHints } =
+  defineProps<{
+    title: string
+    getExportedData?(): { data: unknown; fileNamePart: string }
+    loadFromFileData?(loadFileData: () => Promise<{ fileName: string; fileText: string }>): void
+    datasets: Dataset[]
+    controlElementNames: {
+      source: string
+      target: string
+      link: string
+    }
+    showHints: boolean
+  }>()
 
 const isAbove1024 = useMediaQuery('(min-width: 1024px)')
 const textExamples = 'Open one of the examples to get started quickly.'
 const textDocs = 'Find out more about features in the user guide.'
 const textDocsWithConjunction = 'Or find out more about features in the user guide.'
-
-const emit = defineEmits<{
-  'update:showSidebarRight': [showSidebarRight: boolean]
-}>()
 
 const editorCommit = import.meta.env.VITE_EDITOR_COMMIT?.slice(0, 7)
 const editorVersion = import.meta.env.VITE_EDITOR_VERSION
@@ -115,10 +118,6 @@ async function loadTextData(file: File): Promise<string> {
   })
 }
 
-function toogleSidebarRight() {
-  emit('update:showSidebarRight', !showSidebarRight)
-}
-
 const isShowControlExplanationModal = ref(false)
 
 function saveToFile() {
@@ -161,34 +160,31 @@ const burgerMenuItemRef = useTemplateRef('burger')
 </script>
 
 <template>
-  <nav class="navbar" role="navigation" aria-label="main navigation">
-    <div class="navbar-brand">
-      <div class="navbar-item">
-        <img
-          src="@/app/logoaig2025_transparent.png"
-          alt="Artificial Intelligence Group of the Faculty of Mathematics and Computer Science"
-          width="60px"
-        />
-      </div>
-      <div class="navbar-item">
-        <span class="title is-4 has-text-weight-bold"> {{ title }}</span>
-      </div>
+  <nav
+    class="navbar bg-base-100 border-base-300 relative z-20 max-w-[100vw] flex-wrap gap-x-2 gap-y-1 border-b px-2 shadow-sm sm:px-4"
+    role="navigation"
+    aria-label="main navigation"
+  >
+    <div class="flex min-w-0 flex-1 items-center gap-3">
+      <img
+        src="@/app/logoaig2025_transparent.png"
+        alt="Artificial Intelligence Group of the Faculty of Mathematics and Computer Science"
+        class="h-8 w-auto shrink-0"
+      />
+      <span class="text-base-content min-w-0 truncate text-lg font-bold">{{ title }}</span>
 
-      <a
+      <button
         ref="burger"
-        role="button"
-        class="navbar-burger"
-        :class="{ 'is-active': isNavbarBurgerActive }"
-        aria-label="menu"
-        aria-expanded="false"
-        data-target="navbarEditor"
+        type="button"
+        class="btn btn-ghost btn-square ml-auto lg:hidden"
+        aria-label="Toggle menu"
+        :aria-expanded="isNavbarBurgerActive"
+        aria-controls="navbarEditor"
         @click="toogleNavbarBurgerActive"
       >
-        <span aria-hidden="true"></span>
-        <span aria-hidden="true"></span>
-        <span aria-hidden="true"></span>
-        <span aria-hidden="true"></span>
-      </a>
+        <X v-if="isNavbarBurgerActive" class="size-5" aria-hidden="true" />
+        <Menu v-else class="size-5" aria-hidden="true" />
+      </button>
 
       <EditorNavbarHint
         v-if="doShowHints && !isNavbarBurgerActive && !isAbove1024"
@@ -198,143 +194,165 @@ const burgerMenuItemRef = useTemplateRef('burger')
       >
     </div>
 
-    <div id="navbarEditor" class="navbar-menu" :class="{ 'is-active': isNavbarBurgerActive }">
-      <div class="navbar-start">
-        <div
-          class="navbar-item has-dropdown is-hoverable"
-          v-if="getExportedData !== undefined || loadFromFileData !== undefined"
-        >
-          <a class="navbar-link">File</a>
-          <div class="navbar-dropdown">
-            <a v-if="getExportedData" class="navbar-item" @click="saveToFile()">Save As...</a>
-            <a v-if="loadFromFileData" class="navbar-item" @click="triggerFileUpload()"
-              >Open File...</a
-            >
-            <input
-              ref="file-input"
-              type="file"
-              v-show="false"
-              accept="application/json"
-              @change="loadFromFileInput($event)"
-            />
-          </div>
+    <div
+      id="navbarEditor"
+      class="w-full flex-col gap-1 lg:flex lg:w-auto lg:flex-row lg:items-center"
+      :class="isNavbarBurgerActive ? 'flex' : 'hidden'"
+    >
+      <div
+        class="dropdown lg:dropdown-hover"
+        v-if="getExportedData !== undefined || loadFromFileData !== undefined"
+      >
+        <div tabindex="0" role="button" class="btn btn-ghost btn-sm justify-start gap-1.5">
+          <FolderOpen class="size-4" aria-hidden="true" />
+          File
+          <ChevronDown class="size-3.5 opacity-60" aria-hidden="true" />
         </div>
+        <ul
+          tabindex="0"
+          class="dropdown-content menu bg-base-100 rounded-box border-base-300 z-30 w-56 border p-2 shadow-lg"
+        >
+          <li v-if="getExportedData">
+            <a @click="saveToFile()"><Download class="size-4" aria-hidden="true" />Save As...</a>
+          </li>
+          <li v-if="loadFromFileData">
+            <a @click="triggerFileUpload()"
+              ><Upload class="size-4" aria-hidden="true" />Open File...</a
+            >
+          </li>
+          <input
+            ref="file-input"
+            type="file"
+            class="hidden"
+            accept="application/json"
+            @change="loadFromFileInput($event)"
+          />
+        </ul>
+      </div>
 
-        <div class="navbar-item has-dropdown is-hoverable" v-if="datasets.length > 0">
-          <a class="navbar-link"><span ref="examples">Example</span></a>
-          <div class="navbar-dropdown">
-            <input
-              ref="file-input"
-              type="file"
-              v-show="false"
-              accept="application/json"
-              @change="loadFromFileInput($event)"
-            />
-            <a
-              class="navbar-item"
-              v-for="dataset in datasets"
-              :key="dataset.name"
-              @click="dataset.load"
-              ><span
+      <div class="dropdown lg:dropdown-hover" v-if="datasets.length > 0">
+        <div tabindex="0" role="button" class="btn btn-ghost btn-sm justify-start gap-1.5">
+          <BookOpen class="size-4" aria-hidden="true" />
+          <span ref="examples">Example</span>
+          <ChevronDown class="size-3.5 opacity-60" aria-hidden="true" />
+        </div>
+        <ul
+          tabindex="0"
+          class="dropdown-content menu bg-base-100 rounded-box border-base-300 z-30 w-64 border p-2 shadow-lg"
+        >
+          <input
+            ref="file-input"
+            type="file"
+            class="hidden"
+            accept="application/json"
+            @change="loadFromFileInput($event)"
+          />
+          <li v-for="dataset in datasets" :key="dataset.name">
+            <a @click="dataset.load"
+              ><FileText class="size-4" aria-hidden="true" /><span
                 >Open <em>{{ dataset.name }}</em></span
               ></a
             >
-          </div>
+          </li>
+        </ul>
+      </div>
+
+      <EditorNavbarHint
+        v-if="isAbove1024 && doShowHints"
+        :reference="examplesMenuItemRef"
+        :offset-y="128"
+        >{{ textExamples }}</EditorNavbarHint
+      >
+      <EditorNavbarBurgerMenuHint
+        v-if="isNavbarBurgerActive && !isAbove1024 && doShowHints"
+        :reference="examplesMenuItemRef"
+        :offset-x="64"
+        >{{ textExamples }}</EditorNavbarBurgerMenuHint
+      >
+
+      <div class="dropdown lg:dropdown-hover">
+        <div tabindex="0" role="button" class="btn btn-ghost btn-sm justify-start gap-1.5">
+          <CircleQuestionMark class="size-4" aria-hidden="true" />
+          <span ref="docs">Docs</span>
+          <ChevronDown class="size-3.5 opacity-60" aria-hidden="true" />
         </div>
-
-        <EditorNavbarHint
-          v-if="isAbove1024 && doShowHints"
-          :reference="examplesMenuItemRef"
-          :offset-y="128"
-          >{{ textExamples }}</EditorNavbarHint
+        <ul
+          tabindex="0"
+          class="dropdown-content menu bg-base-100 rounded-box border-base-300 z-30 w-64 border p-2 shadow-lg"
         >
-        <EditorNavbarBurgerMenuHint
-          v-if="isNavbarBurgerActive && !isAbove1024 && doShowHints"
-          :reference="examplesMenuItemRef"
-          :offset-x="64"
-          >{{ textExamples }}</EditorNavbarBurgerMenuHint
-        >
-
-        <div class="navbar-item has-dropdown is-hoverable" v-if="sidebarRightName !== undefined">
-          <a class="navbar-link">View</a>
-
-          <div class="navbar-dropdown">
-            <a class="navbar-item" @click="toogleSidebarRight">
-              {{ showSidebarRight ? 'Hide' : 'Show' }} {{ sidebarRightName }}
+          <li>
+            <a @click="isShowControlExplanationModal = true"
+              ><Keyboard class="size-4" aria-hidden="true" />Controls</a
+            >
+          </li>
+          <li v-if="showUserGuide">
+            <a target="_blank" rel="noopener" href="/docs/user-guide.html">
+              <BookOpen class="size-4" aria-hidden="true" />
+              <span ref="userGuide">User Guide</span>
+              <ExternalLink class="size-3.5 opacity-60" aria-hidden="true" />
             </a>
-          </div>
-        </div>
-        <div class="navbar-item has-dropdown is-hoverable">
-          <a class="navbar-link"><span ref="docs">Docs</span></a>
-
-          <div class="navbar-dropdown">
-            <a class="navbar-item" @click="isShowControlExplanationModal = true"> Controls </a>
+          </li>
+          <li v-if="editorVersion !== undefined || editorCommit !== undefined">
+            <hr class="border-base-300 my-1" />
+          </li>
+          <li v-if="editorVersion !== undefined">
             <a
-              v-if="showUserGuide"
-              class="navbar-item"
-              target="_blank"
-              rel="noopener"
-              href="/docs/user-guide.html"
-            >
-              <span ref="userGuide">User Guide &#8599;</span></a
-            >
-            <hr
-              v-if="editorVersion !== undefined || editorCommit !== undefined"
-              class="navbar-divider"
-            />
-            <a
-              v-if="editorVersion !== undefined"
-              class="navbar-item"
               target="_blank"
               rel="noopener"
               :href="`https://github.com/aig-hagen/aig-causal-knowledge-base-editor/releases/tag/${editorVersion}`"
             >
-              Version {{ editorVersion }} &#8599;</a
-            >
+              <Tag class="size-4" aria-hidden="true" />Version {{ editorVersion }}
+              <ExternalLink class="size-3.5 opacity-60" aria-hidden="true" />
+            </a>
+          </li>
+          <li v-if="editorCommit !== undefined">
             <a
-              v-if="editorCommit !== undefined"
-              class="navbar-item"
               target="_blank"
               rel="noopener"
               :href="`https://github.com/aig-hagen/aig-causal-knowledge-base-editor/commit/${editorCommit}`"
             >
-              Commit {{ editorCommit }} &#8599;</a
-            >
-            <hr class="navbar-divider" />
-            <a class="navbar-item" target="_blank" rel="noopener" href="/third-party-licenses">
-              Third-Party Licenses &#8599;
+              <GitCommitHorizontal class="size-4" aria-hidden="true" />Commit {{ editorCommit }}
+              <ExternalLink class="size-3.5 opacity-60" aria-hidden="true" />
             </a>
-          </div>
-        </div>
-        <EditorNavbarHint
-          v-if="isAbove1024 && doShowHints"
-          :reference="docsMenuItemRef"
-          :offset-y="224"
-          >{{ textDocs }}</EditorNavbarHint
-        >
-        <EditorNavbarBurgerMenuHint
-          v-if="isNavbarBurgerActive && !isAbove1024 && doShowHints"
-          :reference="userGuideMenuItemRef"
-          :offset-x="64"
-        >
-          {{ textDocs }}</EditorNavbarBurgerMenuHint
-        >
-        <div class="navbar-item has-dropdown is-hoverable">
-          <a class="navbar-link">More</a>
-
-          <div class="navbar-dropdown">
-            <a
-              v-for="route in routesForMore"
-              :key="route.path"
-              class="navbar-item"
-              target="_blank"
-              rel="noopener"
-              :href="route.path"
-            >
-              {{ route.meta?.[NAV_MORE_NAME_KEY] }} &#8599;
+          </li>
+          <li><hr class="border-base-300 my-1" /></li>
+          <li>
+            <a target="_blank" rel="noopener" href="/third-party-licenses">
+              <Scale class="size-4" aria-hidden="true" />Third-Party Licenses
+              <ExternalLink class="size-3.5 opacity-60" aria-hidden="true" />
             </a>
-          </div>
+          </li>
+        </ul>
+      </div>
+      <EditorNavbarHint
+        v-if="isAbove1024 && doShowHints"
+        :reference="docsMenuItemRef"
+        :offset-y="224"
+        >{{ textDocs }}</EditorNavbarHint
+      >
+      <EditorNavbarBurgerMenuHint
+        v-if="isNavbarBurgerActive && !isAbove1024 && doShowHints"
+        :reference="userGuideMenuItemRef"
+        :offset-x="64"
+      >
+        {{ textDocs }}</EditorNavbarBurgerMenuHint
+      >
+      <div class="dropdown lg:dropdown-hover">
+        <div tabindex="0" role="button" class="btn btn-ghost btn-sm justify-start gap-1.5">
+          <Ellipsis class="size-4" aria-hidden="true" />
+          More
         </div>
+        <ul
+          tabindex="0"
+          class="dropdown-content menu bg-base-100 rounded-box border-base-300 z-30 w-56 border p-2 shadow-lg"
+        >
+          <li v-for="route in routesForMore" :key="route.path">
+            <a target="_blank" rel="noopener" :href="route.path">
+              {{ route.meta?.[NAV_MORE_NAME_KEY] }}
+              <ExternalLink class="size-3.5 opacity-60" aria-hidden="true" />
+            </a>
+          </li>
+        </ul>
       </div>
     </div>
   </nav>
@@ -345,24 +363,3 @@ const burgerMenuItemRef = useTemplateRef('burger')
     :link-name="controlElementNames.link"
   />
 </template>
-
-<style>
-.navbar-brand,
-.navbar-menu {
-  max-width: 100vw;
-  box-sizing: content-box;
-}
-
-.navbar {
-  border-bottom-right-radius: 4px;
-  border-bottom: 2px solid black;
-  border-right: 2px solid black;
-}
-
-@media (max-width: 1536px) {
-  .navbar {
-    border-bottom-right-radius: 0;
-    border-right: none;
-  }
-}
-</style>

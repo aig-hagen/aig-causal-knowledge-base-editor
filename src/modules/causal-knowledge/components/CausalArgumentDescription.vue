@@ -17,25 +17,45 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { getLiteralName, type CausalArgument } from '../causalArgument'
+import { type CausalArgument } from '../causalArgument'
 import type { Atom, Id } from '../graphicalCausalKnowledgeBase'
+import type { Literal } from '../composables/useEvaluationRequestPayload'
+import { getDisplayName } from '../stores/knowledgeBase'
 import { hasOneEntry } from '@/modules/common/types'
+import AtomName from './AtomName.vue'
 
 const { argument, atoms } = defineProps<{
   argument: CausalArgument
   atoms: Map<Id, Atom>
 }>()
+
+function getAtomName(literal: Literal): string {
+  const atom = atoms.get(literal.atomId)
+  if (atom === undefined) {
+    throw new Error(`Atom with ID ${String(literal.atomId)} not found.`)
+  }
+  return getDisplayName(atom, false)
+}
 </script>
 <template>
-  <div class="title is-5"><h1>Argument description</h1></div>
+  <div class="text-lg font-semibold"><h1>Argument description</h1></div>
   <template v-if="argument.premises.length === 0">
-    <span class="is-underlined">{{ getLiteralName(argument.conclusion, atoms) }} </span> always
-    holds <br />given the assumptions.
+    <AtomName
+      class="underline"
+      :name="getAtomName(argument.conclusion)"
+      :negated="argument.conclusion.negated"
+    />
+    always holds
+    <br />given the assumptions.
   </template>
   <template v-else>
     <template v-if="hasOneEntry(argument.premises)"
       >From the premise
-      <span class="is-underlined">{{ getLiteralName(argument.premises[0], atoms) }}</span>
+      <AtomName
+        class="underline"
+        :name="getAtomName(argument.premises[0])"
+        :negated="argument.premises[0].negated"
+      />
       <br />
     </template>
     <template v-else-if="argument.premises.length > 1"
@@ -46,15 +66,17 @@ const { argument, atoms } = defineProps<{
           :key="`${premise.atomId}-${premise.negated}`"
         >
           <li>
-            <span
-              ><span class="is-underlined">{{ getLiteralName(premise, atoms) }}</span></span
-            >
+            <AtomName class="underline" :name="getAtomName(premise)" :negated="premise.negated" />
           </li>
         </template>
       </ul>
     </template>
-    follows <span class="is-underlined">{{ getLiteralName(argument.conclusion, atoms) }}</span
-    >.
+    follows
+    <AtomName
+      class="underline"
+      :name="getAtomName(argument.conclusion)"
+      :negated="argument.conclusion.negated"
+    />.
   </template>
 </template>
 

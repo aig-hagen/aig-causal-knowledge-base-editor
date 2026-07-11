@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import 'bulma/css/bulma.min.css'
 import '@/app/main.css'
 
 import { createPinia } from 'pinia'

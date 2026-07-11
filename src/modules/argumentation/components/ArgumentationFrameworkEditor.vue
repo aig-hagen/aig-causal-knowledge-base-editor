@@ -56,6 +56,7 @@ import {
   ARGUMENT_RADIUS_IN_PX,
   ARGUMENT_WIDTH_IN_PX,
 } from '@/modules/argumentation/consts'
+import { X } from '@lucide/vue'
 
 interface NodeType {
   name: string
@@ -508,67 +509,78 @@ const graphComponentId = 'g' + crypto.randomUUID()
       ref="graph-component"
       :id="graphComponentId"
     ></graph-component>
-    <div v-if="!hideLegend" class="menu menu-left">
-      <div class="node-selection p-2">
+    <div v-if="!hideLegend" class="menu-left">
+      <div
+        class="node-selection bg-base-100 border-base-300 rounded-box border p-3.5 text-sm shadow-md"
+      >
         <div
           v-for="nodeType of nodeTypes ?? DEFAULT_NODE_TYPES"
           :key="nodeType.name"
-          class="type p-2"
+          class="legend-row"
         >
-          <div class="node-type-legend" :style="{ backgroundColor: nodeType.color }"></div>
+          <div class="legend-swatch" :style="{ backgroundColor: nodeType.color }"></div>
           {{ nodeType.name }}
         </div>
-        <div class="type p-2">
-          <div class="link-type-legend" :style="{ color: COLOR_ATTACK }">&#8594;</div>
+        <div class="legend-row">
+          <div class="legend-swatch-arrow" :style="{ color: COLOR_ATTACK }">&#8594;</div>
           Attack
         </div>
       </div>
     </div>
     <div
       v-if="selectedArgumentRef !== null"
-      class="menu menu-right p-2"
+      class="menu-right bg-base-100 border-base-300 rounded-box w-64 space-y-4 border p-4 shadow-md"
       @keydown.esc="selectArgument(null)"
     >
       <slot name="argumentMenu" :argument="selectedArgumentRef">
-        <div class="title is-5"><h1>Argument properties</h1></div>
-
-        <div class="field">
-          <label class="label">Name</label>
-          <div class="control">
-            <input
-              v-focus
-              :key="selectedArgumentRef.id"
-              :value="selectedArgumentRef.name"
-              :readonly="readonlyStatic"
-              @input="
-                (event) => {
-                  const target = (event as InputEvent).target as HTMLInputElement
-                  processNameInput(target.value)
-                }
-              "
-              class="input"
-              type="text"
-              placeholder="Name"
-            />
-          </div>
+        <div class="flex items-center justify-between">
+          <h1 class="text-lg font-semibold">Argument properties</h1>
+          <button
+            class="btn btn-sm btn-circle btn-ghost"
+            aria-label="Close"
+            @click="selectArgument(null)"
+          >
+            <X class="size-4" aria-hidden="true" />
+          </button>
         </div>
-        <div class="field">
-          <label class="label">Shape</label>
-          <div class="control">
-            <label class="radio is-block">
+
+        <div>
+          <label class="text-base-content/80 mb-1 block text-sm font-medium">Name</label>
+          <input
+            v-focus
+            :key="selectedArgumentRef.id"
+            :value="selectedArgumentRef.name"
+            :readonly="readonlyStatic"
+            @input="
+              (event) => {
+                const target = (event as InputEvent).target as HTMLInputElement
+                processNameInput(target.value)
+              }
+            "
+            class="input w-full"
+            type="text"
+            placeholder="Name"
+          />
+        </div>
+        <div>
+          <label class="text-base-content/80 mb-1 block text-sm font-medium">Shape</label>
+          <div class="space-y-1">
+            <label class="label w-fit cursor-pointer gap-2 px-0">
               <input
                 type="radio"
                 name="shape"
+                class="radio radio-sm"
                 :disabled="readonlyStatic"
                 :checked="selectedArgumentRef.graphicalData.shape === 'circle'"
                 @change="processShapeInput(selectedArgumentRef, 'circle')"
               />
               Circle
             </label>
-            <label class="radio is-block">
+            <label class="label w-fit cursor-pointer gap-2 px-0">
               <input
                 type="radio"
                 name="shape"
+                class="radio radio-sm"
                 :disabled="readonlyStatic"
                 :checked="selectedArgumentRef.graphicalData.shape === 'rectangle'"
                 @change="processShapeInput(selectedArgumentRef, 'rectangle')"
@@ -601,52 +613,44 @@ const graphComponentId = 'g' + crypto.randomUUID()
 }
 
 .menu-left {
-  background-color: white;
-  top: 128px;
   position: absolute;
-}
-
-.node-selection {
-  border: 2px solid black;
-  border-radius: 4px;
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-  border-left: none;
-  overflow: hidden;
+  top: 128px;
+  left: 1rem;
 }
 
 .menu-right {
-  background-color: white;
-  top: 128px;
-  right: 0;
   position: absolute;
-  border: 2px solid black;
-  border-right: none;
-  border-radius: 4px;
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
+  top: 128px;
+  right: 1rem;
 }
 
-.type {
+.legend-row {
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
-  gap: 4px;
+  gap: 0.5rem;
+  padding-block: 0.125rem;
 }
 
-.node-type-legend {
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
-  /* center text inside div */
-  text-align: center;
+.legend-swatch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--color-base-300);
 }
 
-.link-type-legend {
-  font-weight: bold;
-  height: 20px;
-  line-height: 17px;
+.legend-swatch-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.125rem;
+  height: 1.125rem;
+  font-weight: 700;
 }
 </style>

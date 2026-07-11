@@ -25,6 +25,7 @@ import {
 import { computed, ref, watchEffect } from 'vue'
 import Multiselect from '@vueform/multiselect'
 import ConclusionsText from '@/modules/causal-knowledge/components/ConclusionsText.vue'
+import AtomName from '@/modules/causal-knowledge/components/AtomName.vue'
 import {
   getLiteralString,
   parseLiteralString,
@@ -41,6 +42,12 @@ import ExplanationText from '@/modules/causal-knowledge/components/ExplanationTe
 import { SEQUENCE_EXPLANATION_TAB, type Tab } from '../tabs'
 import type { SequenceExplanations } from '../sequenceExplanation'
 import { argumentationFrameworkFromCausalArguments } from '../argumentation'
+import { NODE_LIGHT_ORANGE } from '@/modules/common/colors'
+
+const assumptionTagStyle = {
+  '--ms-tag-bg': NODE_LIGHT_ORANGE,
+  '--ms-tag-bg-disabled': NODE_LIGHT_ORANGE,
+}
 
 const { knowledgeBase, observations, assumptions } = defineProps<{
   knowledgeBase: KnowledgeBase
@@ -70,19 +77,50 @@ const modeledAssumptionLiteralStrings = computed(() =>
   modeledAssumptions.value.map((assumption) => getLiteralString(assumption)),
 )
 
-function convertToOptions(atoms: Atom[]): { label: string; value: string }[] {
+interface AtomOption {
+  label: string
+  value: string
+  name: string
+  negated: boolean
+}
+
+function convertToOptions(atoms: Atom[]): AtomOption[] {
   return atoms.flatMap((atom) => {
+    const name = getDisplayName(atom, false)
     return [
       {
-        label: getDisplayName(atom, false),
+        label: name,
         value: getLiteralString({ atomId: atom.id, negated: false }),
+        name,
+        negated: false,
       },
       {
         label: getDisplayName(atom, true),
         value: getLiteralString({ atomId: atom.id, negated: true }),
+        name,
+        negated: true,
       },
     ]
   })
+}
+
+// `option` here is usually a full `AtomOption`, but when `:allow-absent="true"` lets the
+// v-model contain a value not (yet) present in `:options`, Multiselect synthesizes a bare
+// `{ label, value }` fallback for it — so `name`/`negated` must be re-derived from `value`.
+// See the `allow-absent` comment above each Multiselect for why that can happen.
+function getOptionDisplay(option: { value: string; name?: string; negated?: boolean }): {
+  name: string
+  negated: boolean
+} {
+  if (option.name !== undefined && option.negated !== undefined) {
+    return { name: option.name, negated: option.negated }
+  }
+  const literal = parseLiteralString(option.value)
+  const atom = knowledgeBase.atoms.get(literal.atomId)
+  return {
+    name: atom === undefined ? option.value : getDisplayName(atom, false),
+    negated: literal.negated,
+  }
 }
 
 const explainableAtoms = computed(() => {
@@ -385,277 +423,331 @@ const combinedExplanationsEvaluationBlocker = computed(() => {
 </script>
 
 <template>
-  <div class="evaluation-console p-5">
-    <h4 class="title is-4">Evaluation</h4>
-    <div class="columns">
-      <div class="column is-full">
-        <h5 class="title is-5">Inputs</h5>
-        <form>
-          <div class="field">
-            <label class="label">Assumptions (modeled)</label>
-            <div class="control">
-              <!-- Setting `:allow-absent="true"` is workaround for the fact that `sources` is only updated after `assumptions` is updated.
+  <div class="evaluation-console space-y-6 p-5">
+    <h4 class="text-xl font-bold">Evaluation</h4>
+    <div>
+      <h5 class="mb-3 text-lg font-semibold">Inputs</h5>
+      <form class="space-y-4">
+        <div>
+          <label class="text-base-content/80 mb-1 block text-sm font-medium"
+            >Assumptions (modeled)</label
+          >
+          <!-- Setting `:allow-absent="true"` is workaround for the fact that `sources` is only updated after `assumptions` is updated.
            This leads to some values from `assumptions` not beeing shown in the multiselect.
            See https://github.com/vueform/multiselect/issues/446 -->
-              <Multiselect
-                :options="assumptionOptions"
-                v-model="modeledAssumptionLiteralStrings"
-                mode="tags"
-                :searchable="true"
-                :close-on-select="false"
-                label="label"
-                track-by="label"
-                :allow-absent="true"
-                :disabled="true"
-              />
-            </div>
-          </div>
-          <div class="field">
-            <label class="label">Assumptions (overridden)</label>
-            <div class="control">
-              <div class="checkboxes">
-                <label class="checkbox">
-                  <input
-                    type="checkbox"
-                    name="negated"
-                    :checked="ignoreModeledAssumptions"
-                    @change="setIgnoreModeledAssumptions(!ignoreModeledAssumptions)"
-                  />
-                  Override modeled assumptions for evaluation
-                </label>
+          <Multiselect
+            class="assumption-multiselect"
+            :style="assumptionTagStyle"
+            :options="assumptionOptions"
+            v-model="modeledAssumptionLiteralStrings"
+            mode="tags"
+            :searchable="true"
+            :close-on-select="false"
+            label="label"
+            track-by="label"
+            :allow-absent="true"
+            :disabled="true"
+          >
+            <template v-slot:tag="{ option, disabled }">
+              <div class="multiselect-tag" :class="{ 'is-disabled': disabled }">
+                <AtomName
+                  :name="getOptionDisplay(option).name"
+                  :negated="getOptionDisplay(option).negated"
+                />
               </div>
-            </div>
-            <div class="control mt-2">
-              <!-- Setting `:allow-absent="true"` is workaround for the fact that `sources` is only updated after `assumptions` is updated.
+            </template>
+            <template v-slot:option="{ option }">
+              <AtomName
+                :name="getOptionDisplay(option).name"
+                :negated="getOptionDisplay(option).negated"
+              />
+            </template>
+          </Multiselect>
+        </div>
+        <div>
+          <label class="text-base-content/80 mb-1 block text-sm font-medium"
+            >Assumptions (overridden)</label
+          >
+          <label class="label w-fit cursor-pointer gap-2 px-0">
+            <input
+              type="checkbox"
+              name="negated"
+              class="checkbox checkbox-sm"
+              :checked="ignoreModeledAssumptions"
+              @change="setIgnoreModeledAssumptions(!ignoreModeledAssumptions)"
+            />
+            Override modeled assumptions for evaluation
+          </label>
+          <div class="mt-2">
+            <!-- Setting `:allow-absent="true"` is workaround for the fact that `sources` is only updated after `assumptions` is updated.
            This leads to some values from `assumptions` not beeing shown in the multiselect.
            See https://github.com/vueform/multiselect/issues/446 -->
-              <Multiselect
-                v-if="ignoreModeledAssumptions"
-                :options="assumptionOptions"
-                v-model="overridenAssumptions"
-                mode="tags"
-                :searchable="true"
-                :close-on-select="false"
-                label="label"
-                track-by="label"
-                :allow-absent="true"
-                @input="setOverridenAssumptions($event)"
-              />
-            </div>
+            <Multiselect
+              class="assumption-multiselect"
+              :style="assumptionTagStyle"
+              v-if="ignoreModeledAssumptions"
+              :options="assumptionOptions"
+              v-model="overridenAssumptions"
+              mode="tags"
+              :searchable="true"
+              :close-on-select="false"
+              label="label"
+              track-by="label"
+              :allow-absent="true"
+              @input="setOverridenAssumptions($event)"
+            >
+              <template v-slot:tag="{ option, handleTagRemove, disabled }">
+                <div class="multiselect-tag" :class="{ 'is-disabled': disabled }">
+                  <AtomName
+                    :name="getOptionDisplay(option).name"
+                    :negated="getOptionDisplay(option).negated"
+                  />
+                  <span
+                    v-if="!disabled"
+                    class="multiselect-tag-remove"
+                    @click="handleTagRemove(option, $event)"
+                  >
+                    <span class="multiselect-tag-remove-icon"></span>
+                  </span>
+                </div>
+              </template>
+              <template v-slot:option="{ option }">
+                <AtomName
+                  :name="getOptionDisplay(option).name"
+                  :negated="getOptionDisplay(option).negated"
+                />
+              </template>
+            </Multiselect>
           </div>
-          <div class="field">
-            <label class="label">Observations</label>
-            <div class="control">
-              <Multiselect
-                :value="selectedObservations"
-                :options="observationOptions"
-                mode="tags"
-                :searchable="true"
-                :close-on-select="false"
-                label="label"
-                track-by="label"
-                @input="setObservations($event)"
+        </div>
+        <div>
+          <label class="text-base-content/80 mb-1 block text-sm font-medium">Observations</label>
+          <Multiselect
+            :value="selectedObservations"
+            :options="observationOptions"
+            mode="tags"
+            :searchable="true"
+            :close-on-select="false"
+            label="label"
+            track-by="label"
+            @input="setObservations($event)"
+          >
+            <template v-slot:tag="{ option, handleTagRemove, disabled }">
+              <div class="multiselect-tag" :class="{ 'is-disabled': disabled }">
+                <AtomName
+                  :name="getOptionDisplay(option).name"
+                  :negated="getOptionDisplay(option).negated"
+                />
+                <span
+                  v-if="!disabled"
+                  class="multiselect-tag-remove"
+                  @click="handleTagRemove(option, $event)"
+                >
+                  <span class="multiselect-tag-remove-icon"></span>
+                </span>
+              </div>
+            </template>
+            <template v-slot:option="{ option }">
+              <AtomName
+                :name="getOptionDisplay(option).name"
+                :negated="getOptionDisplay(option).negated"
               />
-            </div>
-          </div>
-        </form>
+            </template>
+          </Multiselect>
+        </div>
+      </form>
+    </div>
+    <div>
+      <h5 class="mb-3 text-lg font-semibold">Conclusions</h5>
+      <form
+        @submit.prevent="
+          () => {
+            if (evaluateConclusions !== null) evaluateConclusions()
+          }
+        "
+      >
+        <div class="join w-full">
+          <button
+            :disabled="evaluateConclusions === null"
+            type="submit"
+            class="btn btn-primary join-item"
+          >
+            Evaluate
+          </button>
+          <select
+            class="select join-item flex-1"
+            v-model="selectedAtomToShowConclusionFor"
+            :disabled="evaluateConclusions === null"
+          >
+            <option :value="nonSelected">all</option>
+            <hr />
+            <option v-for="atom in atoms" :key="atom.id" :value="atom.id">
+              {{ getDisplayName(atom, false) }}
+            </option>
+          </select>
+          <button
+            v-if="abortConclusionsEvaluation !== null"
+            type="button"
+            class="btn join-item"
+            @click="abortConclusionsEvaluation()"
+          >
+            Abort
+          </button>
+        </div>
+      </form>
+    </div>
+    <div class="space-y-3">
+      <div v-if="isEvaluatingConclusions" role="alert" class="alert text-sm">
+        Computing conclusions...
+      </div>
+      <div
+        v-if="conclusionsEvaluationBlocker !== null"
+        role="alert"
+        class="alert alert-warning text-sm"
+      >
+        <EvaluationBlockerText
+          :atoms="knowledgeBase.atoms"
+          :blocker="conclusionsEvaluationBlocker"
+        />
+      </div>
+      <div
+        v-if="conclusionsEvaluationError !== null"
+        role="alert"
+        class="alert alert-error text-sm"
+      >
+        {{ conclusionsEvaluationError }}
+      </div>
+      <div
+        v-if="conclusionsEvaluationResult !== null"
+        class="bg-base-200 border-base-300 rounded-box border p-4 text-sm"
+      >
+        <ConclusionsText
+          :atoms="knowledgeBase.atoms"
+          :observations="observations"
+          :conclusions="conclusionsEvaluationResult"
+          :requesed-atoms-for-conclusion="atomsToShowConclusionFor"
+        />
       </div>
     </div>
-    <div class="columns">
-      <div class="column is-full">
-        <h5 class="title is-5">Conclusions</h5>
+    <div class="space-y-6">
+      <div>
+        <h5 class="mb-3 text-lg font-semibold">Explanations</h5>
         <form
           @submit.prevent="
             () => {
-              if (evaluateConclusions !== null) evaluateConclusions()
+              if (evaluateCombinedSequenceExplanations !== null)
+                evaluateCombinedSequenceExplanations()
             }
           "
         >
-          <div class="field is-grouped is-gapless">
-            <div class="field has-addons is-flex-grow-1">
-              <div class="control">
-                <button
-                  :disabled="evaluateConclusions === null"
-                  type="submit"
-                  class="button is-primary"
-                >
-                  Evaluate
-                </button>
-              </div>
-              <div class="control is-flex-grow-1">
-                <div class="select is-fullwidth">
-                  <select
-                    class="is-fullwidt"
-                    v-model="selectedAtomToShowConclusionFor"
-                    :disabled="evaluateConclusions === null"
-                  >
-                    <option :value="nonSelected">all</option>
-                    <hr />
-                    <option v-for="atom in atoms" :key="atom.id" :value="atom.id">
-                      {{ getDisplayName(atom, false) }}
-                    </option>
-                  </select>
-                </div>
-              </div>
-              <div class="control">
-                <button
-                  v-if="abortConclusionsEvaluation !== null"
-                  type="button"
-                  class="button"
-                  @click="abortConclusionsEvaluation()"
-                >
-                  Abort
-                </button>
-              </div>
-            </div>
+          <div class="join w-full">
+            <button
+              :disabled="
+                evaluateCombinedSequenceExplanations === null ||
+                selectedAtomToShowExplanationFor === null
+              "
+              type="submit"
+              class="btn btn-primary join-item"
+            >
+              Evaluate
+            </button>
+            <select
+              class="select join-item flex-1"
+              v-model="selectedAtomToShowExplanationFor"
+              :disabled="evaluateExplanations === null"
+            >
+              <option v-for="atom in atoms" :key="atom.id" :value="atom.id">
+                {{ getDisplayName(atom, false) }}
+              </option>
+            </select>
+            <button
+              v-if="abortCombinedSequenceExplanationEvaluation !== null"
+              type="button"
+              class="btn join-item"
+              @click="abortCombinedSequenceExplanationEvaluation()"
+            >
+              Abort
+            </button>
           </div>
         </form>
       </div>
-    </div>
-    <div class="columns">
-      <div class="column is-full">
-        <article v-if="isEvaluatingConclusions" class="message">
-          <div class="message-body is-size-6">Computing conclusions...</div>
-        </article>
-        <article v-if="conclusionsEvaluationBlocker !== null" class="message is-warning">
-          <div class="message-body is-size-6">
-            <EvaluationBlockerText
-              :atoms="knowledgeBase.atoms"
-              :blocker="conclusionsEvaluationBlocker"
-            />
-          </div>
-        </article>
-        <article v-if="conclusionsEvaluationError !== null" class="message is-danger">
-          <div class="message-body is-size-6">
-            {{ conclusionsEvaluationError }}
-          </div>
-        </article>
-        <article v-if="conclusionsEvaluationResult !== null" class="message is-dark">
-          <div class="message-body is-size-6">
-            <ConclusionsText
-              :atoms="knowledgeBase.atoms"
-              :observations="observations"
-              :conclusions="conclusionsEvaluationResult"
-              :requesed-atoms-for-conclusion="atomsToShowConclusionFor"
-            />
-          </div>
-        </article>
-      </div>
-    </div>
-    <div>
-      <div class="columns">
-        <div class="column is-full">
-          <h5 class="title is-5">Explanations</h5>
-          <form
-            @submit.prevent="
-              () => {
-                if (evaluateCombinedSequenceExplanations !== null)
-                  evaluateCombinedSequenceExplanations()
-              }
-            "
-          >
-            <div class="field is-grouped is-gapless">
-              <div class="field has-addons is-flex-grow-1">
-                <div class="control">
-                  <button
-                    :disabled="
-                      evaluateCombinedSequenceExplanations === null ||
-                      selectedAtomToShowExplanationFor === null
-                    "
-                    type="submit"
-                    class="button is-primary"
-                  >
-                    Evaluate
-                  </button>
-                </div>
-                <div class="control is-flex-grow-1">
-                  <div class="select is-fullwidth">
-                    <select
-                      class="is-fullwidt"
-                      v-model="selectedAtomToShowExplanationFor"
-                      :disabled="evaluateExplanations === null"
-                    >
-                      <option v-for="atom in atoms" :key="atom.id" :value="atom.id">
-                        {{ getDisplayName(atom, false) }}
-                      </option>
-                    </select>
-                  </div>
-                </div>
-                <div class="control">
-                  <button
-                    v-if="abortCombinedSequenceExplanationEvaluation !== null"
-                    type="button"
-                    class="button"
-                    @click="abortCombinedSequenceExplanationEvaluation()"
-                  >
-                    Abort
-                  </button>
-                </div>
-              </div>
-            </div>
-          </form>
+      <div class="space-y-3" v-if="selectedAtomToShowExplanationFor !== null">
+        <div v-if="isEvaluatingExplanation" role="alert" class="alert text-sm">
+          Computing explanation...
+        </div>
+        <div
+          v-if="explanationEvaluationError !== null"
+          role="alert"
+          class="alert alert-error text-sm"
+        >
+          {{ explanationEvaluationError }}
+        </div>
+        <div
+          v-if="explanationEvaluationResult !== null"
+          class="bg-base-200 border-base-300 rounded-box border p-4 text-sm"
+        >
+          <ExplanationText
+            :atoms="knowledgeBase.atoms"
+            :per-atom-id-significant-atom-ids="explanationEvaluationResult"
+            :requesed-atom-for-explanation="selectedAtomToShowExplanationFor"
+          />
         </div>
       </div>
-      <div class="columns" v-if="selectedAtomToShowExplanationFor !== null">
-        <div class="column is-full">
-          <article v-if="isEvaluatingExplanation" class="message">
-            <div class="message-body is-size-6">Computing explanation...</div>
-          </article>
-          <article v-if="explanationEvaluationError !== null" class="message is-danger">
-            <div class="message-body is-size-6">
-              {{ explanationEvaluationError }}
-            </div>
-          </article>
-          <article v-if="explanationEvaluationResult !== null" class="message is-dark">
-            <div class="message-body is-size-6">
-              <ExplanationText
-                :atoms="knowledgeBase.atoms"
-                :per-atom-id-significant-atom-ids="explanationEvaluationResult"
-                :requesed-atom-for-explanation="selectedAtomToShowExplanationFor"
-              />
-            </div>
-          </article>
+      <div class="space-y-3">
+        <div
+          v-if="combinedExplanationsEvaluationBlocker !== null"
+          role="alert"
+          class="alert alert-warning text-sm"
+        >
+          <EvaluationBlockerText
+            :atoms="knowledgeBase.atoms"
+            :blocker="combinedExplanationsEvaluationBlocker"
+          />
         </div>
-      </div>
-      <div class="columns">
-        <div class="column is-full">
-          <article v-if="combinedExplanationsEvaluationBlocker !== null" class="message is-warning">
-            <div class="message-body is-size-6">
-              <EvaluationBlockerText
-                :atoms="knowledgeBase.atoms"
-                :blocker="combinedExplanationsEvaluationBlocker"
-              />
-            </div>
-          </article>
-          <article
-            v-if="!isEvaluatingExplanation && isEvaluatingSequenceExplanations"
-            class="message"
+        <div
+          v-if="!isEvaluatingExplanation && isEvaluatingSequenceExplanations"
+          role="alert"
+          class="alert text-sm"
+        >
+          Computing sequence explanations...
+        </div>
+        <div
+          v-if="sequenceExplanationEvaluationError !== null"
+          role="alert"
+          class="alert alert-error text-sm"
+        >
+          {{ sequenceExplanationEvaluationError }}
+        </div>
+        <div
+          v-if="
+            sequenceExplanationEvaluationResult !== null && activeTab !== SEQUENCE_EXPLANATION_TAB
+          "
+          role="alert"
+          class="alert alert-info text-sm"
+        >
+          Navigate to the
+          <a class="link" @click="emit('update:activeTab', SEQUENCE_EXPLANATION_TAB)"
+            >sequence explanation tab</a
           >
-            <div class="message-body is-size-6">Computing sequence explanations...</div>
-          </article>
-          <article v-if="sequenceExplanationEvaluationError !== null" class="message is-danger">
-            <div class="message-body is-size-6">
-              {{ sequenceExplanationEvaluationError }}
-            </div>
-          </article>
-          <article
-            v-if="
-              sequenceExplanationEvaluationResult !== null && activeTab !== SEQUENCE_EXPLANATION_TAB
-            "
-            class="message is-link"
-          >
-            <div class="message-body is-size-6">
-              Navigate to the
-              <a @click="emit('update:activeTab', SEQUENCE_EXPLANATION_TAB)"
-                >sequence explanation tab</a
-              >
-              to explore the sequence explanations.
-            </div>
-          </article>
+          to explore the sequence explanations.
         </div>
       </div>
     </div>
   </div>
 </template>
 <style src="@vueform/multiselect/themes/default.css"></style>
-<style scoped></style>
+<style scoped>
+/* Keep the overridden-assumptions tags visually matching the (always-disabled) modeled-assumptions
+   tags, rather than the default active/primary tag color used elsewhere (e.g. Observations).
+   Background color (same as background-atom graph nodes) comes from `assumptionTagStyle` since
+   it's a JS color constant; a light background keeps the atom name and the muted "not" prefix
+   from AtomName.vue (styled for light backgrounds) readable. */
+.assumption-multiselect {
+  --ms-tag-color: var(--color-base-content);
+  --ms-tag-color-disabled: var(--color-base-content);
+}
+
+.assumption-multiselect .multiselect-tag {
+  border: 1px solid var(--color-base-300);
+}
+</style>

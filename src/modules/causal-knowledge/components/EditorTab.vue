@@ -50,6 +50,7 @@ import {
 } from '@/modules/common/graphComponentTypes'
 import { LEFT_MOUSE_BUTTON } from '@/modules/common/button'
 import { controlElementNames } from '../controls'
+import { X } from '@lucide/vue'
 
 defineExpose({
   getExportedData,
@@ -945,47 +946,6 @@ function updateSelection(clickTarget: HTMLElement) {
   }
 }
 
-function toogleAsumption(toogledValue: boolean) {
-  const selectedAtom = selectedAtomRef.value
-  if (selectedAtom === undefined) return
-  const currentAssumption = selectedAtom.assumption
-  if (currentAssumption === undefined) return
-  if ([1, 2].includes(currentAssumption)) {
-    // current assumption is false
-    if (toogledValue) {
-      // true is added
-      // changed assumption is true and false
-      selectedAtom.assumption = 3
-    } else {
-      // false is removed
-      // changed assumption is automatically changed to true
-      selectedAtom.assumption = 5
-    }
-  } else if (currentAssumption === 3) {
-    // current assumption is true and false
-    if (toogledValue) {
-      // true is removed
-      // changed assumption is false
-      selectedAtom.assumption = 1
-    } else {
-      // false is removed
-      // changed assumption is true
-      selectedAtom.assumption = 5
-    }
-  } else {
-    // current assumption is true
-    if (toogledValue) {
-      // true is removed
-      // changed assumption is automatically changed to false
-      selectedAtom.assumption = 1
-    } else {
-      // false is added
-      // changed assumption is true and false
-      selectedAtom.assumption = 3
-    }
-  }
-}
-
 // IDs starting with numbers break the graph component code
 // because they are used without escaping in CSS selectors
 const graphComponentId = 'g' + crypto.randomUUID()
@@ -1007,47 +967,50 @@ const graphComponentId = 'g' + crypto.randomUUID()
         />
       </div>
     </div>
-    <div class="menu menu-left">
-      <div class="node-selection p-2">
-        <div class="title is-5 m-0"><h1>Atoms</h1></div>
-        <div class="type p-2">
-          <div
-            class="node-type-legend"
-            :style="{
-              background: COLOR_BACKGROUND_ATOM,
-            }"
-          ></div>
+    <div class="menu-left">
+      <div
+        class="node-selection bg-base-100 border-base-300 rounded-box border p-3.5 text-sm shadow-md"
+      >
+        <div class="legend-section-title">Atoms</div>
+        <div class="legend-row">
+          <div class="legend-swatch" :style="{ backgroundColor: COLOR_BACKGROUND_ATOM }"></div>
           Background atom
         </div>
-        <div class="type p-2">
-          <div class="node-type-legend" :style="{ backgroundColor: COLOR_EXPLAINABLE_ATOM }"></div>
+        <div class="legend-row">
+          <div class="legend-swatch" :style="{ backgroundColor: COLOR_EXPLAINABLE_ATOM }"></div>
           Explainable atom
         </div>
-        <div class="title is-5 m-0"><h1>Causal relation</h1></div>
-        <div class="type p-2">
+        <div class="legend-section-title mt-3">Causal relation</div>
+        <div class="legend-row">
           <!-- https://en.wikipedia.org/wiki/Wedge_(symbol) -->
-          <div class="operator-type-legend" :style="{ backgroundColor: COLOR_CONJUNCTION }"></div>
+          <div
+            class="legend-swatch legend-swatch-circle"
+            :style="{ background: COLOR_CONJUNCTION }"
+          ></div>
           Independent
         </div>
-        <div class="type p-2">
+        <div class="legend-row">
           <!-- https://en.wikipedia.org/wiki/Wedge_(symbol) -->
-          <div class="operator-type-legend" :style="{ backgroundColor: COLOR_CONJUNCTION }">
+          <div
+            class="legend-swatch legend-swatch-circle"
+            :style="{ background: COLOR_CONJUNCTION }"
+          >
             {{ LABEL_CONJUNCTION }}
           </div>
           Dependent
         </div>
-        <div class="type p-2">
-          <div class="link-type-legend" :style="{ color: COLOR_REGULAR_LINKS }">&#8594;</div>
+        <div class="legend-row">
+          <div class="legend-swatch-arrow" :style="{ color: COLOR_REGULAR_LINKS }">&#8594;</div>
           Regular
         </div>
-        <div class="type p-2">
-          <div class="link-type-legend" :style="{ color: COLOR_NEGATED_LINKS }">&#8594;</div>
+        <div class="legend-row">
+          <div class="legend-swatch-arrow" :style="{ color: COLOR_NEGATED_LINKS }">&#8594;</div>
           Negated
         </div>
-        <div class="title is-5 m-0"><h1>Highlighting</h1></div>
-        <div class="type p-2">
+        <div class="legend-section-title mt-3">Highlighting</div>
+        <div class="legend-row">
           <div
-            class="node-type-legend"
+            class="legend-swatch"
             :style="{
               background: 'white',
               // Generated with https://css-tricks.com/more-control-over-css-borders-with-background-image/
@@ -1055,16 +1018,18 @@ const graphComponentId = 'g' + crypto.randomUUID()
               backgroundSize: `3px 100%, 100% 3px, 3px 100% , 100% 3px`,
               backgroundPosition: '0 0, 0 0, 100% 0, 0 100%',
               backgroundRepeat: 'no-repeat',
+              border: 'none',
             }"
           ></div>
           Selected for editing
         </div>
-        <div class="type p-2">
+        <div class="legend-row">
           <div
-            class="node-type-legend"
+            class="legend-swatch"
             :style="{
               backgroundColor: 'white',
               boxShadow: `0px 0px 6px 2px ${COLOR_HIGHLIGHT_RELEVANT_FOR_EXPLANATION}`,
+              border: 'none',
             }"
           ></div>
           Used in explanation
@@ -1073,64 +1038,52 @@ const graphComponentId = 'g' + crypto.randomUUID()
     </div>
     <div
       v-if="selectedAtomRef !== undefined"
-      class="menu menu-right p-2"
+      class="menu-right bg-base-100 border-base-300 rounded-box w-64 space-y-4 border p-4 shadow-md"
       @keydown.esc="selectAtom(null)"
     >
-      <div class="title is-5"><h1>Atom properties</h1></div>
-
-      <div class="field">
-        <label class="label">Name</label>
-        <div class="control">
-          <input
-            v-focus
-            :key="selectedAtomRef.id"
-            :value="selectedAtomRef.name"
-            @input="
-              (event) => {
-                const target = (event as InputEvent).target as HTMLInputElement
-                processNameInput(target.value)
-              }
-            "
-            class="input"
-            type="text"
-            placeholder="Name"
-          />
-        </div>
+      <div class="flex items-center justify-between">
+        <h1 class="text-lg font-semibold">Atom properties</h1>
+        <button
+          class="btn btn-sm btn-circle btn-ghost"
+          aria-label="Close"
+          @click="selectAtom(null)"
+        >
+          <X class="size-4" aria-hidden="true" />
+        </button>
       </div>
 
-      <div class="field">
-        <label class="label">Description</label>
-        <div class="control">
-          <textarea
-            v-model="selectedAtomRef.description"
-            class="textarea"
-            placeholder="Description"
-          ></textarea>
-        </div>
+      <div>
+        <label class="text-base-content/80 mb-1 block text-sm font-medium">Name</label>
+        <input
+          v-focus
+          :key="selectedAtomRef.id"
+          :value="selectedAtomRef.name"
+          @input="
+            (event) => {
+              const target = (event as InputEvent).target as HTMLInputElement
+              processNameInput(target.value)
+            }
+          "
+          class="input w-full"
+          type="text"
+          placeholder="Name"
+        />
       </div>
 
-      <div class="field">
-        <label class="label">Type</label>
-        <div class="control">
-          <label class="radio is-block">
-            <input
-              type="radio"
-              name="type"
-              :checked="selectedAtomRef.assumption !== undefined"
-              disabled
-            />
-            Background atom
-          </label>
-          <label class="radio is-block">
-            <input
-              type="radio"
-              name="type"
-              :checked="selectedAtomRef.assumption === undefined"
-              disabled
-            />
-            Explainable atom
-          </label>
-        </div>
+      <div>
+        <label class="text-base-content/80 mb-1 block text-sm font-medium">Description</label>
+        <textarea
+          v-model="selectedAtomRef.description"
+          class="textarea w-full"
+          placeholder="Description"
+        ></textarea>
+      </div>
+
+      <div>
+        <label class="text-base-content/80 mb-1 block text-sm font-medium">Type</label>
+        <p class="text-sm">
+          {{ selectedAtomRef.assumption !== undefined ? 'Background atom' : 'Explainable atom' }}
+        </p>
       </div>
       <!-- UI for sliders, when we enable selecting between five values again. -->
       <!-- <div class="field" v-if="selectedAtomRef.assumption !== undefined">
@@ -1157,54 +1110,36 @@ const graphComponentId = 'g' + crypto.randomUUID()
           </datalist>
         </div>
       </div> -->
-
-      <div class="field" v-if="selectedAtomRef.assumption !== undefined">
-        <label class="label">Assumptions</label>
-        <div class="control">
-          <div class="checkboxes">
-            <label class="checkbox">
-              <input
-                type="checkbox"
-                :checked="[3, 4, 5].includes(selectedAtomRef.assumption)"
-                @change="toogleAsumption(true)"
-              />
-              true
-            </label>
-            <label class="checkbox">
-              <input
-                type="checkbox"
-                :checked="[1, 2, 3].includes(selectedAtomRef.assumption)"
-                @change="toogleAsumption(false)"
-              />
-              false
-            </label>
-          </div>
-        </div>
-      </div>
     </div>
     <div
       v-if="selectedConnectionRef !== undefined"
-      class="menu menu-right p-2"
+      class="menu-right bg-base-100 border-base-300 rounded-box w-64 space-y-4 border p-4 shadow-md"
       @keydown.esc="selectConnection(null)"
     >
-      <div class="title is-5"><h1>Relation properties</h1></div>
-      <div class="field">
-        <label class="label">Relation type</label>
-        <div class="control">
-          <div class="checkboxes">
-            <label class="checkbox">
-              <input
-                v-focus
-                :key="getConnectionKey(selectedConnectionRef.id)"
-                type="checkbox"
-                name="negated"
-                :checked="selectedConnectionRef.negated"
-                @change="updateLinkType(!selectedConnectionRef.negated)"
-              />
-              Negated
-            </label>
-          </div>
-        </div>
+      <div class="flex items-center justify-between">
+        <h1 class="text-lg font-semibold">Relation properties</h1>
+        <button
+          class="btn btn-sm btn-circle btn-ghost"
+          aria-label="Close"
+          @click="selectConnection(null)"
+        >
+          <X class="size-4" aria-hidden="true" />
+        </button>
+      </div>
+      <div>
+        <label class="text-base-content/80 mb-1 block text-sm font-medium">Relation type</label>
+        <label class="label w-fit cursor-pointer gap-2 px-0">
+          <input
+            v-focus
+            :key="getConnectionKey(selectedConnectionRef.id)"
+            type="checkbox"
+            name="negated"
+            class="checkbox checkbox-sm"
+            :checked="selectedConnectionRef.negated"
+            @change="updateLinkType(!selectedConnectionRef.negated)"
+          />
+          Negated
+        </label>
       </div>
     </div>
     <div
@@ -1215,7 +1150,7 @@ const graphComponentId = 'g' + crypto.randomUUID()
       }"
     >
       <div class="overlay-content">
-        <progress class="progress is-small is-primary" max="100">15%</progress>
+        <progress class="progress progress-primary h-1.5" max="100">15%</progress>
       </div>
     </div>
   </div>
@@ -1252,30 +1187,15 @@ const graphComponentId = 'g' + crypto.randomUUID()
 }
 
 .menu-left {
-  background-color: white;
-  top: 128px;
   position: absolute;
-}
-
-.node-selection {
-  border: 2px solid black;
-  border-radius: 4px;
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-  border-left: none;
-  overflow: hidden;
+  top: 128px;
+  left: 1rem;
 }
 
 .menu-right {
-  background-color: white;
-  top: 128px;
-  right: 0;
   position: absolute;
-  border: 2px solid black;
-  border-right: none;
-  border-radius: 4px;
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
+  top: 128px;
+  right: 1rem;
 }
 
 .menu-right datalist option:first-child {
@@ -1286,36 +1206,54 @@ const graphComponentId = 'g' + crypto.randomUUID()
   margin-right: 5px;
 }
 
-.type {
+.legend-section-title {
+  color: var(--color-base-content);
+  opacity: 0.6;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 0.375rem;
+}
+
+.legend-section-title:first-child {
+  margin-top: 0;
+}
+
+.legend-row {
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
-  gap: 4px;
+  gap: 0.5rem;
+  padding-block: 0.125rem;
 }
 
-.node-type-legend {
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
-  /* center text inside div */
-  text-align: center;
+.legend-swatch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--color-base-300);
 }
 
-.operator-type-legend {
-  display: inline-block;
-  width: 20px;
-  height: 20px;
+.legend-swatch-circle {
   border-radius: 100%;
-  /* center text inside div */
-  text-align: center;
-  line-height: 19px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-base-content);
 }
 
-.link-type-legend {
-  font-weight: bold;
-  height: 20px;
-  line-height: 17px;
+.legend-swatch-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.125rem;
+  height: 1.125rem;
+  font-weight: 700;
 }
 </style>

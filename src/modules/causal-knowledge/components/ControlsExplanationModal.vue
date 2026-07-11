@@ -19,6 +19,7 @@
 <script setup lang="ts">
 import { vFocus } from '@/modules/common/vFocus'
 import ControlsExplanationTable from './ControlsExplanationTable.vue'
+import { X } from '@lucide/vue'
 
 const show = defineModel<boolean>('show', { required: true })
 const { sourceName, targetName, linkName } = defineProps<{
@@ -38,29 +39,23 @@ function hideControlExplanationModal() {
     v-if="show"
     tabindex="0"
     @keydown.esc="hideControlExplanationModal"
-    class="modal control-explanation-modal is-active"
+    class="modal modal-open"
   >
-    <div class="modal-background" @click="hideControlExplanationModal"></div>
-    <div class="modal-content">
-      <div class="box">
-        <ControlsExplanationTable
-          class="is-fullwidth is-hoverable"
-          :source-name="sourceName"
-          :target-name="targetName"
-          :link-name="linkName"
-        />
-      </div>
+    <div class="modal-box border-base-300 relative max-w-2xl border">
+      <button
+        class="btn btn-sm btn-circle btn-ghost absolute top-3 right-3"
+        @click="hideControlExplanationModal"
+        aria-label="Close"
+      >
+        <X class="size-4" aria-hidden="true" />
+      </button>
+      <h3 class="mb-4 text-lg font-bold">Controls</h3>
+      <ControlsExplanationTable
+        :source-name="sourceName"
+        :target-name="targetName"
+        :link-name="linkName"
+      />
     </div>
-    <button
-      class="modal-close is-large"
-      @click="hideControlExplanationModal"
-      aria-label="close"
-    ></button>
+    <div class="modal-backdrop" @click="hideControlExplanationModal"></div>
   </div>
 </template>
-
-<style scoped>
-th {
-  font-weight: 700;
-}
-</style>

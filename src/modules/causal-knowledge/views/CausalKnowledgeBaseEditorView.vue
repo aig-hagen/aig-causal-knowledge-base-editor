@@ -110,42 +110,41 @@ const isSequenceExplnationTabActive = computed(() => activeTab.value === SEQUENC
 </script>
 
 <template>
-  <EditorLayout :show-sidebar-right="showEvaluationConsole">
+  <EditorLayout
+    v-model:show-sidebar-right="showEvaluationConsole"
+    sidebar-right-name="evaluation console"
+  >
     <template v-slot:navbar>
       <EditorNavbar
         title="Causal Knowledge Base Editor"
         :get-exported-data="getExportedData"
         :load-from-file-data="loadKnowledgeBase"
         :datasets="sampleDatasets"
-        sidebarRightName="evaluation console"
         :controlElementNames="controlElementNames"
-        v-model:show-sidebar-right="showEvaluationConsole"
         :showHints="knowledgeBase.atoms.size === 0"
       />
     </template>
     <template v-slot:editor>
       <div class="view">
-        <div class="view-tabs tabs mb-0" :style="{ width: 'max-content' }">
-          <ul>
-            <li
-              :class="{ 'is-active': activeTab === CAUSAL_MODAL_TAB }"
-              @click="activeTab = CAUSAL_MODAL_TAB"
-            >
-              <a>Causal Model</a>
-            </li>
-            <li
-              :class="{ 'is-active': activeTab === ARGUMENTATION_GRAPH_TAB }"
-              @click="activeTab = ARGUMENTATION_GRAPH_TAB"
-            >
-              <a>Argumentation Graph</a>
-            </li>
-            <li
-              :class="{ 'is-active': activeTab === SEQUENCE_EXPLANATION_TAB }"
-              @click="activeTab = SEQUENCE_EXPLANATION_TAB"
-            >
-              <a>Sequence Explanations</a>
-            </li>
-          </ul>
+        <div class="view-tabs tabs tabs-lift" :style="{ width: 'max-content' }">
+          <a
+            class="tab"
+            :class="{ 'tab-active': activeTab === CAUSAL_MODAL_TAB }"
+            @click="activeTab = CAUSAL_MODAL_TAB"
+            >Causal Model</a
+          >
+          <a
+            class="tab"
+            :class="{ 'tab-active': activeTab === ARGUMENTATION_GRAPH_TAB }"
+            @click="activeTab = ARGUMENTATION_GRAPH_TAB"
+            >Argumentation Graph</a
+          >
+          <a
+            class="tab"
+            :class="{ 'tab-active': activeTab === SEQUENCE_EXPLANATION_TAB }"
+            @click="activeTab = SEQUENCE_EXPLANATION_TAB"
+            >Sequence Explanations</a
+          >
         </div>
         <div class="view-editor">
           <EditorTab

@@ -75,40 +75,30 @@ watch(selectedExplanation, () => {
 
 <template>
   <div v-if="sequenceExplanations === undefined">
-    <div class="container is-max-tablet pt-6">
-      <div class="message is-info">
-        <div class="message-body">
-          Evaluate sequence explanations first in the evaluation console to display them here.
-        </div>
+    <div class="max-w-3xl pt-6">
+      <div role="alert" class="alert alert-info text-sm">
+        Evaluate sequence explanations first in the evaluation console to display them here.
       </div>
     </div>
   </div>
   <div v-else-if="explantionsWithIndexInArgument.length === 0">
-    <div class="container is-max-tablet pt-6">
-      <div class="message is-warning">
-        <div class="message-body">No sequence explanations to display.</div>
+    <div class="max-w-3xl pt-6">
+      <div role="alert" class="alert alert-warning text-sm">
+        No sequence explanations to display.
       </div>
     </div>
   </div>
   <div v-else-if="isActive">
-    <div class="tabs mb-0" :style="{ width: 'max-content' }">
-      <ul>
-        <li
-          @click="selectedExplanationIndex = index"
-          v-for="(explantionWithIndexInArgument, index) in explantionsWithIndexInArgument"
-          :key="index"
-          :class="{ 'is-active': selectedExplanationIndex === index }"
-        >
-          <a
-            ><span
-              >Explanation {{ explantionWithIndexInArgument.indexInArgument + 1 }} for
-              <span class="is-underlined">{{
-                explantionWithIndexInArgument.explanation.argument
-              }}</span></span
-            ></a
-          >
-        </li>
-      </ul>
+    <div class="tabs tabs-lift" :style="{ width: 'max-content' }">
+      <a
+        v-for="(explantionWithIndexInArgument, index) in explantionsWithIndexInArgument"
+        :key="index"
+        class="tab"
+        :class="{ 'tab-active': selectedExplanationIndex === index }"
+        @click="selectedExplanationIndex = index"
+        >Explanation {{ explantionWithIndexInArgument.indexInArgument + 1 }} for
+        <span class="underline">{{ explantionWithIndexInArgument.explanation.argument }}</span></a
+      >
     </div>
     <SequenceExplanation
       v-if="selectedExplanation !== undefined"

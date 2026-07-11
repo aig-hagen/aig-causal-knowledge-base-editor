@@ -78,7 +78,7 @@ test('renders one observation', () => {
   expect(wrapper.text()).toContain(
     'Given the assumptions and the causal model, from the observation a follow no conclusions.',
   )
-  expect(getCleanHtml(wrapper)).toContain(`<span class="is-underlined">a</span>`)
+  expect(getCleanHtml(wrapper)).toContain(`<span class="underline"><!--v-if-->a</span>`)
 })
 
 test('renders negated observation', () => {
@@ -98,7 +98,9 @@ test('renders negated observation', () => {
   expect(wrapper.text()).toContain(
     'Given the assumptions and the causal model, from the observation not\xa0a follow no conclusions.',
   )
-  expect(getCleanHtml(wrapper)).toContain(`<span class="is-underlined">not&nbsp;a</span>`)
+  expect(getCleanHtml(wrapper)).toContain(
+    `<span class="underline"><span class="text-base-content/55 italic">not&nbsp;</span>a</span>`,
+  )
 })
 
 test('renders multiple observation', () => {
@@ -127,9 +129,9 @@ test('renders multiple observation', () => {
     'Given the assumptions and the causal model, from the observations a, b and c follow no conclusions.',
   )
   const html = getCleanHtml(wrapper)
-  expect(html).toContain(`<span class="is-underlined">a</span>`)
-  expect(html).toContain(`<span class="is-underlined">b</span>`)
-  expect(html).toContain(`<span class="is-underlined">c</span>`)
+  expect(html).toContain(`<span class="underline"><!--v-if-->a</span>`)
+  expect(html).toContain(`<span class="underline"><!--v-if-->b</span>`)
+  expect(html).toContain(`<span class="underline"><!--v-if-->c</span>`)
 })
 
 test('renders one conclusion', () => {
@@ -149,7 +151,7 @@ test('renders one conclusion', () => {
   expect(wrapper.text()).toContain(
     'Given the assumptions and the causal model, from no observations follows a.',
   )
-  expect(getCleanHtml(wrapper)).toContain(`<span class="is-underlined">a</span>`)
+  expect(getCleanHtml(wrapper)).toContain(`<span class="underline"><!--v-if-->a</span>`)
 })
 
 test('renders multiple conclusion', () => {
@@ -175,8 +177,8 @@ test('renders multiple conclusion', () => {
   )
   expect(getCleanHtml(wrapper)).toContain(
     `<ul>
-      <li><span><span class="is-underlined">a</span></span></li>
-      <li><span><span class="is-underlined">b</span>.</span></li>
+      <li><span class="underline"><!--v-if-->a</span></li>
+      <li><span class="underline"><!--v-if-->b</span>. </li>
     </ul>`,
   )
 })

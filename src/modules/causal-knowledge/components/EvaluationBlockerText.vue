@@ -61,25 +61,25 @@ const isEmptyKnowlegeBase = computed(() => props.blocker instanceof EmptyKnowleg
 
 Evaluation is therefore not possible.
 <template>
-  <div class="is-size-6">
+  <div class="text-sm">
     <div>
       <template v-if="connectionIdWithNotTargetedConjunction !== null">
         A conjunction targeting
-        <span class="is-underlined">{{
+        <span class="underline">{{
           getName(connectionIdWithNotTargetedConjunction.targetId)
         }}</span>
         has no incomming edges.
       </template>
       <template v-if="cycle !== null">
         <template v-if="cycle.length == 2"
-          >It exists a self-loop for <span class="is-underlined">{{ getName(cycle[0]!) }}</span
+          >It exists a self-loop for <span class="underline">{{ getName(cycle[0]!) }}</span
           >.</template
         >
         <template v-else
           >It exists the following cycle:
           <ul>
             <li v-for="(nodeId, index) in cycle" :key="index">
-              <span class="is-underlined">{{ getName(nodeId) }}</span>
+              <span class="underline">{{ getName(nodeId) }}</span>
             </li>
           </ul>
         </template>

@@ -25,7 +25,7 @@ const { reference, offsetY } = defineProps<{
   offsetY: number
 }>()
 
-const color = 'var(--bulma-info)'
+const color = 'var(--hint-arrow-color)'
 const arrowHeadHeight = 16
 const arrowHeadWidht = 8
 const arrowWidht = 4
@@ -46,15 +46,12 @@ const { floatingStyles, middlewareData } = useFloating(
 </script>
 
 <template>
-  <div ref="floating" :style="floatingStyles" class="message is-info">
-    <div
-      class="message-header"
-      :style="{
-        height: `${arrowWidht}px`,
-        padding: 0,
-      }"
-    ></div>
-    <div class="message-body"><slot></slot></div>
+  <div
+    ref="floating"
+    :style="floatingStyles"
+    class="alert alert-info block rounded-box py-2 text-sm shadow-lg"
+  >
+    <slot></slot>
     <div
       ref="floatingArrow"
       :style="{

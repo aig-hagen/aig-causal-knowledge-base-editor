@@ -1,0 +1,7 @@
+- better font?
+- update legend (in particular the edge types)
+- probably remove topbar (embed name in canvas and move menu items to the side?)
+- the three tabs thing needs a better place
+- hover tooltips or something in the eval console to explain the things there
+- check eval result display
+- update userguide

@@ -93,40 +93,39 @@ function setNewArgumentationFramework(newArgumentationFramework: ArgumentationFr
 </script>
 
 <template>
-  <EditorLayout :show-sidebar-right="showEvaluationConsole">
+  <EditorLayout
+    v-model:show-sidebar-right="showEvaluationConsole"
+    sidebar-right-name="evaluation console"
+  >
     <template v-slot:navbar>
       <EditorNavbar
         title="Argumentation Framework Editor"
         :get-exported-data="getExportedData"
         :load-from-file-data="loadArgumentationFramework"
         :datasets="sampleDatasets"
-        sidebarRightName="evaluation console"
         :controlElementNames="{
           source: 'argument',
           target: 'argument',
           link: 'attack',
         }"
-        v-model:show-sidebar-right="showEvaluationConsole"
         :show-hints="false"
       />
     </template>
     <template v-slot:editor>
       <div class="view">
-        <div class="tabs mb-0" :style="{ width: 'max-content' }">
-          <ul>
-            <li
-              :class="{ 'is-active': activeTab === ARGUMENTATION_GRAPH_TAB }"
-              @click="activeTab = ARGUMENTATION_GRAPH_TAB"
-            >
-              <a>Argumentation Graph</a>
-            </li>
-            <li
-              :class="{ 'is-active': activeTab === SEQUENCE_EXPLANATION_TAB }"
-              @click="activeTab = SEQUENCE_EXPLANATION_TAB"
-            >
-              <a>Sequence Explanations</a>
-            </li>
-          </ul>
+        <div class="tabs tabs-lift" :style="{ width: 'max-content' }">
+          <a
+            class="tab"
+            :class="{ 'tab-active': activeTab === ARGUMENTATION_GRAPH_TAB }"
+            @click="activeTab = ARGUMENTATION_GRAPH_TAB"
+            >Argumentation Graph</a
+          >
+          <a
+            class="tab"
+            :class="{ 'tab-active': activeTab === SEQUENCE_EXPLANATION_TAB }"
+            @click="activeTab = SEQUENCE_EXPLANATION_TAB"
+            >Sequence Explanations</a
+          >
         </div>
         <div class="view-editor">
           <ArgumentationFrameworkEditor

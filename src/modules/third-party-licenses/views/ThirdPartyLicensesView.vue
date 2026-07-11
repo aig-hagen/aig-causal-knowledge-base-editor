@@ -38,60 +38,56 @@ function getAttributionId(attribution: Attribution) {
 </script>
 
 <template>
-  <div class="container">
-    <div class="columns">
-      <div class="column is-4">
-        <section class="section">
-          <aside class="menu">
-            <p class="menu-label">Third-Party Licenses</p>
-            <ul class="menu-list">
-              <li v-for="attribution of attributions" :key="getAttributionId(attribution)">
-                <a :href="'#' + getAttributionId(attribution)"
-                  ><template v-if="attribution.scope !== undefined"
-                    >@{{ attribution.scope }}/</template
-                  >{{ attribution.name }}</a
-                >
-              </li>
-            </ul>
-          </aside>
-        </section>
-      </div>
-      <div class="column">
-        <section class="section">
-          <div class="content">
-            <h1>Third-Party Licenses</h1>
-            <p>
-              This application makes use of open-source software components. We gratefully
-              acknowledge the developers and contributors of these projects. The following
-              attributions are provided to comply with applicable open-source licenses.
-            </p>
-            <template v-for="attribution of attributions" :key="getAttributionId(attribution)">
-              <h6 :id="getAttributionId(attribution)">
-                <template v-if="attribution.scope !== undefined">@{{ attribution.scope }}/</template
-                >{{ attribution.name
-                }}<template v-if="attribution.version !== undefined"
-                  >@{{ attribution.version }}</template
-                >
-              </h6>
+  <div class="mx-auto max-w-6xl p-6">
+    <div class="flex flex-col gap-8 lg:flex-row">
+      <aside class="lg:w-64 lg:shrink-0">
+        <ul class="menu bg-base-100 border-base-300 rounded-box border p-2 lg:sticky lg:top-4">
+          <li class="menu-title">Third-Party Licenses</li>
+          <li v-for="attribution of attributions" :key="getAttributionId(attribution)">
+            <a :href="'#' + getAttributionId(attribution)"
+              ><template v-if="attribution.scope !== undefined">@{{ attribution.scope }}/</template
+              >{{ attribution.name }}</a
+            >
+          </li>
+        </ul>
+      </aside>
+      <div class="min-w-0 flex-1 space-y-4">
+        <h1 class="text-2xl font-bold">Third-Party Licenses</h1>
+        <p class="text-base-content/80 text-sm">
+          This application makes use of open-source software components. We gratefully acknowledge
+          the developers and contributors of these projects. The following attributions are provided
+          to comply with applicable open-source licenses.
+        </p>
+        <template v-for="attribution of attributions" :key="getAttributionId(attribution)">
+          <div class="border-base-300 space-y-2 border-t pt-4">
+            <h6 :id="getAttributionId(attribution)" class="font-semibold">
+              <template v-if="attribution.scope !== undefined">@{{ attribution.scope }}/</template
+              >{{ attribution.name
+              }}<template v-if="attribution.version !== undefined"
+                >@{{ attribution.version }}</template
+              >
+            </h6>
 
-              <p>
-                Published<template v-if="attribution.publisher">
-                  by <em> {{ attribution.publisher }}</em></template
-                >
-                under <em>{{ attribution.license }}</em> at
-                <a :href="attribution.repository">{{ attribution.repository }}</a
-                >.
-              </p>
-              <blockquote v-if="attribution.licenseText" style="white-space: pre-wrap">
-                {{ attribution.licenseText }}
-              </blockquote>
-              <p v-else>This software component provides no license text.</p>
-            </template>
+            <p class="text-base-content/80 text-sm">
+              Published<template v-if="attribution.publisher">
+                by <em> {{ attribution.publisher }}</em></template
+              >
+              under <em>{{ attribution.license }}</em> at
+              <a class="link" :href="attribution.repository">{{ attribution.repository }}</a
+              >.
+            </p>
+            <blockquote
+              v-if="attribution.licenseText"
+              class="bg-base-200 border-base-300 rounded-box overflow-x-auto border p-4 font-mono text-xs whitespace-pre-wrap"
+            >
+              {{ attribution.licenseText }}
+            </blockquote>
+            <p v-else class="text-base-content/80 text-sm">
+              This software component provides no license text.
+            </p>
           </div>
-        </section>
+        </template>
       </div>
     </div>
   </div>
 </template>
-
-<style></style>

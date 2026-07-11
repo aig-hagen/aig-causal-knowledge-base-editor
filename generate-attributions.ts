@@ -20,7 +20,7 @@ const options: InitOpts = {
   start: '.',
   excludePrivatePackages: true,
   onlyAllow:
-    'MIT;BSD-3-Clause;Apache-2.0;ISC;Python-2.0;CC-BY-4.0;BSD-2-Clause;BlueOak-1.0.0;Unlicense;CC0-1.0;CC-BY-3.0;0BSD;MPL-2.0',
+    'MIT;BSD-3-Clause;Apache-2.0;ISC;Python-2.0;CC-BY-4.0;BSD-2-Clause;BlueOak-1.0.0;Unlicense;CC0-1.0;CC-BY-3.0;0BSD;MPL-2.0;OFL-1.1',
 }
 checker.init(options, (err, packages) => {
   if (err) {

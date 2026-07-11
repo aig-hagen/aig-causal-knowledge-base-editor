@@ -18,6 +18,7 @@
 -->
 <script setup lang="ts">
 import { useNotifications } from '@/modules/common/stores/notifications'
+import { X } from '@lucide/vue'
 const notifications = useNotifications()
 </script>
 
@@ -26,14 +27,22 @@ const notifications = useNotifications()
     <div
       v-for="notification in notifications.notifications"
       :key="notification.id"
-      :class="['notification', notification.type === 'error' ? 'is-danger' : 'is-success']"
+      role="alert"
+      :class="[
+        'alert',
+        'shadow-lg',
+        notification.type === 'error' ? 'alert-error' : 'alert-success',
+      ]"
     >
+      <div style="white-space: pre-wrap" class="text-sm">{{ notification.message }}</div>
       <button
         v-if="notification.type === 'error'"
-        class="delete"
+        class="btn btn-circle btn-ghost btn-xs"
+        aria-label="Dismiss"
         @click="notifications.removeNotification(notification.id)"
-      ></button>
-      <div style="white-space: pre-wrap">{{ notification.message }}</div>
+      >
+        <X class="size-4" aria-hidden="true" />
+      </button>
     </div>
   </div>
 </template>

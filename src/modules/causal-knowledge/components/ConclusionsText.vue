@@ -22,6 +22,7 @@ import { type Literal } from '@/modules/causal-knowledge/composables/useEvaluati
 import { getDisplayName } from '@/modules/causal-knowledge/stores/knowledgeBase'
 import { computed } from 'vue'
 import { hasOneEntry } from '@/modules/common/types'
+import AtomName from './AtomName.vue'
 
 const props = defineProps<{
   atoms: Map<Id, Atom>
@@ -46,12 +47,12 @@ const showNoFurtherConclusions = computed(() => {
   return !allRequestedConclusionsHaveAResult
 })
 
-function getName(atomId: Id, negated: boolean): string {
+function getAtomName(atomId: Id): string {
   const atom = props.atoms.get(atomId)
   if (atom === undefined) {
     throw new Error(`Atom with ID ${String(atomId)} not found.`)
   }
-  return getDisplayName(atom, negated)
+  return getDisplayName(atom, false)
 }
 </script>
 
@@ -62,9 +63,11 @@ function getName(atomId: Id, negated: boolean): string {
       <template v-if="observations.length === 0">from no observations </template>
       <template v-else-if="hasOneEntry(observations)"
         >from the observation
-        <span class="is-underlined">{{
-          getName(observations[0].atomId, observations[0].negated)
-        }}</span>
+        <AtomName
+          class="underline"
+          :name="getAtomName(observations[0].atomId)"
+          :negated="observations[0].negated"
+        />
         <span v-html="` `"></span>
       </template>
       <template v-else-if="observations.length > 1"
@@ -72,37 +75,41 @@ function getName(atomId: Id, negated: boolean): string {
         <template
           v-for="observation in observations.slice(0, -2)"
           :key="`${observation.atomId}-${observation.negated}`"
-          ><span class="is-underlined">{{ getName(observation.atomId, observation.negated) }} </span
-          >, </template
-        ><span class="is-underlined">{{
-          getName(
-            observations[observations.length - 2]!.atomId,
-            observations[observations.length - 2]!.negated,
-          )
-        }}</span>
+          ><AtomName
+            class="underline"
+            :name="getAtomName(observation.atomId)"
+            :negated="observation.negated"
+          />, </template
+        ><AtomName
+          class="underline"
+          :name="getAtomName(observations[observations.length - 2]!.atomId)"
+          :negated="observations[observations.length - 2]!.negated"
+        />
         and
-        <span class="is-underlined">{{
-          getName(
-            observations[observations.length - 1]!.atomId,
-            observations[observations.length - 1]!.negated,
-          )
-        }}</span
-        ><span v-html="` `"></span>
+        <AtomName
+          class="underline"
+          :name="getAtomName(observations[observations.length - 1]!.atomId)"
+          :negated="observations[observations.length - 1]!.negated"
+        /><span v-html="` `"></span>
       </template>
       <template v-if="conclusionsToShow.length === 0">
         <template v-if="hasOneEntry(requesedAtomsForConclusion)"
           >follow no conclusions for
-          <span class="is-underlined">{{ getName(requesedAtomsForConclusion[0], false) }}</span
-          >.
+          <AtomName
+            class="underline"
+            :name="getAtomName(requesedAtomsForConclusion[0])"
+            :negated="false"
+          />.
         </template>
         <template v-else>follow no conclusions.</template>
       </template>
       <template v-else-if="hasOneEntry(conclusionsToShow)"
         >follows
-        <span class="is-underlined">{{
-          getName(conclusionsToShow[0].atomId, conclusionsToShow[0].negated)
-        }}</span
-        >.
+        <AtomName
+          class="underline"
+          :name="getAtomName(conclusionsToShow[0].atomId)"
+          :negated="conclusionsToShow[0].negated"
+        />.
       </template>
       <template v-else-if="conclusionsToShow.length > 1"
         >follows:
@@ -112,23 +119,19 @@ function getName(atomId: Id, negated: boolean): string {
             :key="`${conclusion.atomId}-${conclusion.negated}`"
           >
             <li>
-              <span
-                ><span class="is-underlined">{{
-                  getName(conclusion.atomId, conclusion.negated)
-                }}</span></span
-              >
+              <AtomName
+                class="underline"
+                :name="getAtomName(conclusion.atomId)"
+                :negated="conclusion.negated"
+              />
             </li>
           </template>
           <li>
-            <span>
-              <span class="is-underlined">{{
-                getName(
-                  conclusionsToShow[conclusionsToShow.length - 1]!.atomId,
-                  conclusionsToShow[conclusionsToShow.length - 1]!.negated,
-                )
-              }}</span
-              >.</span
-            >
+            <AtomName
+              class="underline"
+              :name="getAtomName(conclusionsToShow[conclusionsToShow.length - 1]!.atomId)"
+              :negated="conclusionsToShow[conclusionsToShow.length - 1]!.negated"
+            />.
           </li>
         </ul>
       </template>

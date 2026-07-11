@@ -18,9 +18,15 @@
 -->
 <script setup lang="ts">
 import { computed } from 'vue'
+import { ChevronLeft, ChevronRight } from '@lucide/vue'
 
-const { showSidebarRight } = defineProps<{
+const { showSidebarRight, sidebarRightName } = defineProps<{
   showSidebarRight: boolean
+  sidebarRightName?: string
+}>()
+
+const emit = defineEmits<{
+  'update:showSidebarRight': [showSidebarRight: boolean]
 }>()
 
 const slots = defineSlots<{
@@ -32,6 +38,10 @@ const slots = defineSlots<{
 const isSidebarRightActive = computed(() => {
   return slots.sidebarRight !== undefined && showSidebarRight
 })
+
+function toggleSidebarRight() {
+  emit('update:showSidebarRight', !showSidebarRight)
+}
 </script>
 
 <template>
@@ -45,14 +55,29 @@ const isSidebarRightActive = computed(() => {
     <aside v-show="isSidebarRightActive" class="editor-layout-sidebar-right">
       <slot name="sidebarRight" />
     </aside>
+    <button
+      v-if="slots.sidebarRight !== undefined"
+      type="button"
+      class="sidebar-toggle btn btn-circle btn-sm bg-base-100 border-base-300 border shadow-md"
+      :aria-label="
+        isSidebarRightActive
+          ? `Collapse ${sidebarRightName ?? 'panel'}`
+          : `Expand ${sidebarRightName ?? 'panel'}`
+      "
+      @click="toggleSidebarRight"
+    >
+      <ChevronRight v-if="isSidebarRightActive" class="size-4" aria-hidden="true" />
+      <ChevronLeft v-else class="size-4" aria-hidden="true" />
+    </button>
   </div>
 </template>
 
 <style scoped>
 .editor-layout {
+  --sidebar-width: 512px;
   display: grid;
   grid-template-rows: max-content 1fr;
-  grid-template-columns: 1fr 512px;
+  grid-template-columns: 1fr var(--sidebar-width);
   grid-auto-flow: column;
   height: 100vh;
 }
@@ -78,7 +103,8 @@ const isSidebarRightActive = computed(() => {
   grid-column: 2;
   height: 100%;
   width: 100%;
-  border-left: 2px solid black;
+  border-left: 1px solid var(--color-base-300);
+  box-shadow: -2px 0 8px rgb(0 0 0 / 4%);
 }
 
 @media (max-width: 1536px) {
@@ -96,5 +122,18 @@ const isSidebarRightActive = computed(() => {
 .editor-layout-editor {
   position: relative;
   height: 100%;
+}
+
+.sidebar-toggle {
+  position: fixed;
+  top: 50%;
+  right: var(--sidebar-width);
+  transform: translate(50%, -50%);
+  z-index: 20;
+}
+
+.editor-layout:not(.sidebar-right-active) .sidebar-toggle {
+  right: 0.75rem;
+  transform: translateY(-50%);
 }
 </style>

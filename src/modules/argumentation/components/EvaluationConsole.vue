@@ -95,84 +95,61 @@ watchEffect(() => {
 </script>
 
 <template>
-  <div class="evaluation-console p-5">
-    <div class="columns">
-      <div class="column is-full">
-        <form
-          @submit.prevent="
-            () => {
-              if (evaluate !== null) evaluate()
-            }
-          "
+  <div class="evaluation-console space-y-3 p-5">
+    <form
+      @submit.prevent="
+        () => {
+          if (evaluate !== null) evaluate()
+        }
+      "
+    >
+      <div class="join w-full">
+        <button :disabled="evaluate === null" type="submit" class="btn btn-primary join-item">
+          Explain
+        </button>
+        <select
+          class="select join-item flex-1"
+          v-model="selectedArgumentToShowConclusionFor"
+          :disabled="getArguments(argumentationFramework).length == 0"
         >
-          <div class="field is-grouped is-gapless">
-            <div class="field has-addons is-flex-grow-1">
-              <div class="control">
-                <button :disabled="evaluate === null" type="submit" class="button is-primary">
-                  Explain
-                </button>
-              </div>
-              <div class="control is-flex-grow-1">
-                <div class="select is-fullwidth">
-                  <select
-                    class="is-fullwidt"
-                    v-model="selectedArgumentToShowConclusionFor"
-                    :disabled="getArguments(argumentationFramework).length == 0"
-                  >
-                    <option :value="nonSelected">all</option>
-                    <hr />
-                    <option
-                      v-for="argument in getArguments(argumentationFramework)"
-                      :key="argument.id"
-                      :value="argument.id"
-                    >
-                      {{ getDisplayName(argument) }}
-                    </option>
-                  </select>
-                </div>
-              </div>
-              <div class="control">
-                <button
-                  v-if="abortEvaluation !== null"
-                  type="button"
-                  class="button"
-                  @click="abortEvaluation()"
-                >
-                  Abort
-                </button>
-              </div>
-            </div>
-          </div>
-        </form>
+          <option :value="nonSelected">all</option>
+          <hr />
+          <option
+            v-for="argument in getArguments(argumentationFramework)"
+            :key="argument.id"
+            :value="argument.id"
+          >
+            {{ getDisplayName(argument) }}
+          </option>
+        </select>
+        <button
+          v-if="abortEvaluation !== null"
+          type="button"
+          class="btn join-item"
+          @click="abortEvaluation()"
+        >
+          Abort
+        </button>
       </div>
-    </div>
-    <div class="columns">
-      <div class="column is-full">
-        <article v-if="isEvaluating" class="message">
-          <div class="message-body is-size-6">Evaluating...</div>
-        </article>
-        <article v-if="evaluationBlocker !== null" class="message is-warning">
-          <div class="message-body is-size-6">
-            <EvaluationBlockerText :blocker="evaluationBlocker" />
-          </div>
-        </article>
-        <article v-if="evaluationError !== null" class="message is-danger">
-          <div class="message-body is-size-6">
-            {{ evaluationError }}
-          </div>
-        </article>
-        <article
-          v-if="evaluationResult !== null && activeTab !== SEQUENCE_EXPLANATION_TAB"
-          class="message is-link"
+    </form>
+    <div class="space-y-3">
+      <div v-if="isEvaluating" role="alert" class="alert text-sm">Evaluating...</div>
+      <div v-if="evaluationBlocker !== null" role="alert" class="alert alert-warning text-sm">
+        <EvaluationBlockerText :blocker="evaluationBlocker" />
+      </div>
+      <div v-if="evaluationError !== null" role="alert" class="alert alert-error text-sm">
+        {{ evaluationError }}
+      </div>
+      <div
+        v-if="evaluationResult !== null && activeTab !== SEQUENCE_EXPLANATION_TAB"
+        role="alert"
+        class="alert alert-info text-sm"
+      >
+        Navigate to the
+        <a class="link" @click="emit('update:activeTab', SEQUENCE_EXPLANATION_TAB)"
+          >sequence explanation tab</a
         >
-          <div class="message-body is-size-6">
-            Navigate to the
-            <a @click="emit('update:activeTab', SEQUENCE_EXPLANATION_TAB)"
-              >sequence explanation tab</a
-            >
-            to explore the sequence explanations.
-          </div>
-        </article>
+        to explore the sequence explanations.
       </div>
     </div>
   </div>

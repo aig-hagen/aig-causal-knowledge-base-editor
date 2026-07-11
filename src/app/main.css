@@ -16,5 +16,53 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+@import 'tailwindcss';
+@import '@fontsource-variable/inter';
+@plugin 'daisyui';
+@plugin 'daisyui/theme' {
+  name: 'aigtheme';
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+
+  /* Brand colors derived from the causal-graph component's own accent palette,
+     so the app chrome stays visually cohesive with the graph canvas it wraps. */
+  --color-primary: #004c97;
+  --color-primary-content: #ffffff;
+  --color-secondary: #007dae;
+  --color-secondary-content: #ffffff;
+  --color-accent: #eb9850;
+  --color-accent-content: #3a2000;
+  --color-neutral: #3f3f3f;
+  --color-neutral-content: #ffffff;
+
+  --color-base-100: #ffffff;
+  --color-base-200: #f5f6f7;
+  --color-base-300: #e7e9eb;
+  --color-base-content: #1f2328;
+
+  --color-info: #007dae;
+  --color-info-content: #ffffff;
+  --color-success: #1f9d55;
+  --color-success-content: #ffffff;
+  --color-warning: #b8860b;
+  --color-warning-content: #ffffff;
+  --color-error: #c0392b;
+  --color-error-content: #ffffff;
+
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
+body {
+  font-family: 'InterVariable', sans-serif;
+}
+
 @import './base.css';
 @import './aig_graph_components_customization.css';
