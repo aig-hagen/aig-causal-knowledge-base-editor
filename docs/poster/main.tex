@@ -1,0 +1,162 @@
+% Causal Knowledge Base Editor poster — editorial layout (A0 portrait).
+% Reuses the AgonProject poster style: the style layer lives in
+% agoneditorial.sty (colours, title/background styles, and the helper macros
+% \eyebrow, \screenshot, \featureitem, \shotpanel, \semrow, \callout,
+% \sectionrule, \formalism). This file is a scaffold — content is still WIP.
+
+\documentclass[25pt,a0paper,portrait,margin=0mm,innermargin=45mm,blockverticalspace=10mm,colspace=18mm,subcolspace=10mm]{tikzposter}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{sourceserifpro}
+\usepackage{sourcesanspro}
+\usepackage{sourcecodepro}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{qrcode}
+\usepackage{fontawesome5}
+\usepackage{xspace}
+
+\usepackage{agoneditorial}
+
+\newcommand{\ckbe}{Causal Knowledge Base Editor\xspace}
+\newcommand{\tweety}{TweetyProject\xspace}
+
+\usecolorstyle{editorialcolor}
+\usebackgroundstyle{editorialback}
+\usetitlestyle{editorialtitle}
+\useblockstyle{flat}
+
+\title{Argumentation-based Causal Reasoning}
+\subtitle{Lars Bengel \textbullet\ Oleksandr Dzhychko \textbullet\ Myriam Kasten \textbullet\ Kai Sauerwald \textbullet\ Matthias Thimm}
+
+\begin{document}
+\maketitle
+
+%======================================================================
+% Lede
+%======================================================================
+\begin{columns}
+\column{0.56}
+\block{}{
+    \begin{minipage}[c][0.6\linewidth][c]{\linewidth}
+    \eyebrow{Web tool \textbullet\ open source}
+    \vspace{0.5em}
+
+    {\sffamily\bfseries\color{ink}\fontsize{66}{70}\selectfont
+        Build causal models and reason about \textcolor{aigblue}{why}.\par}
+    \vspace{0.7em}
+
+    {\color{inksoft}\fontsize{27}{35}\selectfont
+        The {\sc\ckbe} is a visual interface to construct causal knowledge bases,
+        \textbf{reason} over them through their induced argumentation framework,
+        and get \textbf{human-readable explanations}.\par}
+    \vspace{1.3em}
+
+    {\centering\begin{tcolorbox}[hbox, colback=aigyellow, colframe=aigyellow, boxrule=0pt, arc=14pt,
+        left=18pt, right=22pt, top=16pt, bottom=16pt, boxsep=0pt]
+        \begin{minipage}[c]{3.9cm}
+            \centering
+            \setlength{\fboxsep}{8pt}\colorbox{white}{\qrcode[height=3.4cm]{https://causal-knowledge-base-editor.aig.fernuni-hagen.de}}
+        \end{minipage}\hspace{22pt}%
+        \begin{tabular}[c]{@{}l@{}}
+            {\sffamily\bfseries\color{aigbluedeep}\fontsize{24}{28}\selectfont\textls[150]{SCAN TO TRY IT LIVE}}\\[0.35em]
+            {\sffamily\bfseries\color{aigbluedeep}\fontsize{30}{36}\selectfont causal-knowledge-base-editor.aig.fernuni-hagen.de}
+        \end{tabular}%
+    \end{tcolorbox}\par}
+    \end{minipage}
+}
+\column{0.44}
+\block{}{
+    \vspace{1.2em}
+    \centering\screenshot[0.96\linewidth]{figures/model.pdf}\par
+    \vspace{0.6em}
+    {\color{muted}\itshape\fontsize{20}{25}\selectfont Graphical editor --- a causal model
+     for diagnosing a viral disease, with structural equations and assumptions.\par}
+}
+\end{columns}
+
+%======================================================================
+% How it works — the argumentation-based causal reasoning pipeline
+%======================================================================
+\begin{columns}\column{1}\block{}{\sectionrule\vspace{0.6em}\eyebrow{How it works}}\end{columns}
+\begin{columns}
+\column{0.31}\block{}{\featureitem{1 \enspace Causal model}{\faSitemap}{%
+    Boolean-valued variables tied together by \emph{structural equations}
+    $v \leftrightarrow \phi$ --- one causal mechanism per explainable atom --- plus
+    assumptions on the uncontrollable background atoms.}}
+\column{0.31}\block{}{\featureitem{2 \enspace Induced AF}{\faProjectDiagram}{%
+    Arguments are minimal sets of assumptions that consistently entail a conclusion;
+    an argument \emph{undercuts} another when it negates one of its premises,
+    yielding an argumentation framework.}}
+\column{0.31}\block{}{\featureitem{3 \enspace Reason \& explain}{\faBalanceScale}{%
+    Given an observation, a conclusion holds exactly when it is in \emph{every stable
+    extension} of the induced AF --- with dependency and sequence-based explanations.}}
+\end{columns}
+
+%======================================================================
+% Features
+%======================================================================
+\begin{columns}\column{1}\block{}{\sectionrule\vspace{0.6em}\eyebrow{Features}}\end{columns}
+\begin{columns}
+\column{0.2}\block{}{\featureitem{Model}{\faPenNib}{Construct causal models graphically --- atoms, structural equations, automatic layout.}}
+\column{0.2}\block{}{\featureitem{Assume \& observe}{\faSlidersH}{Fix assumptions on background atoms and choose the observations to reason from.}}
+\column{0.2}\block{}{\featureitem{Reason}{\faBalanceScale}{Valid conclusions computed from the stable extensions of the induced AF.}}
+\column{0.2}\block{}{\featureitem{Explain}{\faStream}{Dependency explanations and sequence-based explanations of conclusion arguments.}}
+\column{0.2}\block{}{\featureitem{Switch views}{\faRetweet}{Flip freely between the causal model and the induced AF behind it.}}
+\end{columns}
+
+%======================================================================
+% In action
+%======================================================================
+\begin{columns}\column{1}\block{}{\sectionrule\vspace{0.6em}\eyebrow{In action}}\end{columns}
+\begin{columns}
+\column{0.5}\block{}{\shotpanel[\linewidth]{Causal model}{figures/model.pdf}{A causal model for diagnosing a viral disease --- explainable atoms, their structural equations and the background assumptions.}}
+\column{0.5}\block{}{\shotpanel[\linewidth]{Induced AF \& evaluation}{figures/af.pdf}{The argumentation framework induced from the model, with the valid conclusions read off its stable extensions.}}
+\end{columns}
+\begin{columns}
+\column{0.5}\block{}{\shotplaceholder{Assumptions \& observations}{The input panel where the user fixes background assumptions and observations before evaluating. \emph{Screenshot to provide.}}}
+\column{0.5}\block{}{\shotplaceholder{Sequence-based explanation}{The step-by-step explanation of a conclusion argument. \emph{Screenshot to provide.}}}
+\end{columns}
+
+%======================================================================
+% Outlook
+%======================================================================
+\begin{columns}
+\column{0.58}
+\block{}{
+    \sectionrule\vspace{0.6em}
+    \eyebrow{Outlook}
+    \vspace{0.7em}
+    {\color{inksoft}\fontsize{25}{33}\selectfont
+    \begin{itemize}\setlength{\itemsep}{0.4em}
+        \item richer presentation and explanation of results within the AF
+        \item counterfactual reasoning via the twin-model method
+    \end{itemize}}
+}
+\column{0.42}
+\block{}{
+    \sectionrule\vspace{0.6em}
+    \eyebrow{Under the hood}
+    \vspace{0.7em}
+    {\color{inksoft}\fontsize{23}{30}\selectfont
+     A JavaScript front end built on the open-source \texttt{aig-graph-component};
+     causal reasoning and AF semantics by \emph{\tweety}.\par}
+    \vspace{0.6em}
+    \callout{Open source --- graphical modelling made to be explored, extended and reused.}
+}
+\end{columns}
+
+%======================================================================
+% Footer band — full-bleed, pinned to the bottom edge of the page
+%======================================================================
+\footerband{%
+    {\ttfamily\bfseries\color{white}\fontsize{26}{30}\selectfont
+     causal-knowledge-base-editor.aig.fernuni-hagen.de
+     \quad\textbullet\quad \faGithub\ github.com/aig-hagen/aig-causal-knowledge-base-editor\par}
+    \vspace{0.4em}
+    {\ttfamily\color{bluetint}\fontsize{18}{23}\selectfont Lars Bengel \textbullet\ Oleksandr Dzhychko
+     \textbullet\ Myriam Kasten \textbullet\ Kai Sauerwald \textbullet\ Matthias Thimm\par}%
+}
+
+\end{document}
