@@ -4,7 +4,7 @@
 % \eyebrow, \screenshot, \featureitem, \shotpanel, \semrow, \callout,
 % \sectionrule, \formalism). This file is a scaffold — content is still WIP.
 
-\documentclass[25pt,a0paper,portrait,margin=0mm,innermargin=45mm,blockverticalspace=10mm,colspace=18mm,subcolspace=10mm]{tikzposter}
+\documentclass[25pt,a0paper,portrait,margin=0mm,innermargin=45mm,blockverticalspace=20mm,colspace=18mm,subcolspace=10mm]{tikzposter}
 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -39,7 +39,7 @@
 \begin{columns}
 \column{0.56}
 \block{}{
-    \begin{minipage}[c][0.6\linewidth][c]{\linewidth}
+    \begin{minipage}[c][17cm][c]{\linewidth}
     \eyebrow{Web tool \textbullet\ open source}
     \vspace{0.5em}
 
@@ -68,30 +68,29 @@
 }
 \column{0.44}
 \block{}{
-    \vspace{1.2em}
-    \centering\screenshot[0.96\linewidth]{figures/model.pdf}\par
-    \vspace{0.6em}
-    {\color{muted}\itshape\fontsize{20}{25}\selectfont Graphical editor --- a causal model
-     for diagnosing a viral disease, with structural equations and assumptions.\par}
-}
-\end{columns}
+    \begin{minipage}[c][17cm][c]{\linewidth}
+    \eyebrow{How it works}
+    \vspace{0.8em}
 
-%======================================================================
-% How it works — the argumentation-based causal reasoning pipeline
-%======================================================================
-\begin{columns}\column{1}\block{}{\sectionrule\vspace{0.6em}\eyebrow{How it works}}\end{columns}
-\begin{columns}
-\column{0.31}\block{}{\featureitem{1 \enspace Causal model}{\faSitemap}{%
-    Boolean-valued variables tied together by \emph{structural equations}
-    $v \leftrightarrow \phi$ --- one causal mechanism per explainable atom --- plus
-    assumptions on the uncontrollable background atoms.}}
-\column{0.31}\block{}{\featureitem{2 \enspace Induced AF}{\faProjectDiagram}{%
-    Arguments are minimal sets of assumptions that consistently entail a conclusion;
-    an argument \emph{undercuts} another when it negates one of its premises,
-    yielding an argumentation framework.}}
-\column{0.31}\block{}{\featureitem{3 \enspace Reason \& explain}{\faBalanceScale}{%
-    Given an observation, a conclusion holds exactly when it is in \emph{every stable
-    extension} of the induced AF --- with dependency and sequence-based explanations.}}
+    \featureitem{1 \enspace Causal model}{\faSitemap}{%
+        Boolean-valued variables are tied together by \emph{structural equations}
+        and assumptions on uncontrollable background atoms.}
+    \vspace{0.25em}
+    {\centering\color{aigyellow}\fontsize{32}{32}\selectfont\faArrowDown\par}
+    \vspace{0.25em}
+
+    \featureitem{2 \enspace Induced AF}{\faProjectDiagram}{%
+        Minimal, consistent arguments are derived from the model; undercuts
+        between them yield an argumentation framework.}
+    \vspace{0.25em}
+    {\centering\color{aigyellow}\fontsize{32}{32}\selectfont\faArrowDown\par}
+    \vspace{0.25em}
+
+    \featureitem{3 \enspace Reason \& explain}{\faBalanceScale}{%
+        Stable extensions determine which conclusions hold and support
+        dependency and sequence-based explanations.}
+    \end{minipage}
+}
 \end{columns}
 
 %======================================================================
@@ -110,14 +109,22 @@
 % In action
 %======================================================================
 \begin{columns}\column{1}\block{}{\sectionrule\vspace{0.6em}\eyebrow{In action}}\end{columns}
-\begin{columns}
-\column{0.5}\block{}{\shotpanel[\linewidth]{Causal model}{figures/model.pdf}{A causal model for diagnosing a viral disease --- explainable atoms, their structural equations and the background assumptions.}}
-\column{0.5}\block{}{\shotpanel[\linewidth]{Induced AF \& evaluation}{figures/af.pdf}{The argumentation framework induced from the model, with the valid conclusions read off its stable extensions.}}
-\end{columns}
-\begin{columns}
-\column{0.5}\block{}{\shotplaceholder{Assumptions \& observations}{The input panel where the user fixes background assumptions and observations before evaluating. \emph{Screenshot to provide.}}}
-\column{0.5}\block{}{\shotplaceholder{Sequence-based explanation}{The step-by-step explanation of a conclusion argument. \emph{Screenshot to provide.}}}
-\end{columns}
+\begin{columns}\column{1}\block{}{%
+    \noindent\begin{minipage}[t]{0.46\linewidth}
+        \shotpanel[\linewidth]{1 \enspace Causal model}{figures/model.pdf}{%
+            Build the structural equations and background assumptions graphically.}
+    \end{minipage}\par
+    \vspace{-8cm}
+    \hfill\begin{minipage}[t]{0.46\linewidth}
+        \shotpanel[\linewidth]{2 \enspace Induced AF}{figures/af.pdf}{%
+            Inspect the arguments and attacks induced by the causal model.}
+    \end{minipage}\par
+    \vspace{-8cm}
+    \noindent\begin{minipage}[t]{0.46\linewidth}
+        \shotpanel[\linewidth]{3 \enspace Reason \& explain}{../images/step_7_explanation_results.png}{%
+            Evaluate conclusions and explore their sequence-based explanations.}
+    \end{minipage}
+}\end{columns}
 
 %======================================================================
 % Outlook
