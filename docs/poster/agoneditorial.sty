@@ -97,7 +97,7 @@
     \begin{minipage}[c]{0.27\linewidth}
         % Powered-by lockup, flush right so its edge mirrors the title's left margin.
         \makebox[\linewidth][r]{%
-            \raisebox{-0.42\height}{\includegraphics[height=2.2cm]{figures/tweety-logo.png}}\hspace{16pt}%
+            \raisebox{-0.42\height}{\includegraphics[height=2.8cm]{figures/tweety-logo.png}}\hspace{16pt}%
             \begin{tabular}[c]{@{}l@{}}
                 {\sffamily\bfseries\color{white}\fontsize{20}{22}\selectfont\textls[150]{POWERED BY}}\\[3pt]
                 {\sffamily\bfseries\color{aigyellow}\fontsize{38}{42}\selectfont TweetyProject}\\[3pt]
@@ -183,6 +183,43 @@
     \noindent{\sffamily\bfseries\color{ink}\fontsize{33}{37}\selectfont #1}%
     \hfill{\color{ochre}\fontsize{37}{37}\selectfont #2}\par
     \vspace{0.6em}{\color{muted}\fontsize{23}{28}\selectfont #3\par}}
+
+% One research contribution presented as a compact, poster-sized definition.
+\newcommand{\contributionitem}[3]{%
+    \noindent{\sffamily\bfseries\color{aigblue}\fontsize{29}{33}\selectfont #1\par}%
+    \vspace{0.5em}%
+    \begin{tcolorbox}[colback=cream, colframe=cream, boxrule=0pt, arc=8pt,
+        left=16pt, right=16pt, top=14pt, bottom=14pt, boxsep=0pt,
+        height=8.2cm, valign=top]
+        \setlength{\abovedisplayskip}{0.1em}%
+        \setlength{\belowdisplayskip}{0.1em}%
+        \setlength{\abovedisplayshortskip}{0.05em}%
+        \setlength{\belowdisplayshortskip}{0.05em}%
+        {\sffamily\bfseries\color{ochre}\fontsize{17}{21}\selectfont
+         \textls[180]{DEFINITION}\par}
+        \vspace{0.45em}%
+        {\color{inksoft}\fontsize{19}{24}\selectfont #2\par}
+        \vspace{0.05em}%
+        {\centering\color{ink}\fontsize{20}{25}\selectfont #3\par}
+    \end{tcolorbox}}
+
+% Formula + two-level plain-language reading for accessible definition cards.
+\newcommand{\definitionrow}[3]{%
+    \noindent\hspace*{1.2em}%
+    \begin{minipage}[c]{\dimexpr\linewidth-2.4em\relax}%
+        \begin{minipage}[c]{0.62\linewidth}%
+            {\raggedright\color{ink}\fontsize{20}{25}\selectfont #1\par}%
+        \end{minipage}\hfill
+        \begin{minipage}[c]{0.34\linewidth}%
+            {\raggedleft\sffamily\bfseries\color{inksoft}\fontsize{13}{16}\selectfont #2\par}%
+            \vspace{0.12em}%
+            {\raggedleft\sffamily\itshape\color{muted}\fontsize{11}{14}\selectfont (#3)\par}%
+        \end{minipage}%
+    \end{minipage}\par}
+
+% Short prose lead-in between formal rows in a definition card.
+\newcommand{\definitionlead}[1]{%
+    {\raggedright\color{inksoft}\fontsize{16}{20}\selectfont #1\par}}
 
 % One formalism entry for the strip: bold blue abbreviation + description.
 \newcommand{\formalism}[2]{%

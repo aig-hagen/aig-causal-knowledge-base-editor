@@ -13,7 +13,8 @@
 \usepackage{sourcecodepro}
 \usepackage{booktabs}
 \usepackage{graphicx}
-\usepackage{qrcode}
+\usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{fontawesome5}
 \usepackage{xspace}
 
@@ -44,23 +45,19 @@
     \vspace{0.5em}
 
     {\sffamily\bfseries\color{ink}\fontsize{66}{70}\selectfont
-        Build causal models and reason about \textcolor{aigblue}{why}.\par}
+        From causal models to
+        \textcolor{aigblue}{argumentation-based explanations}.\par}
     \vspace{0.7em}
 
     {\color{inksoft}\fontsize{27}{35}\selectfont
-        The {\sc\ckbe} is a visual interface to construct causal knowledge bases,
-        \textbf{reason} over them through their induced argumentation framework,
-        and get \textbf{human-readable explanations}.\par}
+        The {\sc\ckbe} is a visual interface for constructing causal knowledge bases and \textbf{reasoning} over them
+        through \textbf{structured argumentation}, making explicit the competing causal inferences.\par}
     \vspace{1.3em}
 
     {\centering\begin{tcolorbox}[hbox, colback=aigyellow, colframe=aigyellow, boxrule=0pt, arc=14pt,
         left=18pt, right=22pt, top=16pt, bottom=16pt, boxsep=0pt]
-        \begin{minipage}[c]{3.9cm}
-            \centering
-            \setlength{\fboxsep}{8pt}\colorbox{white}{\qrcode[height=3.4cm]{https://causal-knowledge-base-editor.aig.fernuni-hagen.de}}
-        \end{minipage}\hspace{22pt}%
-        \begin{tabular}[c]{@{}l@{}}
-            {\sffamily\bfseries\color{aigbluedeep}\fontsize{24}{28}\selectfont\textls[150]{SCAN TO TRY IT LIVE}}\\[0.35em]
+        \begin{tabular}[c]{@{}c@{}}
+            {\sffamily\bfseries\color{white}\fontsize{24}{28}\selectfont\textls[150]{AVAILABLE AT}}\\[0.35em]
             {\sffamily\bfseries\color{aigbluedeep}\fontsize{30}{36}\selectfont causal-knowledge-base-editor.aig.fernuni-hagen.de}
         \end{tabular}%
     \end{tcolorbox}\par}
@@ -68,41 +65,101 @@
 }
 \column{0.44}
 \block{}{
-    \begin{minipage}[c][17cm][c]{\linewidth}
-    \eyebrow{How it works}
+    \hfill\begin{minipage}[c][17cm][c]{\dimexpr\linewidth-40mm\relax}
+    \eyebrow{Workflow}
     \vspace{0.8em}
 
-    \featureitem{1 \enspace Causal model}{\faSitemap}{%
-        Boolean-valued variables are tied together by \emph{structural equations}
-        and assumptions on uncontrollable background atoms.}
+    \featureitem{1 \enspace Build a causal model}{\faSitemap}{%
+        Define unobservable and explainable causal variables, connect them through Boolean causal relationships.}
     \vspace{0.25em}
     {\centering\color{aigyellow}\fontsize{32}{32}\selectfont\faArrowDown\par}
     \vspace{0.25em}
 
-    \featureitem{2 \enspace Induced AF}{\faProjectDiagram}{%
-        Minimal, consistent arguments are derived from the model; undercuts
-        between them yield an argumentation framework.}
+    \featureitem{2 \enspace Induce an AF}{\faProjectDiagram}{%
+        Based on the causal model and observations, derive causal arguments and connect them
+        through undercut attacks.}
     \vspace{0.25em}
     {\centering\color{aigyellow}\fontsize{32}{32}\selectfont\faArrowDown\par}
     \vspace{0.25em}
 
     \featureitem{3 \enspace Reason \& explain}{\faBalanceScale}{%
-        Stable extensions determine which conclusions hold and support
-        dependency and sequence-based explanations.}
+        Compute stable extensions, evaluate conclusions, and generate
+        dependency- and sequence-based explanations.}
     \end{minipage}
 }
 \end{columns}
 
 %======================================================================
-% Features
+% Formal background
 %======================================================================
-\begin{columns}\column{1}\block{}{\sectionrule\vspace{0.6em}\eyebrow{Features}}\end{columns}
+\begin{columns}\column{1}\block{}{\sectionrule\vspace{0.6em}\eyebrow{Formal background}}\end{columns}
 \begin{columns}
-\column{0.2}\block{}{\featureitem{Model}{\faPenNib}{Construct causal models graphically --- atoms, structural equations, automatic layout.}}
-\column{0.2}\block{}{\featureitem{Assume \& observe}{\faSlidersH}{Fix assumptions on background atoms and choose the observations to reason from.}}
-\column{0.2}\block{}{\featureitem{Reason}{\faBalanceScale}{Valid conclusions computed from the stable extensions of the induced AF.}}
-\column{0.2}\block{}{\featureitem{Explain}{\faStream}{Dependency explanations and sequence-based explanations of conclusion arguments.}}
-\column{0.2}\block{}{\featureitem{Switch views}{\faRetweet}{Flip freely between the causal model and the induced AF behind it.}}
+\column{0.35}\block{}{\contributionitem{1 \enspace Causal knowledge bases}{%
+    Let $U,V$ partition the atoms into \textbf{background} and \textbf{explainable}
+    atoms. A \textcolor{aigblue}{\textbf{Boolean causal model}} is a triple
+    $(U,V,K)$; a \textcolor{aigblue}{\textbf{causal knowledge base}} is
+    $\Delta=(K,A)$.}{%
+    \vspace{0.65em}
+    \definitionrow{%
+      \(\displaystyle K=\{v\leftrightarrow\varphi_v\mid v\in V\}\)}{%
+      Boolean structural equations}{%
+      one equation per explainable atom}
+    \vspace{0.8em}
+    \definitionrow{%
+      \(\displaystyle A\subseteq\operatorname{Lit}(U),\quad
+      \forall u\in U:\ A\cap\{u,\neg u\}\neq\varnothing\)}{%
+      Background assumptions}{%
+      at least one literal per background atom}}}
+\column{0.33}\block{}{\contributionitem{2 \enspace Induced argumentation frameworks}{%
+    Given $\Delta=(K,A)$, the \textcolor{aigblue}{\textbf{induced AF}} is
+    $F(\Delta)=(\operatorname{Args}(\Delta),\Rightarrow)$.}{%
+    \vspace{0.45em}
+    \definitionlead{An \textcolor{aigblue}{\textbf{argument}}
+      is a pair $a=(\Phi,\psi)\in\operatorname{Args}(\Delta)$:}
+    \vspace{0.2em}
+    \definitionrow{%
+      {\fontsize{16}{20}\selectfont\(\displaystyle
+      \begin{aligned}
+        &\Phi\subseteq A,\quad K\cup\Phi\nvdash\bot,\quad K\cup\Phi\vdash\psi,\\[-0.15em]
+        &\forall\Psi\subsetneq\Phi:\ K\cup\Psi\nvdash\psi
+      \end{aligned}\)}}{%
+      Causal Argument}{%
+      premises are consistent and minimal for $\psi$}
+    \vspace{0.3em}
+    \definitionlead{For arguments $a=(\Phi,\psi)$ and $a'=(\Phi',\psi')$, an
+      \textcolor{aigblue}{\textbf{attack}} is defined by:}
+    \vspace{0.2em}
+    \definitionrow{%
+      {\fontsize{16}{20}\selectfont\(\displaystyle
+      a\Rightarrow a'\iff\exists\phi'\in\Phi':\ \phi'\equiv\neg\psi\)}}{%
+      Undercut attack}{%
+      $\psi$ negates a premise of $a'$}}}
+\column{0.32}\block{}{\contributionitem{3 \enspace Semantics-based conclusions}{%
+    Given $F=(\operatorname{Args},\Rightarrow)$, a
+    \textcolor{aigblue}{\textbf{stable extension}} is a set
+    $E\subseteq\operatorname{Args}$:}{%
+    \vspace{0.45em}
+    \definitionrow{%
+      {\fontsize{16}{20}\selectfont\(\displaystyle
+      \begin{aligned}
+        &\forall a,b\in E:\ a\nRightarrow b,\\[-0.15em]
+        &\forall a\in\operatorname{Args}\setminus E\ \exists b\in E:\ b\Rightarrow a
+      \end{aligned}\)}}{%
+      Stable extension}{%
+      \mbox{conflict-free; attacks all outside arguments}}
+    \vspace{1.2em}
+    \definitionlead{For an observation $\varphi$ and conclusion $\psi$,
+      \textcolor{aigblue}{\textbf{causal entailment}} is defined by:}
+    \vspace{0.2em}
+    \definitionrow{%
+      {\fontsize{16}{20}\selectfont\(\displaystyle
+      \begin{aligned}
+        \varphi\mid\!\sim_\Delta\psi\iff{}&
+        \forall E\in\mathsf{st}(F(K\cup\{\varphi\},A)):\\[-0.15em]
+        &\exists(\Phi,\psi)\in E
+      \end{aligned}\)}}{%
+      Skeptical acceptance}{%
+      $\psi$ is supported in every stable extension}}}
 \end{columns}
 
 %======================================================================
@@ -111,7 +168,7 @@
 \begin{columns}\column{1}\block{}{\sectionrule\vspace{0.6em}\eyebrow{In action}}\end{columns}
 \begin{columns}\column{1}\block{}{%
     \noindent\begin{minipage}[t]{0.46\linewidth}
-        \shotpanel[\linewidth]{1 \enspace Causal model}{figures/model.pdf}{%
+        \shotpanel[\linewidth]{1 \enspace Causal model}{figures/model.png}{%
             Build the structural equations and background assumptions graphically.}
     \end{minipage}\par
     \vspace{-8cm}
@@ -119,10 +176,18 @@
         \shotpanel[\linewidth]{2 \enspace Induced AF}{figures/af.pdf}{%
             Inspect the arguments and attacks induced by the causal model.}
     \end{minipage}\par
-    \vspace{-8cm}
+    \vspace{-12cm}
     \noindent\begin{minipage}[t]{0.46\linewidth}
-        \shotpanel[\linewidth]{3 \enspace Reason \& explain}{../images/step_7_explanation_results.png}{%
+        \shotpanel[\linewidth]{3 \enspace Reason \& explain}{figures/reason-and-explain.png}{%
             Evaluate conclusions and explore their sequence-based explanations.}
+    \end{minipage}
+    \par
+    \vspace{-16cm}
+    \hfill\begin{minipage}[t]{0.46\linewidth}
+        \vspace{3cm}
+        \shotplaceholder{4 \enspace Additional view}{%
+            A fourth application view will complete the walkthrough.}
+        \vspace{-3cm}
     \end{minipage}
 }\end{columns}
 
@@ -130,28 +195,23 @@
 % Outlook
 %======================================================================
 \begin{columns}
-\column{0.58}
+\column{0.46}
 \block{}{
     \sectionrule\vspace{0.6em}
     \eyebrow{Outlook}
     \vspace{0.7em}
-    {\color{inksoft}\fontsize{25}{33}\selectfont
-    \begin{itemize}\setlength{\itemsep}{0.4em}
-        \item richer presentation and explanation of results within the AF
-        \item counterfactual reasoning via the twin-model method
+    {\color{inksoft}\fontsize{24}{31}\selectfont
+    \begin{itemize}\setlength{\itemsep}{0.65em}
+        \item \textbf{Presentation of Explanations.} Integrate results more tightly with
+        the induced framework, making it easier to inspect how arguments and
+        attacks lead to accepted conclusions.
+        \item \textbf{Counterfactual reasoning.} Add counterfactual reasoning
+        via the twin-model method to contrast the actual model with an
+        intervened copy and reveal how changed conditions affect conclusions.
     \end{itemize}}
 }
-\column{0.42}
-\block{}{
-    \sectionrule\vspace{0.6em}
-    \eyebrow{Under the hood}
-    \vspace{0.7em}
-    {\color{inksoft}\fontsize{23}{30}\selectfont
-     A JavaScript front end built on the open-source \texttt{aig-graph-component};
-     causal reasoning and AF semantics by \emph{\tweety}.\par}
-    \vspace{0.6em}
-    \callout{Open source --- graphical modelling made to be explored, extended and reused.}
-}
+\column{0.54}
+\block{}{}
 \end{columns}
 
 %======================================================================

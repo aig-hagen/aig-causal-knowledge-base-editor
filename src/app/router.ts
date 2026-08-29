@@ -27,8 +27,6 @@ export const NAV_SHOW_USERGUIDE_KEY = 'navShowUserGuide'
 export const NAV_SHOW_HINTS = 'navShowHints'
 export const EDITOR_TYPE_CAUSAL = 'causal'
 
-export const NAV_MORE_NAME_KEY = 'navMoreName'
-
 const CAUSAL_KNOWLEDGE_BASE_EDITOR_TITLE = 'Causal Knowledge Base Editor'
 
 const router = createRouter({
@@ -40,7 +38,6 @@ const router = createRouter({
       component: CausalKnowledgeBaseEditorView,
       meta: {
         [TITLE_KEY]: CAUSAL_KNOWLEDGE_BASE_EDITOR_TITLE,
-        [NAV_MORE_NAME_KEY]: CAUSAL_KNOWLEDGE_BASE_EDITOR_TITLE,
         [NAV_SHOW_USERGUIDE_KEY]: true,
         [NAV_SHOW_HINTS]: true,
       },
@@ -60,7 +57,6 @@ const router = createRouter({
       props: {},
       meta: {
         [TITLE_KEY]: 'Argumentation Framework Editor',
-        [NAV_MORE_NAME_KEY]: 'Argumentation Framework Editor',
       },
     },
   ],

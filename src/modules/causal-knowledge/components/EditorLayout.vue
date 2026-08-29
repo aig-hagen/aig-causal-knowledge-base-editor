@@ -80,17 +80,26 @@ function toggleSidebarRight() {
   grid-template-columns: 1fr var(--sidebar-width);
   grid-auto-flow: column;
   height: 100vh;
+  overflow: hidden;
 }
 
 .editor-layout-navbar {
   grid-row: 1;
   grid-column: 1 / span 2;
-  width: max-content;
+  width: 100%;
+  min-width: 0;
+}
+
+.editor-layout.sidebar-right-active > .editor-layout-navbar {
+  grid-column: 1;
 }
 
 .editor-layout-editor {
   grid-row: 2;
   grid-column: 1 / span 2;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .editor-layout.sidebar-right-active > .editor-layout-editor {
@@ -103,6 +112,8 @@ function toggleSidebarRight() {
   grid-column: 2;
   height: 100%;
   width: 100%;
+  min-height: 0;
+  overflow-y: auto;
   border-left: 1px solid var(--color-base-300);
   box-shadow: -2px 0 8px rgb(0 0 0 / 4%);
 }
@@ -111,7 +122,6 @@ function toggleSidebarRight() {
   .editor-layout-navbar {
     position: static;
     grid-column: 1 / span 2;
-    width: unset;
   }
 
   .editor-layout.sidebar-right-active > .editor-layout-sidebar-right {

@@ -22,7 +22,7 @@ import ControlsExplanationModal from '@/modules/causal-knowledge/components/Cont
 import { hasOneEntry } from '@/modules/common/types'
 import saveAs from 'file-saver'
 import { useRouter } from 'vue-router'
-import { NAV_MORE_NAME_KEY, NAV_SHOW_HINTS, NAV_SHOW_USERGUIDE_KEY } from '@/app/router'
+import { NAV_SHOW_HINTS, NAV_SHOW_USERGUIDE_KEY } from '@/app/router'
 import EditorNavbarHint from './EditorNavbarHint.vue'
 import { useMediaQuery } from '@vueuse/core'
 import EditorNavbarBurgerMenuHint from './EditorNavbarBurgerMenuHint.vue'
@@ -143,14 +143,6 @@ const showUserGuide = computed(() => {
 })
 const doShowHints = computed(() => {
   return showHints && router.currentRoute.value.meta[NAV_SHOW_HINTS] === true
-})
-
-const routesForMore = computed(() => {
-  return router.options.routes.filter(
-    (route) =>
-      typeof route.meta?.[NAV_MORE_NAME_KEY] === 'string' &&
-      router.currentRoute.value.name !== route.name,
-  )
 })
 
 const examplesMenuItemRef = useTemplateRef('examples')
@@ -346,9 +338,9 @@ const burgerMenuItemRef = useTemplateRef('burger')
           tabindex="0"
           class="dropdown-content menu bg-base-100 rounded-box border-base-300 z-30 w-56 border p-2 shadow-lg"
         >
-          <li v-for="route in routesForMore" :key="route.path">
-            <a target="_blank" rel="noopener" :href="route.path">
-              {{ route.meta?.[NAV_MORE_NAME_KEY] }}
+          <li>
+            <a target="_blank" rel="noopener" href="http://agon.tweetyproject.org">
+              AgonProject
               <ExternalLink class="size-3.5 opacity-60" aria-hidden="true" />
             </a>
           </li>

@@ -113,7 +113,7 @@ function setNewArgumentationFramework(newArgumentationFramework: ArgumentationFr
     </template>
     <template v-slot:editor>
       <div class="view">
-        <div class="tabs tabs-lift" :style="{ width: 'max-content' }">
+        <div class="tabs tabs-lift w-full">
           <a
             class="tab"
             :class="{ 'tab-active': activeTab === ARGUMENTATION_GRAPH_TAB }"

@@ -126,7 +126,7 @@ const isSequenceExplnationTabActive = computed(() => activeTab.value === SEQUENC
     </template>
     <template v-slot:editor>
       <div class="view">
-        <div class="view-tabs tabs tabs-lift" :style="{ width: 'max-content' }">
+        <div class="view-tabs tabs tabs-lift w-full">
           <a
             class="tab"
             :class="{ 'tab-active': activeTab === CAUSAL_MODAL_TAB }"
