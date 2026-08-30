@@ -11,6 +11,10 @@
 \RequirePackage{calc}
 \usetikzlibrary{shadows.blur}
 
+% Scratch length: width of the "TweetyProject" wordmark, used to scale its
+% subtitle so both share the same right edge under the logo.
+\newlength{\tpwidth}
+
 % ---------------------------------------------------------------------------
 % Palette
 % ---------------------------------------------------------------------------
@@ -100,8 +104,10 @@
             \raisebox{-0.42\height}{\includegraphics[height=2.8cm]{figures/tweety-logo.png}}\hspace{16pt}%
             \begin{tabular}[c]{@{}l@{}}
                 {\sffamily\bfseries\color{white}\fontsize{20}{22}\selectfont\textls[150]{POWERED BY}}\\[3pt]
-                {\sffamily\bfseries\color{aigyellow}\fontsize{38}{42}\selectfont TweetyProject}\\[3pt]
-                {\color{bluetint}\fontsize{21}{25}\selectfont reasoning libraries \& solvers}
+                {\sffamily\bfseries\color{aigyellow}\fontsize{38}{42}\selectfont TweetyProject}\\[0pt]
+                {\settowidth{\tpwidth}{\sffamily\bfseries\fontsize{38}{42}\selectfont TweetyProject}%
+                 \color{bluetint}\resizebox{\tpwidth}{!}{%
+                   \itshape\fontsize{21}{25}\selectfont knowledge representation \& reasoning}}
             \end{tabular}%
         }%
     \end{minipage}%
