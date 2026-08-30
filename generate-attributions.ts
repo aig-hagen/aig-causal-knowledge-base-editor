@@ -196,6 +196,8 @@ async function fetchLicense(
     url = `https://raw.githubusercontent.com/evanw/esbuild/refs/tags/v${version}/LICENSE.md`
   } else if (packageName.startsWith('@inquirer/ansi@')) {
     url = `https://raw.githubusercontent.com/SBoudrias/Inquirer.js/refs/tags/v${version}/LICENSE-MIT`
+  } else if (packageName.startsWith('@napi-rs/wasm-runtime@')) {
+    url = `https://raw.githubusercontent.com/napi-rs/napi-rs/refs/tags/@napi-rs/wasm-runtime@${version}/LICENSE`
   } else if (packageName === '@open-draft/deferred-promise@2.2.0') {
     return null
   } else if (packageName.startsWith('@polka/url@')) {
@@ -231,6 +233,10 @@ async function fetchLicense(
   } else if (packageName === 'stackback@0.0.2') {
     return null
   } else if (packageName === 'strict-event-emitter@0.5.1') {
+    return null
+  } else if (packageName.startsWith('@tybys/wasm-util@')) {
+    // No license file is published to npm or the GitHub repository, only the
+    // MIT license declaration in package.json.
     return null
   } else if (packageName === 'varint@6.0.0') {
     return null
