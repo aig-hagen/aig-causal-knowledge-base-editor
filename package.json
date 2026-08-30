@@ -60,9 +60,9 @@
     "@vue/eslint-config-typescript": "14.7.0",
     "@vue/test-utils": "2.4.6",
     "@vue/tsconfig": "0.9.1",
-    "@vuepress/bundler-vite": "2.0.0-rc.28",
+    "@vuepress/bundler-vite": "2.0.0-rc.30",
     "@vuepress/plugin-markdown-ext": "^2.0.0-rc.132",
-    "@vuepress/plugin-markdown-hint": "2.0.0-rc.128",
+    "@vuepress/plugin-markdown-hint": "2.0.0-rc.132",
     "@vuepress/plugin-markdown-image": "^2.0.0-rc.132",
     "@vuepress/plugin-redirect": "^2.0.0-rc.131",
     "@vuepress/theme-default": "^2.0.0-rc.132",
@@ -84,6 +84,6 @@
     "vitest": "4.1.4",
     "vitest-browser-vue": "2.1.0",
     "vue-tsc": "3.2.6",
-    "vuepress": "2.0.0-rc.28"
+    "vuepress": "2.0.0-rc.30"
   }
 }
